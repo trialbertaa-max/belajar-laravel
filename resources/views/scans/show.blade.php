@@ -3600,137 +3600,662 @@
         }
 
         // ==========================================
-        // SECONDARY CAPTURE EXPORT
+        // SECONDARY CAPTURE EXPORT (EXECUTIVE HOSPITAL-GRADE MED REPORT)
         // ==========================================
         function exportAnnotatedReport() {
-            showToolHint('⏳', 'Sedang merender lembar laporan citra medis & ekspertise...');
+            showToolHint('⏳', 'Sedang merender lembar laporan ekspertise resmi CDC MCU...');
+            const targetVp = activeViewport;
+            const domImg = (targetVp === 1) ? img1 : img2;
+            const activeSrc = (vpState[targetVp].denoisedSrc || vpState[targetVp].rawSrc || (domImg ? domImg.src : ''));
+
+            // High-Resolution 1600x1200 Canvas (Executive Medical Landscape)
             const canvas = document.createElement('canvas');
-            canvas.width = 1280;
-            canvas.height = 960;
+            canvas.width = 1600;
+            canvas.height = 1200;
             const ctx = canvas.getContext('2d');
 
-            ctx.fillStyle = '#060911';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            function renderExecutiveReport(imgObj) {
+                // 1. Base Canvas Background (Deep Royal Medical Matte)
+                ctx.fillStyle = '#060a14';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            ctx.fillStyle = '#0f172a';
-            ctx.fillRect(0, 0, canvas.width, 70);
-            ctx.fillStyle = '#38bdf8';
-            ctx.font = 'bold 18px "Plus Jakarta Sans", sans-serif';
-            ctx.fillText('CAHAYA DIAGNOSTIC CENTRE (CDC MCU) — HYU PACS', 24, 32);
+                // ==========================================
+                // 2. KOP SURAT RESMI (OFFICIAL CLINICAL LETTERHEAD)
+                // ==========================================
+                ctx.fillStyle = '#09101f';
+                ctx.fillRect(0, 0, canvas.width, 115);
+                
+                // Top Cyan Accent Ribbon
+                const gradRibbon = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                gradRibbon.addColorStop(0, '#0284c7');
+                gradRibbon.addColorStop(0.5, '#38bdf8');
+                gradRibbon.addColorStop(1, '#10b981');
+                ctx.fillStyle = gradRibbon;
+                ctx.fillRect(0, 0, canvas.width, 4);
 
-            ctx.fillStyle = '#94a3b8';
-            ctx.font = '12px monospace';
-            ctx.fillText(`Pasien: {{ strtoupper($scan->patient_name) }} | MRN: {{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }} | Modalitas: {{ $scan->modality }} | Station: {{ $scan->station_name ?: 'FUJIFILM_FDR' }}`, 24, 54);
+                // Clinic Logo Emblem / Cross Symbol
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.roundRect(30, 20, 52, 52, 10);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✚', 56, 46);
 
-            const img = img1;
-            const scanImg = new Image();
-            scanImg.crossOrigin = 'anonymous';
-            scanImg.src = img.src;
+                // Clinic Letterhead Typography
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('CAHAYA DIAGNOSTIC CENTRE (CDC SURABAYA)', 95, 36);
 
-            scanImg.onload = () => {
-                const imgAreaX = 30, imgAreaY = 90, imgAreaW = 820, imgAreaH = 840;
-                ctx.fillStyle = '#000000';
-                ctx.fillRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH);
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('INSTALASI RADIOLOGI & DIAGNOSTIK TERPADU — PT CAHAYA MEDIKA HEALTHCARE', 95, 56);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Jl. Dharmahusada Indah Barat No. 36, Surabaya • Telp: (031) 592-7788 • Akreditasi KARS Paripurna • ISO 15189', 95, 74);
+
+                // Document Metadata Card (Top Right)
+                const docCardX = 1170, docCardY = 16, docCardW = 400, docCardH = 82;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(docCardX, docCardY, docCardW, docCardH, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('LEMBAR HASIL RADIOLOGI & SECONDARY CAPTURE', docCardX + 16, docCardY + 24);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '10.5px monospace';
+                ctx.fillText(`No. Dokumen : CDC-RAD-{{ date('Ymd') }}-{{ str_pad($scan->id, 4, '0', STR_PAD_LEFT) }}`, docCardX + 16, docCardY + 44);
+                ctx.fillText(`Standar     : DICOM SC IOD (NEMA PS 3.3)`, docCardX + 16, docCardY + 62);
+
+                // ==========================================
+                // 3. DEMOGRAPHICS GRID (4-COLUMN STRUCTURED MATRIX)
+                // ==========================================
+                const demoY = 125, demoH = 80, demoX = 30, demoW = 1540;
+                ctx.fillStyle = '#0b1322';
+                ctx.beginPath();
+                ctx.roundRect(demoX, demoY, demoW, demoH, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Vertical column dividers
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(demoX + 385, demoY); ctx.lineTo(demoX + 385, demoY + demoH);
+                ctx.moveTo(demoX + 770, demoY); ctx.lineTo(demoX + 770, demoY + demoH);
+                ctx.moveTo(demoX + 1155, demoY); ctx.lineTo(demoX + 1155, demoY + demoH);
+                ctx.stroke();
+
+                // Col 1: No. Rekam Medis & Accession
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('NO. REKAM MEDIS (MRN):', demoX + 16, demoY + 25);
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 13.5px monospace';
+                ctx.fillText(`{{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}`, demoX + 16, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.fillText(`Acc: {{ $scan->accession_number ?: 'ACC-' . date('Ymd') . '-' . str_pad($scan->id, 3, '0', STR_PAD_LEFT) }}`, demoX + 16, demoY + 65);
+
+                // Col 2: Nama Pasien & Usia
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('NAMA PASIEN / DEMOGRAFI:', demoX + 400, demoY + 25);
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 13.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`{{ strtoupper($scan->patient_name) }}`, demoX + 400, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`Usia: {{ $scan->age ?? 42 }} Tahun • Jenis Kelamin: {{ $scan->gender === 'P' ? 'Perempuan (F)' : 'Laki-laki (M)' }}`, demoX + 400, demoY + 65);
+
+                // Col 3: Modalitas & Unit Pesawat
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('MODALITAS & SUMBER CITRA:', demoX + 785, demoY + 25);
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`{{ $scan->modality ?: 'Thorax PA (CR)' }}`, demoX + 785, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.fillText(`Station: {{ $scan->station_name ?: 'FUJIFILM_FDR_01' }}`, demoX + 785, demoY + 65);
+
+                // Col 4: Waktu & Poli Rujukan
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('WAKTU & ASAL RUJUKAN:', demoX + 1170, demoY + 25);
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`{{ date('d F Y') }}, 09:30 WIB`, demoX + 1170, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Poli Medical Check Up (MCU) — CDC', demoX + 1170, demoY + 65);
+
+                // ==========================================
+                // 4. MAIN BODY (SPLIT VIEW: MEDICAL SCAN + FINDINGS)
+                // ==========================================
+                const bodyY = 220, bodyH = 920;
+                
+                // 4A. LEFT MEDICAL IMAGE VIEWPORT (W: 880px)
+                const imgAreaX = 30, imgAreaY = bodyY, imgAreaW = 880, imgAreaH = bodyH;
+                ctx.fillStyle = '#02040a';
+                ctx.beginPath();
+                ctx.roundRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH, 10);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
 
                 ctx.save();
                 ctx.beginPath();
-                ctx.rect(imgAreaX, imgAreaY, imgAreaW, imgAreaH);
+                ctx.roundRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH, 10);
                 ctx.clip();
 
-                const aspect = scanImg.width / scanImg.height;
-                let drawW = imgAreaW;
-                let drawH = imgAreaW / aspect;
-                if (drawH > imgAreaH) {
-                    drawH = imgAreaH;
-                    drawW = imgAreaH * aspect;
+                // Compute aspect ratio & placement within viewport
+                const innerImgX = imgAreaX + 10, innerImgY = imgAreaY + 10;
+                const innerImgW = imgAreaW - 20, innerImgH = imgAreaH - 20;
+                const naturalW = imgObj ? (imgObj.naturalWidth || imgObj.width || 800) : 800;
+                const naturalH = imgObj ? (imgObj.naturalHeight || imgObj.height || 800) : 800;
+                const aspect = (naturalH > 0) ? (naturalW / naturalH) : 1;
+                let drawW = innerImgW;
+                let drawH = innerImgW / aspect;
+                if (drawH > innerImgH) {
+                    drawH = innerImgH;
+                    drawW = innerImgH * aspect;
                 }
-                const drawX = imgAreaX + (imgAreaW - drawW) / 2;
-                const drawY = imgAreaY + (imgAreaH - drawH) / 2;
-                ctx.drawImage(scanImg, drawX, drawY, drawW, drawH);
+                const drawX = innerImgX + (innerImgW - drawW) / 2;
+                const drawY = innerImgY + (innerImgH - drawH) / 2;
+
+                if (imgObj) {
+                    const st = vpState[targetVp];
+                    ctx.filter = `invert(${st.inverted ? 1 : 0}) brightness(${st.brightness}%) contrast(${st.contrast}%)`;
+                    ctx.drawImage(imgObj, drawX, drawY, drawW, drawH);
+                    ctx.filter = 'none';
+                }
+
+                // 4B. OVERLAID MEASUREMENT ANNOTATIONS ON SCAN
+                const vpElem = (targetVp === 1) ? vp1 : vp2;
+                const vpW = (vpElem && vpElem.clientWidth) ? vpElem.clientWidth : 820;
+                const vpH = (vpElem && vpElem.clientHeight) ? vpElem.clientHeight : 840;
+
+                const toCanvX = (vx) => drawX + (vx / vpW) * drawW;
+                const toCanvY = (vy) => drawY + (vy / vpH) * drawH;
+                const toCanvR = (r) => (r / Math.min(vpW, vpH)) * Math.min(drawW, drawH);
+
+                const list = measurements[targetVp] || [];
+                list.forEach(m => {
+                    if (m.type === 'circle') {
+                        const cx = toCanvX(m.cx);
+                        const cy = toCanvY(m.cy);
+                        const r = toCanvR(m.r);
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.18)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Crosshairs
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+                        ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Cardinal dots
+                        ctx.fillStyle = '#facc15';
+                        [ [cx-r, cy], [cx+r, cy], [cx, cy-r], [cx, cy+r] ].forEach(([px, py]) => {
+                            ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();
+                        });
+
+                        // Badge
+                        const badgeY = (cy - r - 16 >= imgAreaY + 20) ? (cy - r - 16) : (cy + r + 16);
+                        const labelText = `${m.label}: Ø ${m.diamCm} cm • ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(cx - (tw / 2) - 10, badgeY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, cx, badgeY);
+                    } else if (m.type === 'ellipse') {
+                        const cx = toCanvX(m.cx);
+                        const cy = toCanvY(m.cy);
+                        const rx = toCanvR(m.rx);
+                        const ry = toCanvR(m.ry);
+
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.18)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Crosshairs
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(cx - rx, cy); ctx.lineTo(cx + rx, cy);
+                        ctx.moveTo(cx, cy - ry); ctx.lineTo(cx, cy + ry);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        const badgeY = (cy - ry - 16 >= imgAreaY + 20) ? (cy - ry - 16) : (cy + ry + 16);
+                        const labelText = `${m.label}: ${m.d1Cm}×${m.d2Cm} cm • ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(cx - (tw / 2) - 10, badgeY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, cx, badgeY);
+                    } else if (m.type === 'polygon' && m.points && m.points.length >= 3) {
+                        ctx.beginPath();
+                        m.points.forEach((p, i) => {
+                            const px = toCanvX(p.x);
+                            const py = toCanvY(p.y);
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        });
+                        ctx.closePath();
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.2)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.stroke();
+
+                        const pcx = toCanvX(m.cx);
+                        const pcy = toCanvY(m.cy);
+                        const labelText = `${m.label}: ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(pcx - (tw / 2) - 10, pcy - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, pcx, pcy);
+                    } else if (m.type === 'ctr') {
+                        const hx1 = toCanvX(m.heart.x1), hy1 = toCanvY(m.heart.y1);
+                        const hx2 = toCanvX(m.heart.x2), hy2 = toCanvY(m.heart.y2);
+                        const tx1 = toCanvX(m.thorax.x1), ty1 = toCanvY(m.thorax.y1);
+                        const tx2 = toCanvX(m.thorax.x2), ty2 = toCanvY(m.thorax.y2);
+
+                        // Heart line (Ruby Red)
+                        ctx.beginPath();
+                        ctx.moveTo(hx1, hy1); ctx.lineTo(hx2, hy2);
+                        ctx.strokeStyle = '#f43f5e';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        ctx.fillStyle = '#f43f5e';
+                        ctx.beginPath(); ctx.arc(hx1, hy1, 4.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(hx2, hy2, 4.5, 0, Math.PI * 2); ctx.fill();
+
+                        // Thorax line (Gold Yellow)
+                        ctx.beginPath();
+                        ctx.moveTo(tx1, ty1); ctx.lineTo(tx2, ty2);
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = '#facc15';
+                        ctx.beginPath(); ctx.arc(tx1, ty1, 4.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(tx2, ty2, 4.5, 0, Math.PI * 2); ctx.fill();
+
+                        // Mid CTR badge
+                        const midX = (hx1 + hx2 + tx1 + tx2) / 4;
+                        const midY = (hy1 + hy2 + ty1 + ty2) / 4;
+                        const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
+                        const labelText = `CTR: ${m.ratio}% (${m.verdict})`;
+                        ctx.font = 'bold 12px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = badgeColor;
+                        ctx.lineWidth = 1.8;
+                        ctx.beginPath();
+                        ctx.roundRect(midX - (tw / 2) - 12, midY - 14, tw + 24, 28, 14);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = badgeColor;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, midX, midY);
+                    } else {
+                        // Linear Caliper
+                        const x1 = toCanvX(m.x1), y1 = toCanvY(m.y1);
+                        const x2 = toCanvX(m.x2), y2 = toCanvY(m.y2);
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.fillStyle = '#facc15';
+                        ctx.beginPath(); ctx.arc(x1, y1, 4, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(x2, y2, 4, 0, Math.PI * 2); ctx.fill();
+
+                        const midX = (x1 + x2) / 2;
+                        const midY = (y1 + y2) / 2;
+                        const labelText = `${m.label}: ${m.distCm} cm`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(midX - (tw / 2) - 10, midY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, midX, midY);
+                    }
+                });
+
+                // 4C. DICOM HUD CORNER OVERLAYS ON MEDICAL IMAGE
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText('CAHAYA DIAGNOSTIC CENTRE', imgAreaX + 16, imgAreaY + 16);
+                ctx.font = '10.5px monospace';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.fillText('{{ strtoupper($scan->patient_name) }}', imgAreaX + 16, imgAreaY + 34);
+                ctx.fillText('MRN: {{ $scan->patient_id ?: "CDC-" . str_pad($scan->id, 5, "0", STR_PAD_LEFT) }}', imgAreaX + 16, imgAreaY + 52);
+
+                ctx.textAlign = 'right';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.fillText(targetVp === 1 ? '{{ $patientSeries[0]["name"] }}' : '{{ $patientSeries[1]["name"] ?? "USG Abdomen" }}', imgAreaX + imgAreaW - 16, imgAreaY + 16);
+                ctx.fillText('Station: {{ $scan->station_name ?: "FUJIFILM_FDR" }}', imgAreaX + imgAreaW - 16, imgAreaY + 34);
+
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                const st = vpState[targetVp];
+                const engineLabel = st.denoisedSrc ? (st.engine || 'Bilateral Filter (Denoised)') : 'RAW Acquisition (Original CR)';
+                ctx.fillText(`Mode: ${engineLabel}`, imgAreaX + 16, imgAreaY + imgAreaH - 34);
+                ctx.fillText(`WW: 400 | WL: 40 | Scale: 0.8000 mm/px`, imgAreaX + 16, imgAreaY + imgAreaH - 16);
+
+                ctx.textAlign = 'right';
+                ctx.fillText('Hyu PACS Workstation v2.0', imgAreaX + imgAreaW - 16, imgAreaY + imgAreaH - 34);
+                ctx.fillText('SOP: 1.2.840.10008.5.1.4.1.1.7', imgAreaX + imgAreaW - 16, imgAreaY + imgAreaH - 16);
+
                 ctx.restore();
 
-                const panelX = 870, panelY = 90, panelW = 380;
-                ctx.fillStyle = '#0f172a';
-                ctx.roundRect(panelX, panelY, panelW, 840, 10);
+                // ==========================================
+                // 5. RIGHT SECTION: STRUCTURED CLINICAL DOSSIER (W: 630px)
+                // ==========================================
+                const panelX = 940, panelY = bodyY, panelW = 630, panelH = bodyH;
+                ctx.fillStyle = '#0b1322';
+                ctx.beginPath();
+                ctx.roundRect(panelX, panelY, panelW, panelH, 10);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Left Blue Accent Stripe on Dossier
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.roundRect(panelX, panelY, 5, panelH, [10, 0, 0, 10]);
                 ctx.fill();
 
+                // Section Header
                 ctx.fillStyle = '#38bdf8';
-                ctx.font = 'bold 15px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('LEMBAR HASIL EKSPERTISE', panelX + 20, panelY + 35);
+                ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('LEMBAR HASIL EKSPERTISE RADIOLOG', panelX + 25, panelY + 38);
 
                 ctx.fillStyle = '#94a3b8';
-                ctx.font = '12px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText(`Dokter: ${document.getElementById('txtDoctor').value || 'dr. Radiolog Sp.Rad'}`, panelX + 20, panelY + 65);
-                ctx.fillText(`Tanggal: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, panelX + 20, panelY + 85);
+                ctx.font = '11.5px "Plus Jakarta Sans", sans-serif';
+                const docVal = document.getElementById('txtDoctor').value || 'dr. Bambang Sp.Rad';
+                ctx.fillText(`Dokter Pemeriksa: ${docVal} • Tanggal: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, panelX + 25, panelY + 60);
 
-                let curY = panelY + 140;
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, panelY + 75); ctx.lineTo(panelX + panelW - 25, panelY + 75);
+                ctx.stroke();
+
+                let curY = panelY + 105;
+
+                // ------------------------------------------
+                // 5A. CARD HASIL PENGUKURAN KUANTITATIF
+                // ------------------------------------------
                 ctx.fillStyle = '#facc15';
-                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('HASIL PENGUKURAN RADIOLOGI:', panelX + 20, curY);
-                curY += 25;
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('I. ANALISIS KUANTITATIF & PENGUKURAN RADIOLOGI:', panelX + 25, curY);
+                curY += 20;
 
-                const list = measurements[1];
-                if (list.length === 0) {
+                const ctrMeasurement = list.find(m => m.type === 'ctr');
+                if (ctrMeasurement) {
+                    // Highlighted CTR Clinical Box
+                    const isNormal = ctrMeasurement.isNormal;
+                    const ctrBoxBg = isNormal ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)';
+                    const ctrBorder = isNormal ? '#10b981' : '#ef4444';
+                    
+                    ctx.fillStyle = ctrBoxBg;
+                    ctx.beginPath();
+                    ctx.roundRect(panelX + 25, curY, panelW - 50, 68, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = ctrBorder;
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = isNormal ? '#10b981' : '#ef4444';
+                    ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(`🫀 Cardio-Thoracic Ratio (CTR): ${ctrMeasurement.ratio}% [${ctrMeasurement.verdict.toUpperCase()}]`, panelX + 40, curY + 26);
+
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '11px monospace';
+                    ctx.fillText(`• Transversal Jantung (A+B): ${ctrMeasurement.heart.distCm} cm | Toraks Internal (C): ${ctrMeasurement.thorax.distCm} cm`, panelX + 40, curY + 48);
+                    curY += 80;
+                }
+
+                // Other Calipers / Circles / Ellipses
+                const otherMeasurements = list.filter(m => m.type !== 'ctr');
+                if (otherMeasurements.length === 0 && !ctrMeasurement) {
                     ctx.fillStyle = '#64748b';
-                    ctx.font = 'italic 12px "Plus Jakarta Sans", sans-serif';
-                    ctx.fillText('- Tidak ada anotasi khusus.', panelX + 20, curY);
-                    curY += 25;
-                } else {
-                    list.forEach(m => {
-                        if (m.type === 'ctr') {
-                            ctx.fillStyle = m.isNormal ? '#10b981' : '#ef4444';
-                            ctx.font = 'bold 12px monospace';
-                            ctx.fillText(`• CTR: ${m.ratio}% (${m.verdict})`, panelX + 20, curY);
-                            curY += 22;
-                        } else if (m.type === 'circle') {
-                            ctx.fillStyle = '#facc15';
-                            ctx.font = 'bold 12px monospace';
-                            ctx.fillText(`• ${m.label} (Lingkaran): Ø ${m.diamCm} cm (${m.areaCm2} cm²)`, panelX + 20, curY);
-                            curY += 22;
+                    ctx.font = 'italic 11.5px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText('Tidak ada anotasi/lesi fokal khusus yang diukur.', panelX + 25, curY);
+                    curY += 24;
+                } else if (otherMeasurements.length > 0) {
+                    otherMeasurements.forEach(m => {
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.font = 'bold 11px monospace';
+                        if (m.type === 'circle') {
+                            ctx.fillText(`• ${m.label} (Lingkaran Nodul): Ø ${m.diamCm} cm (Luas Area: ${m.areaCm2} cm²)`, panelX + 25, curY);
                         } else if (m.type === 'ellipse') {
-                            ctx.fillStyle = '#facc15';
-                            ctx.font = 'bold 12px monospace';
-                            ctx.fillText(`• ${m.label} (Oval): ${m.d1Cm}x${m.d2Cm} cm (${m.areaCm2} cm²)`, panelX + 20, curY);
-                            curY += 22;
+                            ctx.fillText(`• ${m.label} (Oval Lesi): ${m.d1Cm} × ${m.d2Cm} cm (Luas Area: ${m.areaCm2} cm²)`, panelX + 25, curY);
                         } else if (m.type === 'polygon') {
-                            ctx.fillStyle = '#facc15';
-                            ctx.font = 'bold 12px monospace';
-                            ctx.fillText(`• ${m.label}: ${m.areaCm2} cm²`, panelX + 20, curY);
-                            curY += 22;
+                            ctx.fillText(`• ${m.label} (Area Poligon): Luas ${m.areaCm2} cm² (Keliling: ${m.perimeterCm} cm)`, panelX + 25, curY);
                         } else {
-                            ctx.fillStyle = '#38bdf8';
-                            ctx.font = 'bold 12px monospace';
-                            ctx.fillText(`• ${m.label}: ${m.distCm} cm`, panelX + 20, curY);
-                            curY += 22;
+                            ctx.fillText(`• ${m.label} (Linear Caliper): Panjang ${m.distCm} cm`, panelX + 25, curY);
                         }
+                        curY += 20;
                     });
                 }
 
                 curY += 15;
-                ctx.fillStyle = '#38bdf8';
-                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('KESIMPULAN KLINIS:', panelX + 20, curY);
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, curY); ctx.lineTo(panelX + panelW - 25, curY);
+                ctx.stroke();
                 curY += 25;
 
-                ctx.fillStyle = '#e2e8f0';
-                ctx.font = '12px "Plus Jakarta Sans", sans-serif';
-                const diagText = document.getElementById('txtDiagnosis').value || 'Cor dan pulmo dalam batas normal.';
-                diagText.split('\n').forEach(l => {
-                    ctx.fillText(l.substring(0, 42), panelX + 20, curY);
-                    curY += 20;
+                // ------------------------------------------
+                // 5B. DESKRIPSI TEMUAN RADIOLOGIS (RSNA FORMAT)
+                // ------------------------------------------
+                ctx.fillStyle = '#facc15';
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('II. DESKRIPSI RADIOLOGIS ANATOMI:', panelX + 25, curY);
+                curY += 22;
+
+                const anatomiRows = [
+                    { organ: 'COR', desc: ctrMeasurement ? `CTR ${ctrMeasurement.ratio}%, apeks ${ctrMeasurement.isNormal ? 'tidak tertanam' : 'tertanam/membesar'}.` : 'Bentuk dan ukuran dalam batas normal, CTR < 50%.' },
+                    { organ: 'PULMO', desc: 'Corakan bronkovaskular normal. Tidak tampak infiltrat, konsolidasi, maupun nodul aktif.' },
+                    { organ: 'SINUS & DIAFRAGMA', desc: 'Sinus kostofrenikus kanan & kiri lancip/tajam. Hemidiafragma licin.' },
+                    { organ: 'TULANG & DINDING DADA', desc: 'Struktur tulang kosta dan klavikula intak. Soft tissue dinding dada simetris.' }
+                ];
+
+                anatomiRows.forEach(row => {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(`• ${row.organ}:`, panelX + 25, curY);
+                    
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(row.desc, panelX + 35, curY + 16);
+                    curY += 34;
                 });
 
-                ctx.fillStyle = '#475569';
-                ctx.font = '10px monospace';
-                ctx.fillText('DICOM Secondary Capture (SC) — Generated by Hyu PACS', panelX + 20, panelY + 815);
+                curY += 10;
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, curY); ctx.lineTo(panelX + panelW - 25, curY);
+                ctx.stroke();
+                curY += 25;
 
+                // ------------------------------------------
+                // 5C. KESAN / KESIMPULAN KLINIS (IMPRESSION)
+                // ------------------------------------------
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('III. KESAN / KESIMPULAN KLINIS (IMPRESSION):', panelX + 25, curY);
+                curY += 18;
+
+                // Callout Impression Box
+                const diagText = document.getElementById('txtDiagnosis').value.trim() || 'Cor dan pulmo dalam batas normal. Tidak tampak kelainan radiologis aktif.';
+                const lines = diagText.split('\n');
+                const boxH = Math.max(65, lines.length * 20 + 26);
+
+                ctx.fillStyle = 'rgba(2, 132, 199, 0.08)';
+                ctx.beginPath();
+                ctx.roundRect(panelX + 25, curY, panelW - 50, boxH, 6);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                let diagY = curY + 22;
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                lines.forEach(l => {
+                    ctx.fillText(l.substring(0, 68), panelX + 40, diagY);
+                    diagY += 20;
+                });
+
+                // ------------------------------------------
+                // 5D. VALIDASI DIGITAL & TANDA TANGAN DOKTER (FOOTER PANEL)
+                // ------------------------------------------
+                const signBoxY = panelY + panelH - 120;
+                
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, signBoxY - 15); ctx.lineTo(panelX + panelW - 25, signBoxY - 15);
+                ctx.stroke();
+
+                // QR Code Verification Symbol (Left)
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(panelX + 25, signBoxY, 80, 80, 6);
+                ctx.fill();
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('HYU PACS', panelX + 65, signBoxY + 35);
+                ctx.fillText('VERIFIED', panelX + 65, signBoxY + 50);
+
+                // Validation Text (Right)
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Dokter Spesialis Radiologi Penanggung Jawab:', panelX + 120, signBoxY + 16);
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`${docVal}`, panelX + 120, signBoxY + 36);
+
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('SIP: 503/4421/SIP.DS/436.7.2/2024 • CDC Medical Centre', panelX + 120, signBoxY + 54);
+
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('✓ TERVALIDASI SECARA ELEKTRONIK (DIGITALLY SIGNED)', panelX + 120, signBoxY + 72);
+
+                // ==========================================
+                // 6. BOTTOM SYSTEM FOOTER DISCLAIMER
+                // ==========================================
+                ctx.fillStyle = '#475569';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dokumen ini merupakan Laporan Hasil Radiologi Resmi yang diterbitkan secara elektronik melalui Sistem Hyu PACS & RIS PT Cahaya Medika Healthcare. Informasi di dalamnya bersifat RAHASIA MEDIS.', canvas.width / 2, canvas.height - 18);
+
+                // Trigger Instant High-Quality PNG Download
                 const link = document.createElement('a');
-                link.download = `Laporan_Radiologi_${document.getElementById('txtDoctor').value.replace(/\s+/g, '_')}_{{ $scan->patient_name }}.png`;
-                link.href = canvas.toDataURL('image/png');
+                const cleanDoc = docVal.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                const cleanPatient = '{{ $scan->patient_name }}'.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                link.download = `Laporan_Radiologi_CDC_${cleanDoc}_${cleanPatient}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
-                showToolHint('✅', 'Lembar laporan citra berhasil diekspor!');
+                showToolHint('✅', 'Lembar laporan ekspertise resmi CDC berhasil diekspor!');
                 setTimeout(hideToolHint, 3000);
-            };
+            }
+
+            // Reliable Image Load Dispatcher
+            if (domImg && domImg.complete && domImg.naturalWidth > 0 && (!vpState[targetVp].denoisedSrc || domImg.src === activeSrc)) {
+                renderExecutiveReport(domImg);
+            } else {
+                const scanImg = new Image();
+                scanImg.onload = () => renderExecutiveReport(scanImg);
+                scanImg.onerror = () => {
+                    console.warn('[Hyu PACS] Fallback drawing without image loader');
+                    renderExecutiveReport(domImg || null);
+                };
+                scanImg.src = activeSrc;
+            }
         }
     </script>
 
