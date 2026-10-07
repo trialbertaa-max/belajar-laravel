@@ -620,14 +620,25 @@
                             {{ $scan->diagnosis_notes ?: ($scan->order_notes ?: 'Menunggu pemeriksaan rontgen...') }}
                         </td>
                         <td>
-                            <div style="display: flex; gap: 0.4rem; align-items: center;">
-                                <a href="{{ route('scans.show', $scan->id) }}" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
-                                    🔍 Viewer
-                                </a>
+                            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                                @if($scan->mcu_status === 'siap_rontgen')
+                                    {{-- Pasien belum diperiksa: citra belum tersedia, tidak ada aksi ambil citra --}}
+                                    <span class="badge-status badge-waiting" style="padding: 0.35rem 0.65rem; font-size: 0.76rem; border: 1px dashed rgba(245,158,11,0.5); cursor: default;" title="Pemeriksaan rontgen belum dilakukan. Citra medis belum tersedia.">
+                                        ⏳ Belum Diperiksa
+                                    </span>
+                                    <a href="{{ route('scans.show', $scan->id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.6rem; font-size: 0.76rem; color: #94a3b8; border-color: #334155;" title="Lihat Informasi Order MCU">
+                                        📋 Detail Order
+                                    </a>
+                                @else
+                                    {{-- Pasien sudah diperiksa & citra tersedia: buka PACS Viewer --}}
+                                    <a href="{{ route('scans.show', $scan->id) }}" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+                                        🔍 Viewer
+                                    </a>
+                                @endif
                                 <form action="{{ route('scans.destroy', $scan->id) }}" method="POST" onsubmit="return confirm('Hapus data pemeriksaan ini?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.78rem; color: #ef4444;">
+                                    <button type="submit" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.78rem; color: #ef4444;" title="Hapus Order">
                                         🗑️
                                     </button>
                                 </form>

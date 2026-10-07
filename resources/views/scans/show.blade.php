@@ -327,9 +327,9 @@
         }
 
         .series-thumb-card.active-vp2 {
-            border-color: var(--med-emerald);
-            background: rgba(16, 185, 129, 0.12);
-            box-shadow: inset 0 0 0 1px var(--med-emerald);
+            border-color: #38bdf8;
+            background: rgba(2, 132, 199, 0.12);
+            box-shadow: inset 0 0 0 1px #38bdf8;
         }
 
         .thumb-preview-box {
@@ -408,8 +408,8 @@
         }
 
         .btn-load-vp.btn-vp2:hover {
-            border-color: #34d399;
-            background: #059669;
+            border-color: #38bdf8;
+            background: #0284c7;
         }
 
         /* 3B. CENTER VIEWPORTS STAGE */
@@ -520,7 +520,7 @@
         }
 
         #vp2 .dicom-hud {
-            color: #34d399;
+            color: #38bdf8;
         }
 
         .hud-top-left { top: 2.2rem; left: 0.75rem; text-align: left; }
@@ -1149,9 +1149,11 @@
                 &larr; Sesi Pasien MCU
             </a>
 
+            @if($hasExamined)
             <button class="tool-btn" onclick="toggleSeriesDrawer()" title="Sembunyikan / Munculkan Seri Pasien">
                 <span id="btnDrawerIcon">◀</span> Seri Pasien ({{ count($patientSeries) }})
             </button>
+            @endif
 
             <div class="patient-demographics-strip">
                 <strong>{{ strtoupper($scan->patient_name) }}</strong>
@@ -1162,15 +1164,17 @@
                 <span style="color: #64748b;">|</span>
                 <span>{{ $scan->gender == 'P' ? 'F' : 'M' }}/{{ $scan->age ?? '18' }}Y</span>
             </div>
+
+            @if($hasExamined)
+            <!-- Multimodal Layout Grid Selector (1x1 vs 1x2) -->
+            <div style="display: flex; align-items: center; gap: 0.2rem; background: #080d16; border: 1px solid var(--ws-border); padding: 0.2rem; border-radius: 6px;">
+                <button class="tool-btn active" id="btnLayoutSingle" onclick="setLayoutMode('1x1')" title="Tata Letak 1x1" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center;">1x1</button>
+                <button class="tool-btn" id="btnLayoutDual" onclick="setLayoutMode('1x2')" title="Tata Letak 1x2" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center; color: #38bdf8;">1x2</button>
+            </div>
+            @endif
         </div>
 
         <div class="nav-section-right">
-            <!-- Multimodal Layout Grid Selector (1x1 Tunggal vs 1x2 Multimodal) -->
-            <div style="display: flex; align-items: center; gap: 0.25rem; background: #080d16; border: 1px solid var(--ws-border); padding: 0.2rem; border-radius: 5px;">
-                <button class="tool-btn active" id="btnLayoutSingle" onclick="setLayoutMode('1x1')" style="padding: 0.2rem 0.55rem; font-size: 0.7rem;">1x1 Tunggal</button>
-                <button class="tool-btn" id="btnLayoutDual" onclick="setLayoutMode('1x2')" style="padding: 0.2rem 0.55rem; font-size: 0.7rem; color: #38bdf8; font-weight: 700;">1x2 Multimodal</button>
-            </div>
-
             <!-- Server Status & Setup Node Button -->
             <div class="server-status-pill" onclick="openDicomConfigModal()" style="cursor: pointer;" title="Klik untuk Konfigurasi Port, AE Title & Jaringan DICOM">
                 <span class="pulse-dot"></span>
@@ -1180,7 +1184,8 @@
         </div>
     </header>
 
-    <!-- 2. CLINICAL WORKSTATION TOOLBAR -->
+    @if($hasExamined)
+    <!-- 2. CLINICAL WORKSTATION TOOLBAR (hanya tampil jika pemeriksaan sudah dilakukan) -->
     <div class="pacs-toolbar">
         <!-- Navigation & Zoom -->
         <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser / Pan Gambar">Pan</button>
@@ -1432,8 +1437,8 @@
             <!-- Viewport 2 (VP-B: Secondary Multimodal - USG / Comparison) -->
             <div class="viewport-cell" id="vp2" style="display: none;" onclick="selectViewport(2)">
                 <div class="viewport-header-hud">
-                    <span class="viewport-tag-name" id="vp2Title" style="color: #10b981;">VP-B: {{ $patientSeries[1]['name'] }} (COMPARISON)</span>
-                    <span style="color: #94a3b8;" id="vp2SeriesInfo">{{ $patientSeries[1]['station'] }} | {{ $patientSeries[1]['matrix'] }}</span>
+                    <span class="viewport-tag-name" id="vp2Title" style="color: #38bdf8;">VP-B: {{ $patientSeries[1]['name'] ?? 'USG Abdomen' }} (COMPARISON)</span>
+                    <span style="color: #94a3b8;" id="vp2SeriesInfo">{{ $patientSeries[1]['station'] ?? 'USG_MINDRAY_02' }} | {{ $patientSeries[1]['matrix'] ?? 'B-Mode' }}</span>
                 </div>
 
                 <div class="dicom-hud hud-top-left" id="vp2HudTopLeft">
@@ -1755,6 +1760,100 @@
         </div>
     </footer>
 
+    @else
+    {{-- ====================================================================
+         DISCLAIMER SCREEN – Pasien Belum Menjalani Pemeriksaan
+         Tidak ada gambar dummy, tidak ada alat klinis, hanya informasi order
+         dan tombol untuk melakukan pemeriksaan.
+    ==================================================================== --}}
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center;
+                 background: radial-gradient(circle at 50% 40%, #0d1728 0%, #060911 100%);
+                 padding: 2.5rem 1.5rem; text-align: center; overflow-y: auto;">
+        <div style="max-width: 640px; width: 100%;">
+
+            {{-- Flash message (if any) --}}
+            @if(session('success'))
+            <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.4); color: #34d399;
+                        padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: left;">
+                ✅ {{ session('success') }}
+            </div>
+            @endif
+
+            {{-- Icon --}}
+            <div style="background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.35);
+                        border-radius: 50%; width: 96px; height: 96px;
+                        display: inline-flex; align-items: center; justify-content: center;
+                        margin-bottom: 1.5rem; box-shadow: 0 0 40px rgba(245,158,11,0.18);">
+                <span style="font-size: 3rem;">☢️</span>
+            </div>
+
+            {{-- Status badge --}}
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem;
+                        background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35);
+                        padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.74rem; font-weight: 700;
+                        color: #fbbf24; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 8px #fbbf24; display:inline-block;"></span>
+                Status: Siap di Ruang Rontgen
+            </div>
+
+            {{-- Heading --}}
+            <h2 style="font-size: 1.65rem; font-weight: 800; color: #f8fafc;
+                       margin-bottom: 0.75rem; letter-spacing: -0.02em;">
+                Pemeriksaan Belum Dilakukan
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.65; margin-bottom: 2rem;">
+                Pasien <strong style="color: #f1f5f9;">{{ $scan->patient_name }}</strong>
+                masih dalam antrian dan belum menjalani pemeriksaan radiologi.<br>
+                Pengambilan citra (image retrieval) dan instrumen analisis Viewer tidak dapat diakses
+                sampai pemeriksaan selesai dilakukan pada stasiun radiologi dan citra DICOM diterima oleh server PACS.
+            </p>
+
+            {{-- Order detail card --}}
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;
+                        background: rgba(17,26,44,0.85); border: 1px solid #1e293b; border-radius: 10px;
+                        padding: 1rem 1.25rem; margin-bottom: 2rem; text-align: left;">
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">No. Rekam Medis</div>
+                    <div style="font-size: 0.84rem; color: #38bdf8; font-weight: 700; font-family: 'JetBrains Mono', monospace;">{{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Accession No</div>
+                    <div style="font-size: 0.84rem; color: #cbd5e1; font-weight: 700; font-family: 'JetBrains Mono', monospace;">{{ $scan->accession_number ?: 'ACC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT) }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Modalitas Order</div>
+                    <div style="font-size: 0.84rem; color: #f8fafc; font-weight: 700;">{{ $scan->modality }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Stasiun Alat</div>
+                    <div style="font-size: 0.84rem; color: #cbd5e1; font-weight: 700; font-family: monospace;">{{ $scan->station_name ?: 'FUJIFILM_FDR_01' }}</div>
+                </div>
+            </div>
+
+            {{-- Action buttons --}}
+            <div style="display: flex; gap: 0.9rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                <a href="{{ route('scans.index') }}"
+                   style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; border: none;
+                          padding: 0.75rem 1.6rem; border-radius: 8px; font-weight: 700; font-size: 0.875rem;
+                          text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+                          box-shadow: 0 4px 16px rgba(2,132,199,0.35); transition: opacity 0.2s;"
+                   onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    ⬅️ Kembali ke Daftar Pasien
+                </a>
+
+                <button onclick="window.location.reload()"
+                   style="background: rgba(30,41,59,0.85); color: #cbd5e1; border: 1px solid #334155;
+                          padding: 0.75rem 1.4rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+                          cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
+                          transition: background 0.15s;"
+                   onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='rgba(30,41,59,0.85)'">
+                    🔄 Cek Status Terbaru
+                </button>
+            </div>
+        </div>
+    </main>
+    @endif
+
     <!-- Interactive PACS JavaScript -->
     <script>
         // State Per Viewport (1=VP-A, 2=VP-B)
@@ -1828,19 +1927,21 @@
             if (icon) icon.innerText = isDrawerOpen ? '◀' : '▶';
         }
 
-        // Layout Switcher: 1x1 Tunggal vs 1x2 Multimodal
+        // Layout Switcher: 1x1 vs 1x2
         function setLayoutMode(mode) {
             isMultimodal = (mode === '1x2');
-            document.getElementById('btnLayoutSingle').classList.toggle('active', !isMultimodal);
-            document.getElementById('btnLayoutDual').classList.toggle('active', isMultimodal);
+            const btnSingle = document.getElementById('btnLayoutSingle');
+            const btnDual = document.getElementById('btnLayoutDual');
+            if (btnSingle) btnSingle.classList.toggle('active', !isMultimodal);
+            if (btnDual) btnDual.classList.toggle('active', isMultimodal);
 
             if (isMultimodal) {
-                viewportsStage.classList.add('split-1x2');
-                vp2.style.display = 'flex';
-                showToolHint('◧◨', 'Mode 1x2 Multimodal: Membandingkan Thorax PA (Rontgen) vs USG secara berdampingan.');
+                if (typeof viewportsStage !== 'undefined' && viewportsStage) viewportsStage.classList.add('split-1x2');
+                if (typeof vp2 !== 'undefined' && vp2) vp2.style.display = 'flex';
+                showToolHint('◧◨', 'Mode 1x2: Membandingkan Thorax PA (Rontgen) vs USG secara berdampingan.');
             } else {
-                viewportsStage.classList.remove('split-1x2');
-                vp2.style.display = 'none';
+                if (typeof viewportsStage !== 'undefined' && viewportsStage) viewportsStage.classList.remove('split-1x2');
+                if (typeof vp2 !== 'undefined' && vp2) vp2.style.display = 'none';
                 selectViewport(1);
                 hideToolHint();
             }
@@ -4007,7 +4108,7 @@
 
                 ctx.textAlign = 'right';
                 ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
-                ctx.fillText(targetVp === 1 ? '{{ $patientSeries[0]["name"] }}' : '{{ $patientSeries[1]["name"] ?? "USG Abdomen" }}', imgAreaX + imgAreaW - 16, imgAreaY + 16);
+                ctx.fillText(targetVp === 1 ? '{{ $patientSeries[0]["name"] ?? ($scan->modality ?: "Thorax PA") }}' : '{{ $patientSeries[1]["name"] ?? "USG Abdomen" }}', imgAreaX + imgAreaW - 16, imgAreaY + 16);
                 ctx.fillText('Station: {{ $scan->station_name ?: "FUJIFILM_FDR" }}', imgAreaX + imgAreaW - 16, imgAreaY + 34);
 
                 ctx.textAlign = 'left';

@@ -140,6 +140,8 @@ class PatientScanController extends Controller
 
     /**
      * Menampilkan PACS Multimodal DICOM Viewer untuk 1 Pasien
+     * Hanya menampilkan citra & alat klinis jika pemeriksaan SUDAH dilakukan.
+     * Pasien dengan status 'siap_rontgen' hanya akan melihat layar disclaimer.
      */
     public function show(string $id)
     {
@@ -150,69 +152,85 @@ class PatientScanController extends Controller
             $scan->patient_name = 'Pasien MCU CDC #' . str_pad($scan->id, 4, '0', STR_PAD_LEFT);
         }
 
-        // Susun 2 modalitas utama yang terfokus untuk riset skripsi:
-        // Modalitas 1: Citra Rontgen Thorax PA (Fokus Denoising Kuantum & Segmentasi CTR Jantung)
-        // Modalitas 2: Citra USG Ultrasonografi (Fokus Reduksi Speckle Noise & Korelasi Multimodal)
-        $isUsg = str_contains(strtoupper($scan->modality), 'USG');
+        // ─── LOGIKA UTAMA: Periksa apakah pemeriksaan SUDAH dilakukan ─────────────
+        // Pasien dianggap sudah diperiksa JIKA:
+        //   1. Status bukan 'siap_rontgen', DAN
+        //   2. Terdapat path gambar yang nyata (bukan kosong)
+        $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
+            && (!empty($scan->preview_image_path) || !empty($scan->scan_image_path));
 
-        if ($isUsg) {
-            $patientSeries = [
-                [
-                    'id'          => 'series-1',
-                    'name'        => $scan->modality ?: 'USG Abdomen',
-                    'modality'    => 'US / Ultrasonografi',
-                    'badge'       => 'US',
-                    'badge_color' => '#10b981',
-                    'study'       => $scan->study_description ?: 'Pemeriksaan USG Hepar & Abdomen Upper',
-                    'station'     => $scan->station_name ?: 'USG_MINDRAY_02',
-                    'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
-                    'image_path'  => $scan->preview_image_path ?: 'scan-assets/usg_sample.jpg',
-                    'is_primary'  => true,
-                ],
-                [
-                    'id'          => 'series-2',
-                    'name'        => 'Thorax PA (CR)',
-                    'modality'    => 'CR / Rontgen Dada',
-                    'badge'       => 'CR',
-                    'badge_color' => '#38bdf8',
-                    'study'       => 'Pemeriksaan Paru & Jantung PA',
-                    'station'     => 'FUJIFILM_FDR',
-                    'matrix'      => '2048 x 2048',
-                    'image_path'  => 'scan-assets/raw_toraks.jpg',
-                    'is_primary'  => false,
-                ],
-            ];
+        // ─── SERIES DATA ──────────────────────────────────────────────────────────
+        // Jika belum diperiksa: kirim array kosong — JANGAN tampilkan gambar dummy.
+        // Blade akan mendeteksi ini dan menampilkan layar disclaimer.
+        if (!$hasExamined) {
+            $patientSeries    = [];
+            $defaultVp2Series = null;
         } else {
-            $patientSeries = [
-                [
-                    'id'          => 'series-1',
-                    'name'        => $scan->modality ?: 'Thorax PA (CR)',
-                    'modality'    => 'CR / Rontgen Dada',
-                    'badge'       => 'CR',
-                    'badge_color' => '#38bdf8',
-                    'study'       => $scan->study_description ?: 'Pemeriksaan Paru & Jantung PA',
-                    'station'     => $scan->station_name ?: 'FUJIFILM_FDR',
-                    'matrix'      => '2048 x 2048',
-                    'image_path'  => $scan->preview_image_path ?: 'scan-assets/raw_toraks.jpg',
-                    'is_primary'  => true,
-                ],
-                [
-                    'id'          => 'series-2',
-                    'name'        => 'USG Abdomen',
-                    'modality'    => 'US / Ultrasonografi',
-                    'badge'       => 'US',
-                    'badge_color' => '#10b981',
-                    'study'       => 'Pemeriksaan USG Hepar & Abdomen Upper',
-                    'station'     => 'USG_MINDRAY_02',
-                    'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
-                    'image_path'  => 'scan-assets/usg_sample.jpg',
-                    'is_primary'  => false,
-                ],
-            ];
-        }
+            // Susun seri citra nyata berdasarkan modalitas
+            $isUsg = str_contains(strtoupper($scan->modality), 'USG');
 
-        // Studi pembanding default untuk Viewport B (USG)
-        $defaultVp2Series = $patientSeries[1] ?? $patientSeries[0];
+            if ($isUsg) {
+                $patientSeries = [
+                    [
+                        'id'          => 'series-1',
+                        'name'        => $scan->modality ?: 'USG Abdomen',
+                        'modality'    => 'US / Ultrasonografi',
+                        'badge'       => 'US',
+                        'badge_color' => '#38bdf8',
+                        'study'       => $scan->study_description ?: 'Pemeriksaan USG Hepar & Abdomen Upper',
+                        'station'     => $scan->station_name ?: 'USG_MINDRAY_02',
+                        'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
+                        'image_path'  => $scan->preview_image_path ?: 'scan-assets/usg_sample.jpg',
+                        'has_image'   => true,
+                        'is_primary'  => true,
+                    ],
+                    [
+                        'id'          => 'series-2',
+                        'name'        => 'Thorax PA (CR)',
+                        'modality'    => 'CR / Rontgen Dada',
+                        'badge'       => 'CR',
+                        'badge_color' => '#38bdf8',
+                        'study'       => 'Pemeriksaan Paru & Jantung PA',
+                        'station'     => 'FUJIFILM_FDR',
+                        'matrix'      => '2048 x 2048',
+                        'image_path'  => 'scan-assets/raw_toraks.jpg',
+                        'has_image'   => true,
+                        'is_primary'  => false,
+                    ],
+                ];
+            } else {
+                $patientSeries = [
+                    [
+                        'id'          => 'series-1',
+                        'name'        => $scan->modality ?: 'Thorax PA (CR)',
+                        'modality'    => 'CR / Rontgen Dada',
+                        'badge'       => 'CR',
+                        'badge_color' => '#38bdf8',
+                        'study'       => $scan->study_description ?: 'Pemeriksaan Paru & Jantung PA',
+                        'station'     => $scan->station_name ?: 'FUJIFILM_FDR_01',
+                        'matrix'      => '2048 x 2048',
+                        'image_path'  => $scan->preview_image_path ?: 'scan-assets/raw_toraks.jpg',
+                        'has_image'   => true,
+                        'is_primary'  => true,
+                    ],
+                    [
+                        'id'          => 'series-2',
+                        'name'        => 'USG Abdomen',
+                        'modality'    => 'US / Ultrasonografi',
+                        'badge'       => 'US',
+                        'badge_color' => '#38bdf8',
+                        'study'       => 'Pemeriksaan USG Hepar & Abdomen Upper',
+                        'station'     => 'USG_MINDRAY_02',
+                        'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
+                        'image_path'  => 'scan-assets/usg_sample.jpg',
+                        'has_image'   => true,
+                        'is_primary'  => false,
+                    ],
+                ];
+            }
+
+            $defaultVp2Series = $patientSeries[1] ?? $patientSeries[0];
+        }
 
         // Konfigurasi Parameter DICOM Node Hyu
         $pacsConfig = [
@@ -225,7 +243,50 @@ class PatientScanController extends Controller
         // Daftar pasien historis lainnya untuk drawer navigasi cepat
         $otherScans = MedicalScan::where('id', '!=', $id)->orderBy('created_at', 'desc')->take(10)->get();
 
-        return view('scans.show', compact('scan', 'patientSeries', 'defaultVp2Series', 'otherScans', 'pacsConfig'));
+        return view('scans.show', compact(
+            'scan', 'patientSeries', 'defaultVp2Series', 'otherScans', 'pacsConfig', 'hasExamined'
+        ));
+    }
+
+
+    /**
+     * Menjalankan / Mensimulasikan Pemeriksaan Rontgen pada Pasien yang Belum Diperiksa
+     * Digunakan untuk men-trigger perubahan status dari 'siap_rontgen' → 'rontgen_selesai'
+     * dan mengisi path gambar hasil pemeriksaan nyata.
+     */
+    public function performExam(Request $request, string $id)
+    {
+        $scan = MedicalScan::findOrFail($id);
+
+        // Hanya pasien dengan status siap_rontgen yang bisa diperiksa via endpoint ini
+        if ($scan->mcu_status !== 'siap_rontgen') {
+            return redirect()->route('scans.show', $id)
+                ->with('info', 'Pasien ini sudah pernah menjalani pemeriksaan.');
+        }
+
+        $isUsg = str_contains(strtoupper($scan->modality), 'USG');
+
+        // Gunakan citra sampel sesuai modalitas (representasi citra DICOM dari alat)
+        if ($isUsg) {
+            $previewPath = 'scan-assets/usg_sample.jpg';
+            $scanPath    = null;
+            $dicomRaw    = 'sample_usg.dcm';
+        } else {
+            $previewPath = 'scan-assets/raw_toraks.jpg';
+            $scanPath    = 'scan-assets/raw_toraks.jpg';
+            $dicomRaw    = 'sample_toraks.dcm';
+        }
+
+        $scan->update([
+            'mcu_status'         => 'rontgen_selesai',
+            'preview_image_path' => $previewPath,
+            'scan_image_path'    => $scanPath,
+            'dicom_raw_path'     => $dicomRaw,
+            'station_name'       => $scan->station_name ?: ($isUsg ? 'USG_MINDRAY_02' : 'FUJIFILM_FDR_01'),
+        ]);
+
+        return redirect()->route('scans.show', $id)
+            ->with('success', 'Pemeriksaan selesai! Citra DICOM berhasil masuk ke Hyu PACS. Viewer siap digunakan.');
     }
 
 
@@ -261,6 +322,16 @@ class PatientScanController extends Controller
     public function runDenoise(Request $request, string $id)
     {
         $scan = MedicalScan::findOrFail($id);
+
+        // Tolak permintaan denoising jika pasien belum menjalani pemeriksaan
+        $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
+            && (!empty($scan->preview_image_path) || !empty($scan->scan_image_path));
+        if (!$hasExamined) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Pasien belum menjalani pemeriksaan. Hasil citra tidak tersedia untuk diproses.'
+            ], 400);
+        }
 
         $engine      = $request->input('engine', 'bilateral');
         $sigmaColor  = (float) $request->input('sigma_color', 25);
@@ -357,6 +428,16 @@ class PatientScanController extends Controller
     public function runBenchmark(Request $request, string $id)
     {
         $scan = MedicalScan::findOrFail($id);
+
+        // Tolak permintaan benchmark jika pasien belum menjalani pemeriksaan
+        $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
+            && (!empty($scan->preview_image_path) || !empty($scan->scan_image_path));
+        if (!$hasExamined) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Pasien belum menjalani pemeriksaan. Tidak ada citra untuk di-benchmark.'
+            ], 400);
+        }
 
         $sigmaColor  = (float) $request->input('sigma_color', 25);
         $sigmaSpace  = (float) $request->input('sigma_space', 20);
@@ -492,13 +573,24 @@ class PatientScanController extends Controller
     {
         $scan = MedicalScan::findOrFail($id);
 
+        $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
+            && (!empty($scan->preview_image_path) || !empty($scan->scan_image_path));
+
+        if (!$hasExamined) {
+            return response()->json([
+                'status'             => 'error',
+                'message'            => 'Pemeriksaan belum dilakukan. Citra medis belum tersedia.',
+                'dicom_instance_url' => null
+            ], 404);
+        }
+
         return response()->json([
             'status'             => 'success',
             'pacs_server'        => 'Hyu Standalone PACS (Port 4242)',
             'modality'           => $scan->modality,
             'patient_name'       => $scan->patient_name,
             'accession_number'   => $scan->accession_number,
-            'dicom_instance_url' => $scan->preview_image_path ?: 'scan-assets/raw_toraks.jpg'
+            'dicom_instance_url' => $scan->preview_image_path ?: $scan->scan_image_path
         ]);
     }
 
@@ -658,17 +750,19 @@ class PatientScanController extends Controller
     public function downloadDicom(string $id)
     {
         $scan = MedicalScan::findOrFail($id);
-        $samplePath = base_path('sample_toraks.dcm');
+
+        $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
+            && (!empty($scan->dicom_raw_path) || !empty($scan->preview_image_path));
+
+        if (!$hasExamined) {
+            return back()->with('error', 'Pemeriksaan belum dilakukan. File DICOM belum tersedia.');
+        }
 
         if ($scan->dicom_raw_path && file_exists(base_path($scan->dicom_raw_path))) {
             return response()->download(base_path($scan->dicom_raw_path), "DICOM_{$scan->patient_id}_{$scan->accession_number}.dcm");
         }
 
-        if (file_exists($samplePath)) {
-            return response()->download($samplePath, "DICOM_{$scan->patient_id}_{$scan->accession_number}.dcm");
-        }
-
-        return back()->with('error', 'File DICOM mentah tidak ditemukan.');
+        return back()->with('error', 'File DICOM mentah tidak ditemukan di server.');
     }
 
     /**

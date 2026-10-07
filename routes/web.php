@@ -17,6 +17,9 @@ Route::delete('/scans/{id}', [PatientScanController::class, 'destroy'])->name('s
 // URL /scans/{id} akan memanggil fungsi 'show' di PatientScanController (Viewer)
 Route::get('/scans/{id}', [PatientScanController::class, 'show'])->name('scans.show');
 
+// Endpoint: lakukan / simulasi pemeriksaan rontgen (ubah status siap_rontgen → rontgen_selesai)
+Route::post('/scans/{id}/perform-exam', [PatientScanController::class, 'performExam'])->name('scans.perform-exam');
+
 // Endpoint simpan catatan diagnosa / ekspertise radiolog
 Route::post('/scans/{id}/diagnosis', [PatientScanController::class, 'saveDiagnosis'])->name('scans.diagnosis');
 
