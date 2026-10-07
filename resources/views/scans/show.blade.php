@@ -1138,6 +1138,215 @@
         .tag-table tr:hover {
             background: rgba(2, 132, 199, 0.15);
         }
+
+        /* ── TermHint — "?" Icon & Tooltip Trigger ─────────────────── */
+        .term-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            position: relative;
+        }
+
+        /* The "?" button — hidden by default, shown on hover/focus */
+        .term-hint-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(2, 132, 199, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+            font-size: 0.6rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            /* hidden by default on pointer devices */
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        /* Always visible on touch / coarse-pointer devices (mobile) */
+        @media (hover: none) {
+            .term-hint-btn { opacity: 1 !important; transform: scale(1) !important; }
+        }
+
+        .term-hint-btn:hover,
+        .term-hint-btn:focus-visible {
+            background: rgba(2, 132, 199, 0.45);
+            border-color: #38bdf8;
+            outline: none;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Show on parent hover OR parent focus-within */
+        .term-hint:hover .term-hint-btn,
+        .term-hint:focus-within .term-hint-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ── GlossaryModal ──────────────────────────────────────────── */
+        .gl-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .gl-modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .gl-modal-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.2s ease;
+            outline: none;
+        }
+
+        .gl-modal-overlay.open .gl-modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .gl-modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.25rem 1.4rem 0.9rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .gl-modal-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #38bdf8;
+            line-height: 1.3;
+        }
+
+        .gl-modal-subtitle {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+            font-style: italic;
+        }
+
+        .gl-modal-close {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.35rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0.15rem;
+            border-radius: 4px;
+            transition: color 0.15s;
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
+
+        .gl-modal-close:hover { color: #f1f5f9; }
+        .gl-modal-close:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        .gl-modal-body {
+            padding: 1.1rem 1.4rem;
+            font-size: 0.84rem;
+            line-height: 1.65;
+            color: #94a3b8;
+        }
+
+        .gl-modal-formula {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 0.45rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.77rem;
+            color: #a5f3fc;
+            margin: 0.5rem 0;
+            display: block;
+        }
+
+        .gl-modal-how {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: #34d399;
+            margin-top: 0.4rem;
+        }
+
+        .gl-modal-disclaimer {
+            font-size: 0.72rem;
+            color: #475569;
+            margin-top: 0.75rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid #1e293b;
+            line-height: 1.5;
+        }
+
+        .gl-modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0.9rem 1.4rem 1.2rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        .gl-btn-secondary {
+            padding: 0.45rem 1rem;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #334155;
+            background: rgba(30, 41, 59, 0.8);
+            color: #94a3b8;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .gl-btn-secondary:hover { background: #1e293b; color: #f1f5f9; }
+        .gl-btn-secondary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        .gl-btn-primary {
+            padding: 0.45rem 1rem;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #38bdf8;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: opacity 0.15s;
+            font-family: inherit;
+        }
+
+        .gl-btn-primary:hover { opacity: 0.9; }
+        .gl-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
     </style>
 </head>
 <body>
@@ -1175,6 +1384,10 @@
         </div>
 
         <div class="nav-section-right">
+            <!-- Glosarium Link -->
+            <a href="{{ route('glossary.index') }}" class="btn-nav-back" style="color: #38bdf8; border-color: rgba(56,189,248,0.3);" title="Buka halaman glosarium istilah teknis">
+                📖 Glosarium
+            </a>
             <!-- Server Status & Setup Node Button -->
             <div class="server-status-pill" onclick="openDicomConfigModal()" style="cursor: pointer;" title="Klik untuk Konfigurasi Port, AE Title & Jaringan DICOM">
                 <span class="pulse-dot"></span>
@@ -1586,36 +1799,100 @@
                                 <thead>
                                     <tr>
                                         <th>Metode</th>
-                                        <th>PSNR</th>
-                                        <th>SSIM</th>
-                                        <th>SNR Gain</th>
-                                        <th>Latency</th>
+                                        <th>
+                                            <span class="term-hint">
+                                                PSNR
+                                                <button class="term-hint-btn" aria-label="Penjelasan PSNR"
+                                                    onclick="openGlossaryModal('psnr', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('psnr',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                SSIM
+                                                <button class="term-hint-btn" aria-label="Penjelasan SSIM"
+                                                    onclick="openGlossaryModal('ssim', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('ssim',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                SNR Gain
+                                                <button class="term-hint-btn" aria-label="Penjelasan SNR Gain"
+                                                    onclick="openGlossaryModal('snr-gain', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('snr-gain',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                Latency
+                                                <button class="term-hint-btn" aria-label="Penjelasan Latency"
+                                                    onclick="openGlossaryModal('latency', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('latency',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="bodyBenchmark">
                                     <tr>
-                                        <td style="color: #94a3b8;">Citra Asli (Raw)</td>
+                                        <td style="color: #94a3b8;">
+                                            <span class="term-hint">
+                                                Citra Asli (Raw)
+                                                <button class="term-hint-btn" aria-label="Penjelasan Citra Asli Raw"
+                                                    onclick="openGlossaryModal('raw', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('raw',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
                                         <td>-</td>
                                         <td>1.0000</td>
                                         <td>0.00 dB</td>
                                         <td>0.0 ms</td>
                                     </tr>
                                     <tr>
-                                        <td style="color: #38bdf8;">Bilateral Filter</td>
+                                        <td style="color: #38bdf8;">
+                                            <span class="term-hint">
+                                                Bilateral Filter
+                                                <button class="term-hint-btn" aria-label="Penjelasan Bilateral Filter"
+                                                    onclick="openGlossaryModal('bilateral', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('bilateral',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
                                         <td>44.62 dB</td>
                                         <td>0.9779</td>
                                         <td>+5.24 dB</td>
                                         <td>59.9 ms</td>
                                     </tr>
                                     <tr>
-                                        <td style="color: #c084fc;">Non-Local Means</td>
+                                        <td style="color: #c084fc;">
+                                            <span class="term-hint">
+                                                Non-Local Means
+                                                <button class="term-hint-btn" aria-label="Penjelasan Non-Local Means"
+                                                    onclick="openGlossaryModal('nlm', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('nlm',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
                                         <td>46.06 dB</td>
                                         <td>0.9799</td>
                                         <td>+3.92 dB</td>
                                         <td>254.3 ms</td>
                                     </tr>
                                     <tr>
-                                        <td style="color: #34d399; font-weight: 700;">DnCNN (Deep AI)</td>
+                                        <td style="color: #34d399; font-weight: 700;">
+                                            <span class="term-hint">
+                                                DnCNN (Deep AI)
+                                                <button class="term-hint-btn" aria-label="Penjelasan DnCNN"
+                                                    onclick="openGlossaryModal('dncnn', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('dncnn',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
                                         <td style="color: #34d399; font-weight: 700;">45.12 dB</td>
                                         <td style="color: #34d399; font-weight: 700;">0.9797</td>
                                         <td style="color: #34d399; font-weight: 700;">+3.48 dB</td>
@@ -4499,6 +4776,188 @@
                 btn.disabled = false;
             });
         }
+    </script>
+
+    <!-- ─────────────────────────────────────────────────────────────
+         GLOSSARY MODAL — GlossaryModal component
+         Load data source first, then the modal logic
+    ───────────────────────────────────────────────────────────────── -->
+    <script src="{{ asset('js/glossary-data.js') }}"></script>
+
+    <!-- Modal HTML -->
+    <div id="glossaryModal" class="gl-modal-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="glModalTitle" aria-describedby="glModalSummary"
+         onclick="handleGlossaryOverlayClick(event)">
+        <div class="gl-modal-card" id="glossaryModalCard" tabindex="-1">
+
+            <div class="gl-modal-head">
+                <div>
+                    <div class="gl-modal-title" id="glModalTitle">—</div>
+                    <div class="gl-modal-subtitle" id="glModalSubtitle">—</div>
+                </div>
+                <button class="gl-modal-close" id="glModalCloseBtn"
+                    onclick="closeGlossaryModal()" aria-label="Tutup modal">&times;</button>
+            </div>
+
+            <div class="gl-modal-body">
+                <p id="glModalSummary"></p>
+                <div id="glModalFormulaWrap" style="display:none;">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin-top:.75rem;margin-bottom:.2rem;">Rumus / Formula</div>
+                    <code class="gl-modal-formula" id="glModalFormula"></code>
+                </div>
+                <div id="glModalHowWrap" style="display:none;">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin-top:.6rem;margin-bottom:.2rem;">Cara Membaca Nilai</div>
+                    <div class="gl-modal-how">✅ <span id="glModalHow"></span></div>
+                </div>
+                <div class="gl-modal-disclaimer">
+                    ⚠️ Metrik ini adalah ukuran teknis kualitas citra — bukan penilaian diagnostik klinis.
+                    Interpretasi medis harus dilakukan oleh radiolog bersertifikat.
+                </div>
+            </div>
+
+            <div class="gl-modal-foot">
+                <button class="gl-btn-secondary" id="glBtnKembali"
+                    onclick="closeGlossaryModal()">Kembali</button>
+                <a  class="gl-btn-primary" id="glBtnLearnMore"
+                    href="#" target="_self">📖 Pelajari lebih lanjut</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ──────────────────────────────────────────────────────────────
+         * GlossaryModal — TermHint system
+         *
+         * Public API:
+         *   openGlossaryModal(termId, triggerEl)  — open modal for a term
+         *   closeGlossaryModal()                  — close modal
+         * ────────────────────────────────────────────────────────────── */
+
+        (function () {
+            'use strict';
+
+            const overlay    = document.getElementById('glossaryModal');
+            const card       = document.getElementById('glossaryModalCard');
+            const btnClose   = document.getElementById('glModalCloseBtn');
+            const btnLearn   = document.getElementById('glBtnLearnMore');
+
+            // Track which trigger element opened the modal (for focus-return)
+            let _triggerEl = null;
+
+            /* ── Open ──────────────────────────────────────────────── */
+            window.openGlossaryModal = function (termId, triggerEl) {
+                const entry = (typeof GLOSSARY_MAP !== 'undefined') ? GLOSSARY_MAP[termId] : null;
+                if (!entry) {
+                    console.warn('[GlossaryModal] Term not found:', termId);
+                    return;
+                }
+
+                _triggerEl = triggerEl || null;
+
+                // Populate title & subtitle
+                document.getElementById('glModalTitle').textContent =
+                    entry.abbreviation + ' — ' + entry.fullName;
+                document.getElementById('glModalSubtitle').textContent =
+                    (typeof GLOSSARY_CATEGORIES !== 'undefined')
+                        ? GLOSSARY_CATEGORIES[entry.category] || ''
+                        : '';
+
+                // Summary
+                document.getElementById('glModalSummary').textContent = entry.summary;
+
+                // Formula
+                const formulaWrap = document.getElementById('glModalFormulaWrap');
+                const formulaEl   = document.getElementById('glModalFormula');
+                if (entry.formula) {
+                    formulaEl.textContent  = entry.formula;
+                    formulaWrap.style.display = '';
+                } else {
+                    formulaWrap.style.display = 'none';
+                }
+
+                // How to read
+                const howWrap = document.getElementById('glModalHowWrap');
+                const howEl   = document.getElementById('glModalHow');
+                if (entry.howToRead) {
+                    howEl.textContent  = entry.howToRead;
+                    howWrap.style.display = '';
+                } else {
+                    howWrap.style.display = 'none';
+                }
+
+                // "Pelajari lebih lanjut" link → /glosarium#<id>
+                btnLearn.href = '{{ route('glossary.index') }}' + '#' + entry.id;
+
+                // Lock body scroll
+                document.body.style.overflow = 'hidden';
+
+                // Show overlay
+                overlay.classList.add('open');
+
+                // Focus trap — focus the card
+                requestAnimationFrame(() => {
+                    card.focus();
+                    trapFocusInstall();
+                });
+            };
+
+            /* ── Close ─────────────────────────────────────────────── */
+            window.closeGlossaryModal = function () {
+                overlay.classList.remove('open');
+                document.body.style.overflow = '';
+                trapFocusRemove();
+
+                // Return focus to the triggering "?" button
+                if (_triggerEl) {
+                    _triggerEl.focus();
+                    _triggerEl = null;
+                }
+            };
+
+            /* ── Overlay click (close if clicking the dark backdrop) ── */
+            window.handleGlossaryOverlayClick = function (e) {
+                if (e.target === overlay) closeGlossaryModal();
+            };
+
+            /* ── Keyboard: Esc closes, Tab is trapped ───────────────── */
+            document.addEventListener('keydown', function (e) {
+                if (!overlay.classList.contains('open')) return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeGlossaryModal();
+                }
+            });
+
+            /* ── Focus Trap ─────────────────────────────────────────── */
+            function getFocusableEls() {
+                return Array.from(card.querySelectorAll(
+                    'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                ));
+            }
+
+            function trapFocusHandler(e) {
+                if (e.key !== 'Tab') return;
+                const focusable = getFocusableEls();
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last  = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+
+            function trapFocusInstall()  { document.addEventListener('keydown', trapFocusHandler); }
+            function trapFocusRemove()   { document.removeEventListener('keydown', trapFocusHandler); }
+        })();
     </script>
 </body>
 </html>

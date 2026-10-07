@@ -2,11 +2,15 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PatientScanController;
+use App\Http\Controllers\GlossaryController;
 
 // Halaman utama otomatis diarahkan ke Dashboard Pasien & Viewer
 Route::get('/', function () {
     return redirect()->route('scans.index');
 });
+
+// Halaman Glosarium Singkatan & Istilah Teknis
+Route::get('/glosarium', [GlossaryController::class, 'index'])->name('glossary.index');
 
 
 // URL /scans akan memanggil fungsi 'index' di PatientScanController
