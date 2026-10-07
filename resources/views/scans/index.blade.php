@@ -472,6 +472,70 @@
             margin-bottom: 1.25rem;
             font-size: 0.85rem;
         }
+
+        /* Pagination */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--card-border);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .pagination-info {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .pagination-links a,
+        .pagination-links span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.5rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .pagination-links a {
+            background-color: rgba(30, 41, 59, 0.8);
+            color: var(--text-muted);
+            border-color: var(--card-border);
+        }
+
+        .pagination-links a:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-links span.current {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            border-color: #38bdf8;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .pagination-links span.disabled {
+            color: #334155;
+            border-color: #1e293b;
+            cursor: not-allowed;
+            background-color: rgba(15, 23, 42, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -654,6 +718,41 @@
                 @endforelse
             </tbody>
         </table>
+
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                @if ($scans->total() > 0)
+                    Menampilkan <strong>{{ $scans->firstItem() }}–{{ $scans->lastItem() }}</strong>
+                    dari <strong>{{ $scans->total() }}</strong> data pemeriksaan
+                @else
+                    Tidak ada data pemeriksaan
+                @endif
+            </div>
+            <div class="pagination-links">
+                {{-- Previous --}}
+                <span class="disabled">&#8249;</span>
+
+                {{-- Page Numbers: only show when more than 1 page --}}
+                @if ($scans->hasPages())
+                    @foreach ($scans->getUrlRange(1, $scans->lastPage()) as $page => $url)
+                        @if ($page == $scans->currentPage())
+                            <span class="current">{{ $page }}</span>
+                        @else
+                            <a href="{{ $url }}">{{ $page }}</a>
+                        @endif
+                    @endforeach
+                @else
+                    <span class="current">1</span>
+                @endif
+
+                {{-- Next --}}
+                @if ($scans->hasMorePages())
+                    <a href="{{ $scans->nextPageUrl() }}">&#8250;</a>
+                @else
+                    <span class="disabled">&#8250;</span>
+                @endif
+            </div>
+        </div>
     </div>
 
 </div>

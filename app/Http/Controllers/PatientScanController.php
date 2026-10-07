@@ -80,7 +80,7 @@ class PatientScanController extends Controller
             });
         }
 
-        $scans = $query->get();
+        $scans = $query->paginate(10)->withQueryString();
 
         // Statistik Dashboard Pos MCU
         $stats = [
