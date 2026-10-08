@@ -400,7 +400,7 @@
         <h1>📖 Glosarium Hyu PACS</h1>
         <p>
             Referensi lengkap singkatan, metrik, protokol, dan istilah teknis
-            yang digunakan dalam sistem Hyu PACS &amp; MCU Central.
+            yang digunakan dalam sistem Hyu PACS.
             Gunakan kotak pencarian atau filter kategori di bawah.
         </p>
         <div class="gl-disclaimer">
@@ -446,7 +446,7 @@
     </main>
 
     <!-- Load centralized data source -->
-    <script src="{{ asset('js/glossary-data.js') }}"></script>
+    <script src="{{ asset('js/glossary-data.js') }}?v={{ time() }}"></script>
 
     <script>
         /* ──────────────────────────────────────────────────────────────

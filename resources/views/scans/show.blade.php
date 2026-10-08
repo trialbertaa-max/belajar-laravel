@@ -1378,7 +1378,7 @@
     <header class="pacs-navbar">
         <div class="nav-section-left">
             <a href="{{ route('scans.index') }}" class="btn-nav-back">
-                &larr; Sesi Pasien MCU
+                &larr; Sesi Pasien
             </a>
 
             @if($hasExamined)
@@ -1724,7 +1724,7 @@
                     Hasil Ukur / CTR
                 </button>
                 <button class="dock-tab-btn" id="tabBtnDiagnosis" onclick="switchDockTab('diagnosis')">
-                    Ekspertise MCU
+                    Ekspertise Radiologi
                 </button>
                 <button class="dock-tab-btn" id="tabBtnDicom" onclick="switchDockTab('dicom')">
                     Tags DICOM
@@ -2003,7 +2003,7 @@
                     <div class="dock-card">
                         <div class="dock-card-header">
                             <span class="dock-card-title">Lembar Catatan Ekspertise</span>
-                            <span style="font-size: 0.65rem; color: #64748b;">MCU Radiologi</span>
+                            <span style="font-size: 0.65rem; color: #64748b;">Radiologi Diagnostik</span>
                         </div>
 
                         <div style="font-size: 0.68rem; color: #94a3b8; margin-bottom: 0.2rem;">Template Cepat:</div>
@@ -2916,7 +2916,7 @@
     <Cell ss:MergeAcross="5"><Data ss:Type="String">Formula &amp; Standar: Wang et al. (2004) SSIM, Immerkaer (1996) Laplacian Noise Estimation.</Data></Cell>
    </Row>
    <Row>
-    <Cell ss:MergeAcross="5"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil MCU Radiologi</Data></Cell>
+    <Cell ss:MergeAcross="5"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil Radiologi</Data></Cell>
    </Row>
   </Table>
   <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
@@ -3054,7 +3054,7 @@
             addText("VALIDASI RADIOLOGI KLINIS", 370, currentY + 30, 8, true, 0.1, 0.3, 0.6);
             addText("Tervalidasi secara Elektronik", 370, currentY + 18, 7.5, false, 0.1, 0.6, 0.3);
             addText("Hyu PACS Workstation Medical Hub", 370, currentY + 7, 7, false, 0.5, 0.5, 0.5);
-            addText("Dokumen Resmi Berkas MCU CDC", 370, currentY - 4, 7, false, 0.5, 0.5, 0.5);
+            addText("Dokumen Resmi Berkas Radiologi CDC", 370, currentY - 4, 7, false, 0.5, 0.5, 0.5);
 
             // System Footer
             addText("Dokumen ini dicetak/diekspor secara otomatis dari sistem Hyu PACS. Informasi bersifat Rahasia Medis.", 100, 30, 7.5, false, 0.6, 0.6, 0.6);
@@ -4383,7 +4383,7 @@
         // SECONDARY CAPTURE EXPORT (EXECUTIVE HOSPITAL-GRADE MED REPORT)
         // ==========================================
         function exportAnnotatedReport() {
-            showToolHint('⏳', 'Sedang merender lembar laporan ekspertise resmi CDC MCU...');
+            showToolHint('⏳', 'Sedang merender lembar laporan ekspertise resmi CDC...');
             const targetVp = activeViewport;
             const domImg = (targetVp === 1) ? img1 : img2;
             const activeSrc = (vpState[targetVp].denoisedSrc || vpState[targetVp].rawSrc || (domImg ? domImg.src : ''));
@@ -4519,7 +4519,7 @@
                 ctx.fillText(`{{ date('d F Y') }}, 09:30 WIB`, demoX + 1170, demoY + 45);
                 ctx.fillStyle = '#94a3b8';
                 ctx.font = '10px "Plus Jakarta Sans", sans-serif';
-                ctx.fillText('Poli Medical Check Up (MCU) — CDC', demoX + 1170, demoY + 65);
+                ctx.fillText('Instalasi Radiologi — CDC', demoX + 1170, demoY + 65);
 
                 // ==========================================
                 // 4. MAIN BODY (SPLIT VIEW: MEDICAL SCAN + FINDINGS)
@@ -5184,7 +5184,7 @@
          GLOSSARY MODAL — GlossaryModal component
          Load data source first, then the modal logic
     ───────────────────────────────────────────────────────────────── -->
-    <script src="{{ asset('js/glossary-data.js') }}"></script>
+    <script src="{{ asset('js/glossary-data.js') }}?v={{ time() }}"></script>
 
     <!-- Modal HTML -->
     <div id="glossaryModal" class="gl-modal-overlay" role="dialog" aria-modal="true"

@@ -545,22 +545,6 @@ const GLOSSARY_DATA = [
         references: [],
     },
     {
-        id: 'mcu',
-        abbreviation: 'MCU',
-        fullName: 'Medical Check Up (Pemeriksaan Kesehatan Menyeluruh)',
-        category: 'system',
-        summary:
-            'MCU adalah program pemeriksaan kesehatan preventif yang mencakup berbagai tes diagnostik termasuk rontgen thorax dan USG abdomen. ' +
-            'Sistem Hyu dirancang sebagai platform manajemen MCU terpadu — dari registrasi pasien, antrian rontgen, hingga penyimpanan dan interpretasi citra. ' +
-            'Dashboard utama Hyu menampilkan semua pasien MCU beserta status pemeriksaannya.',
-        detailedExplanation:
-            'Medical Check Up (MCU) di Cahaya Diagnostic Centre (CDC) mencakup pemeriksaan radiologi (X-ray thorax, USG abdomen) dan pemeriksaan laboratorium. ' +
-            'Sistem Hyu PACS menangani alur radiologi MCU secara terintegrasi.',
-        formula: null,
-        howToRead: null,
-        references: [],
-    },
-    {
         id: 'mrn',
         abbreviation: 'MRN / No. RM',
         fullName: 'Medical Record Number (Nomor Rekam Medis)',
