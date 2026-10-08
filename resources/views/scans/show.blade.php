@@ -487,20 +487,46 @@
             letter-spacing: 0.03em;
         }
 
-        .medical-image {
+        /* Transformed Medical Image Stage Layer */
+        .vp-stage-layer {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center center;
+            will-change: transform;
+            transition: transform 0.05s ease-out;
+            user-select: none;
+            touch-action: none;
             max-width: 86%;
             max-height: 86%;
-            transition: transform 0.05s ease-out, filter 0.1s ease-out;
+        }
+
+        .medical-image {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
             box-shadow: 0 0 35px rgba(0, 0, 0, 0.95);
             user-select: none;
             pointer-events: none;
+            transition: filter 0.1s ease-out;
         }
 
         .medical-image-denoised {
             position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
             z-index: 3;
             box-shadow: none;
             display: none;
+            pointer-events: none;
+            transition: filter 0.1s ease-out;
         }
 
         /* DICOM Corner HUD Overlays */
@@ -537,9 +563,54 @@
             height: 100%;
             pointer-events: none;
             z-index: 5;
+            overflow: visible;
             touch-action: none !important;
             -webkit-user-select: none !important;
             user-select: none !important;
+        }
+
+        /* Interactive SVG Shapes & Quick Delete Badges */
+        .measurement-shape-hit,
+        .measurement-interactive-item {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        .annotation-quick-delete-badge {
+            cursor: pointer;
+            pointer-events: all;
+            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .annotation-quick-delete-badge:hover rect {
+            fill: #dc2626 !important;
+            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.9)) !important;
+        }
+
+        .annotation-quick-delete-badge:hover text {
+            fill: #ffffff !important;
+        }
+
+        /* Measurement list items in right panel */
+        .measurement-list-item {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--ws-border);
+            padding: 0.45rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .measurement-list-item:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #334155;
+        }
+
+        .measurement-list-item.is-selected-in-list {
+            background: rgba(2, 132, 199, 0.16) !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.28) !important;
         }
 
         /* A/B Comparison Split-Curtain Slider */
@@ -674,6 +745,79 @@
             border-bottom-color: var(--med-blue-light);
             background: rgba(2, 132, 199, 0.08);
             font-weight: 700;
+        }
+
+        /* Undo & Redo Tab Icons */
+        .dock-history-nav-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 4px;
+            margin: auto 2px;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .dock-undo-redo-btn {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            color: #cbd5e1;
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .dock-undo-redo-btn:hover:not(:disabled) {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .dock-undo-redo-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .dock-undo-redo-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+        }
+
+        /* Trash can delete button for single measurement item */
+        .btn-delete-item {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-delete-item:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.08);
+        }
+
+        .btn-delete-item:active {
+            transform: scale(0.95);
         }
 
         .dock-content {
@@ -1657,15 +1801,17 @@
                     </div>
                 </div>
 
-                <!-- Measurement Canvas Overlay -->
-                <svg class="measurement-canvas" id="svgMeasure1"></svg>
-
-                <img id="imgVp1" class="medical-image"
-                     src="{{ asset($patientSeries[0]['image_path']) }}?v={{ time() }}" 
-                     alt="DICOM Scan VP1">
-                <img id="imgVp1Denoised" class="medical-image medical-image-denoised"
-                     src="{{ asset($patientSeries[0]['image_path']) }}?v={{ time() }}" 
-                     alt="Denoised Scan VP1">
+                <!-- Transformed Stage Layer (Anchors Image & SVG Measurements in 100% Lockstep) -->
+                <div class="vp-stage-layer" id="vpStageLayer1">
+                    <img id="imgVp1" class="medical-image"
+                         src="{{ asset($patientSeries[0]['image_path']) }}?v={{ time() }}" 
+                         alt="DICOM Scan VP1">
+                    <img id="imgVp1Denoised" class="medical-image medical-image-denoised"
+                         src="{{ asset($patientSeries[0]['image_path']) }}?v={{ time() }}" 
+                         alt="Denoised Scan VP1">
+                    <!-- Measurement Canvas Overlay inside Stage Layer -->
+                    <svg class="measurement-canvas" id="svgMeasure1"></svg>
+                </div>
             </div>
 
             <!-- Viewport 2 (VP-B: Secondary Multimodal - USG / Comparison) -->
@@ -1681,17 +1827,17 @@
                     MRN: {{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}
                 </div>
                 <div class="dicom-hud hud-top-right" id="vp2HudTopRight">
-                    Modalitas: {{ $patientSeries[1]['name'] }}<br>
-                    Studi: {{ $patientSeries[1]['study'] }}<br>
-                    Station: {{ $patientSeries[1]['station'] }}
+                    Modalitas: {{ $patientSeries[1]['name'] ?? ($patientSeries[0]['name'] ?? 'Thorax PA') }}<br>
+                    Studi: {{ $patientSeries[1]['study'] ?? ($patientSeries[0]['study'] ?? 'Pemeriksaan Radiologi') }}<br>
+                    Station: {{ $patientSeries[1]['station'] ?? ($patientSeries[0]['station'] ?? 'FUJIFILM_FDR') }}
                 </div>
                 <div class="dicom-hud hud-bottom-left">
                     Zoom: <span id="lblZoom2">100%</span><br>
-                    Probe: Convex 3.5 MHz
+                    Modality: {{ $patientSeries[1]['badge'] ?? ($patientSeries[0]['badge'] ?? 'CR') }}
                 </div>
                 <div class="dicom-hud hud-bottom-right">
                     Hyu PACS &bull; Viewport B<br>
-                    USG B-Mode Real-time
+                    Comparison View
                 </div>
 
                 <!-- A/B Comparison Split Curtain Container VP2 -->
@@ -1703,13 +1849,16 @@
                     </div>
                 </div>
 
-                <svg class="measurement-canvas" id="svgMeasure2"></svg>
-                <img id="imgVp2" class="medical-image"
-                     src="{{ asset($patientSeries[1]['image_path']) }}?v={{ time() }}" 
-                     alt="DICOM Scan VP2">
-                <img id="imgVp2Denoised" class="medical-image medical-image-denoised"
-                     src="{{ asset($patientSeries[1]['image_path']) }}?v={{ time() }}" 
-                     alt="Denoised Scan VP2">
+                <!-- Transformed Stage Layer (Anchors Image & SVG Measurements in 100% Lockstep) -->
+                <div class="vp-stage-layer" id="vpStageLayer2">
+                    <img id="imgVp2" class="medical-image"
+                         src="{{ asset($patientSeries[1]['image_path'] ?? $patientSeries[0]['image_path']) }}?v={{ time() }}" 
+                         alt="DICOM Scan VP2">
+                    <img id="imgVp2Denoised" class="medical-image medical-image-denoised"
+                         src="{{ asset($patientSeries[1]['image_path'] ?? $patientSeries[0]['image_path']) }}?v={{ time() }}" 
+                         alt="Denoised Scan VP2">
+                    <svg class="measurement-canvas" id="svgMeasure2"></svg>
+                </div>
             </div>
 
         </div>
@@ -1720,6 +1869,20 @@
                 <button class="dock-tab-btn active-tab" id="tabBtnDenoise" onclick="switchDockTab('denoise')">
                     Restorasi & Filter
                 </button>
+                <div class="dock-history-nav-group" title="Riwayat Anotasi & Pengukuran (Undo / Redo)">
+                    <button type="button" class="dock-undo-redo-btn" id="btnDockUndo" onclick="undoLastMeasurement()" title="Undo Anotasi (Ctrl+Z)" aria-label="Undo">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                            <path d="M3 3v5h5"/>
+                        </svg>
+                    </button>
+                    <button type="button" class="dock-undo-redo-btn" id="btnDockRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)" aria-label="Redo">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                            <path d="M21 3v5h-5"/>
+                        </svg>
+                    </button>
+                </div>
                 <button class="dock-tab-btn" id="tabBtnMeasure" onclick="switchDockTab('measure')">
                     Hasil Ukur / CTR
                 </button>
@@ -1966,9 +2129,8 @@
                     <div class="dock-card">
                         <div class="dock-card-header">
                             <span class="dock-card-title">Daftar Anotasi & Temuan</span>
-                            <div style="display: flex; gap: 0.35rem;">
-                                <button onclick="undoLastMeasurement()" style="background: none; border: none; color: #38bdf8; font-size: 0.7rem; cursor: pointer; font-weight: 600;">Undo</button>
-                                <button onclick="clearAllCalipers()" style="background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; font-weight: 600;">Hapus</button>
+                            <div>
+                                <button type="button" onclick="clearAllCalipers()" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.15s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'" title="Hapus semua anotasi di viewport ini">Hapus Semua</button>
                             </div>
                         </div>
 
@@ -2172,8 +2334,39 @@
             2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
         };
 
-        // Measurements Store
+        // Measurements Store & Undo/Redo Stacks
         const measurements = { 1: [], 2: [] };
+        const undoStack = { 1: [], 2: [] };
+        const redoStack = { 1: [], 2: [] };
+
+        function pushMeasurementHistory(vpId) {
+            if (!undoStack[vpId]) undoStack[vpId] = [];
+            if (!redoStack[vpId]) redoStack[vpId] = [];
+            undoStack[vpId].push(JSON.parse(JSON.stringify(measurements[vpId])));
+            if (undoStack[vpId].length > 40) undoStack[vpId].shift();
+            redoStack[vpId] = [];
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            const btnUndo = document.getElementById('btnDockUndo');
+            const btnRedo = document.getElementById('btnDockRedo');
+            const canUndo = (activeTool === 'polygon' && currentPolygonPoints.length > 0) || 
+                            (undoStack[activeViewport] && undoStack[activeViewport].length > 0) || 
+                            (measurements[activeViewport] && measurements[activeViewport].length > 0);
+            const canRedo = (redoStack[activeViewport] && redoStack[activeViewport].length > 0);
+
+            if (btnUndo) {
+                btnUndo.disabled = !canUndo;
+                btnUndo.style.opacity = canUndo ? '1' : '0.35';
+                btnUndo.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+            }
+            if (btnRedo) {
+                btnRedo.disabled = !canRedo;
+                btnRedo.style.opacity = canRedo ? '1' : '0.35';
+                btnRedo.style.cursor = canRedo ? 'pointer' : 'not-allowed';
+            }
+        }
         let activeDrawing = null;
         let activeCircleDrawing = null;
         let isCircleDrawing = false;
@@ -2196,6 +2389,8 @@
         let startX, startY;
         let activeDraggingCurtainVp = null;
 
+        const vpStageLayer1 = document.getElementById('vpStageLayer1');
+        const vpStageLayer2 = document.getElementById('vpStageLayer2');
         const img1 = document.getElementById('imgVp1');
         const img2 = document.getElementById('imgVp2');
         const img1Denoised = document.getElementById('imgVp1Denoised');
@@ -2215,6 +2410,8 @@
         const curtainContainer2 = document.getElementById('curtainContainer2');
         const curtainDivider1 = document.getElementById('curtainDivider1');
         const curtainDivider2 = document.getElementById('curtainDivider2');
+
+        let selectedAnnotation = null; // { vpId: 1, index: 0 }
 
         // Init Initial Image Sources & Drawer Responsive State
         if (img1) vpState[1].rawSrc = img1.src;
@@ -2378,6 +2575,7 @@
             updateInspectionButtons();
             updateTelemetryForViewport(id);
             updateMeasurementsPanel();
+            updateUndoRedoButtons();
         }
 
         function updateInspectionButtons() {
@@ -3237,6 +3435,7 @@
         }
 
         function resetViewer() {
+            selectedAnnotation = null;
             [1, 2].forEach(id => {
                 vpState[id] = { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: vpState[id].rawSrc, denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' };
                 const cContainer = (id === 1) ? curtainContainer1 : curtainContainer2;
@@ -3258,13 +3457,11 @@
         }
 
         function updateTransform(id) {
-            const img = (id === 1) ? img1 : img2;
-            const imgDenoised = (id === 1) ? img1Denoised : img2Denoised;
-            if (!img) return;
+            const stage = (id === 1) ? document.getElementById('vpStageLayer1') : document.getElementById('vpStageLayer2');
+            if (!stage) return;
             const st = vpState[id];
             const transformStr = `translate(${st.translateX}px, ${st.translateY}px) rotate(${st.rotation}deg) scaleX(${st.flipH ? -1 : 1}) scale(${st.zoom})`;
-            img.style.transform = transformStr;
-            if (imgDenoised) imgDenoised.style.transform = transformStr;
+            stage.style.transform = transformStr;
             if (id === 1 && lblZoom) lblZoom.innerText = Math.round(st.zoom * 100) + '%';
             else {
                 const lbl2 = document.getElementById('lblZoom2');
@@ -3314,8 +3511,10 @@
                 polygonHoverPoint = null;
                 isPolygonSnapping = false;
                 renderMeasurements(vpId);
+                updateUndoRedoButtons();
                 return;
             }
+            pushMeasurementHistory(vpId);
             const metrics = calculatePolygonMetrics(currentPolygonPoints);
             const countRoi = measurements[vpId].filter(m => m.type === 'polygon').length + 1;
             measurements[vpId].push({
@@ -3332,6 +3531,34 @@
             isPolygonSnapping = false;
             renderMeasurements(vpId);
             updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('📐', `ROI tersimpan: ${metrics.areaCm2} cm² (Kll: ${metrics.perimeterCm} cm)`);
+        }
+
+        function selectMeasurement(vpId, idx) {
+            if (selectedAnnotation && selectedAnnotation.vpId === vpId && selectedAnnotation.index === idx) {
+                return;
+            }
+            selectedAnnotation = { vpId: vpId, index: idx };
+            renderMeasurements(vpId);
+            updateMeasurementsPanel();
+
+            // Scroll corresponding measurement in list into view
+            setTimeout(() => {
+                const itemEl = document.getElementById(`measureItem_${vpId}_${idx}`);
+                if (itemEl) {
+                    itemEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 50);
+        }
+
+        function deselectMeasurement() {
+            if (selectedAnnotation) {
+                const prevVp = selectedAnnotation.vpId;
+                selectedAnnotation = null;
+                renderMeasurements(prevVp);
+                updateMeasurementsPanel();
+            }
         }
 
         function renderMeasurements(vpId) {
@@ -3340,78 +3567,118 @@
             let html = '';
 
             measurements[vpId].forEach((m, idx) => {
+                const isSelected = (selectedAnnotation && selectedAnnotation.vpId === vpId && selectedAnnotation.index === idx);
+                const strokeColor = isSelected ? '#38bdf8' : '#facc15';
+                const strokeW = isSelected ? 2.8 : 2;
+                const glowFilter = isSelected ? 'filter="drop-shadow(0 0 7px rgba(56, 189, 248, 0.85))"' : '';
+
                 if (m.type === 'circle') {
                     const badgeY = (m.cy - m.r - 14 >= 14) ? (m.cy - m.r - 14) : (m.cy + m.r + 14);
+                    const deleteBtnY = (badgeY > m.cy) ? (badgeY + 26) : (badgeY - 26);
                     html += `
                         <g id="circle-group-${vpId}-${idx}">
+                            <!-- Invisible Wide Hit-Test Circle Area -->
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
                             <!-- True Circle Body (1:1 Locked) -->
-                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r}" fill="rgba(250, 204, 21, 0.16)" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
                             
                             <!-- Crosshair Axes -->
-                            <line x1="${m.cx - m.r}" y1="${m.cy}" x2="${m.cx + m.r}" y2="${m.cy}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
-                            <line x1="${m.cx}" y1="${m.cy - m.r}" x2="${m.cx}" y2="${m.cy + m.r}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx - m.r}" y1="${m.cy}" x2="${m.cx + m.r}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx}" y1="${m.cy - m.r}" x2="${m.cx}" y2="${m.cy + m.r}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
                             
                             <!-- Center Crosshair Marker -->
-                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="#facc15" stroke-width="2" />
-                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="#facc15" stroke-width="2" />
+                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="2" />
+                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="${strokeColor}" stroke-width="2" />
                             
                             <!-- 4 Cardinal Boundary Points -->
-                            <circle cx="${m.cx - m.r}" cy="${m.cy}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx + m.r}" cy="${m.cy}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx}" cy="${m.cy - m.r}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx}" cy="${m.cy + m.r}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx - m.r}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx + m.r}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy - m.r}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy + m.r}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
                             
                             <!-- Compact Rim Badge (Anti-Occlusion) -->
-                            <g transform="translate(${m.cx}, ${badgeY})">
-                                <rect x="-65" y="-11" width="130" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
-                                <text x="0" y="3" fill="#facc15" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-65" y="-11" width="130" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: &Oslash; ${m.diamCm} cm &bull; ${m.areaCm2} cm²
                                 </text>
                             </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
                         </g>
                     `;
                 } else if (m.type === 'ellipse') {
                     const badgeY = (m.cy - m.ry - 14 >= 14) ? (m.cy - m.ry - 14) : (m.cy + m.ry + 14);
+                    const deleteBtnY = (badgeY > m.cy) ? (badgeY + 26) : (badgeY - 26);
                     html += `
                         <g id="ellipse-group-${vpId}-${idx}">
+                            <!-- Invisible Wide Hit-Test Ellipse Area -->
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx + 8}" ry="${m.ry + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
                             <!-- Ellipse Body -->
-                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx}" ry="${m.ry}" fill="rgba(250, 204, 21, 0.16)" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx}" ry="${m.ry}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
                             
                             <!-- Orthogonal Diameter Lines (Major & Minor Axis) -->
-                            <line x1="${m.cx - m.rx}" y1="${m.cy}" x2="${m.cx + m.rx}" y2="${m.cy}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
-                            <line x1="${m.cx}" y1="${m.cy - m.ry}" x2="${m.cx}" y2="${m.cy + m.ry}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx - m.rx}" y1="${m.cy}" x2="${m.cx + m.rx}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx}" y1="${m.cy - m.ry}" x2="${m.cx}" y2="${m.cy + m.ry}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
                             
                             <!-- Center Crosshair Marker -->
-                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="#facc15" stroke-width="2" />
-                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="#facc15" stroke-width="2" />
+                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="2" />
+                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="${strokeColor}" stroke-width="2" />
                             
                             <!-- 4 Cardinal Boundary Points -->
-                            <circle cx="${m.cx - m.rx}" cy="${m.cy}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx + m.rx}" cy="${m.cy}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx}" cy="${m.cy - m.ry}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
-                            <circle cx="${m.cx}" cy="${m.cy + m.ry}" r="3.5" fill="#facc15" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx - m.rx}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx + m.rx}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy - m.ry}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy + m.ry}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
                             
                             <!-- Compact Rim Badge (Anti-Occlusion) -->
-                            <g transform="translate(${m.cx}, ${badgeY})">
-                                <rect x="-70" y="-11" width="140" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
-                                <text x="0" y="3" fill="#facc15" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-70" y="-11" width="140" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: ${m.d1Cm}&times;${m.d2Cm} &bull; ${m.areaCm2} cm²
                                 </text>
                             </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
                         </g>
                     `;
                 } else if (m.type === 'polygon') {
                     const ptsString = m.points.map(p => `${p.x},${p.y}`).join(' ');
+                    const deleteBtnY = (m.cy - 34 >= 14) ? (m.cy - 34) : (m.cy + 34);
                     html += `
                         <g id="roi-group-${vpId}-${idx}">
-                            <polygon points="${ptsString}" fill="rgba(250, 204, 21, 0.2)" stroke="#facc15" stroke-width="2" stroke-linejoin="round" />
-                            ${m.points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="#facc15" stroke="#0f172a" stroke-width="1.5" />`).join('')}
-                            <g transform="translate(${m.cx}, ${m.cy})">
-                                <rect x="-55" y="-11" width="110" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
-                                <text x="0" y="3" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                            <!-- Polygon Body with Hit Handler -->
+                            <polygon points="${ptsString}" fill="rgba(250, 204, 21, ${isSelected ? '0.32' : '0.2'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-linejoin="round" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            ${m.points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />`).join('')}
+                            
+                            <g transform="translate(${m.cx}, ${m.cy})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-11" width="110" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: ${m.areaCm2} cm²
                                 </text>
                             </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
                         </g>
                     `;
                 } else if (m.type === 'ctr') {
@@ -3422,45 +3689,85 @@
                     const midTX = (t.x1 + t.x2) / 2;
                     const midTY = (t.y1 + t.y2) / 2;
                     const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
+                    const centerCtrX = (midHX + midTX) / 2;
+                    const centerCtrY = (midHY + midTY) / 2;
+                    const deleteBtnY = (centerCtrY - 36 >= 14) ? (centerCtrY - 36) : (centerCtrY + 36);
 
                     html += `
                         <g id="ctr-group-${vpId}-${idx}">
-                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="#f43f5e" stroke-width="2.5" />
-                            <circle cx="${h.x1}" cy="${h.y1}" r="4" fill="#f43f5e" stroke="#000" />
-                            <circle cx="${h.x2}" cy="${h.y2}" r="4" fill="#f43f5e" stroke="#000" />
-                            <rect x="${midHX - 55}" y="${midHY - 20}" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#f43f5e" stroke-width="1" />
-                            <text x="${midHX}" y="${midHY - 7}" fill="#f43f5e" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
-                                Jantung: ${h.distCm} cm
-                            </text>
+                            <!-- Invisible Hit Test Lines -->
+                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
 
-                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="#facc15" stroke-width="2.5" stroke-dasharray="4,4" />
-                            <circle cx="${t.x1}" cy="${t.y1}" r="4" fill="#facc15" stroke="#000" />
-                            <circle cx="${t.x2}" cy="${t.y2}" r="4" fill="#facc15" stroke="#000" />
-                            <rect x="${midTX - 55}" y="${midTY - 20}" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#facc15" stroke-width="1" />
-                            <text x="${midTX}" y="${midTY - 7}" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
-                                Toraks: ${t.distCm} cm
-                            </text>
+                            <!-- Heart Line (Transversal Cor) -->
+                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="#f43f5e" stroke-width="${isSelected ? '3.2' : '2.5'}" ${glowFilter} />
+                            <circle cx="${h.x1}" cy="${h.y1}" r="4.5" fill="#f43f5e" stroke="#000" />
+                            <circle cx="${h.x2}" cy="${h.y2}" r="4.5" fill="#f43f5e" stroke="#000" />
+                            <g transform="translate(${midHX}, ${midHY - 11})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#f43f5e" stroke-width="1" />
+                                <text x="0" y="4" fill="#f43f5e" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    Jantung: ${h.distCm} cm
+                                </text>
+                            </g>
 
-                            <g transform="translate(${(midHX + midTX) / 2}, ${(midHY + midTY) / 2})">
-                                <rect x="-85" y="-13" width="170" height="26" rx="13" fill="rgba(15, 23, 42, 0.95)" stroke="${badgeColor}" stroke-width="1.5" />
+                            <!-- Thorax Line (Transversal Thorax) -->
+                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="#facc15" stroke-width="${isSelected ? '3.2' : '2.5'}" stroke-dasharray="4,4" ${glowFilter} />
+                            <circle cx="${t.x1}" cy="${t.y1}" r="4.5" fill="#facc15" stroke="#000" />
+                            <circle cx="${t.x2}" cy="${t.y2}" r="4.5" fill="#facc15" stroke="#000" />
+                            <g transform="translate(${midTX}, ${midTY - 11})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#facc15" stroke-width="1" />
+                                <text x="0" y="4" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    Toraks: ${t.distCm} cm
+                                </text>
+                            </g>
+
+                            <!-- Center Overall CTR Badge -->
+                            <g transform="translate(${centerCtrX}, ${centerCtrY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-85" y="-13" width="170" height="26" rx="13" fill="rgba(15, 23, 42, 0.95)" stroke="${isSelected ? '#38bdf8' : badgeColor}" stroke-width="${isSelected ? '2.5' : '1.5'}" ${glowFilter} />
                                 <text x="0" y="3" fill="${badgeColor}" font-size="11" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     CTR: ${m.ratio}% (${m.verdict})
                                 </text>
                             </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${centerCtrX}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
                         </g>
                     `;
                 } else {
+                    // Linear Caliper
                     const midX = (m.x1 + m.x2) / 2;
                     const midY = (m.y1 + m.y2) / 2;
+                    const deleteBtnY = (midY - 38 >= 14) ? (midY - 38) : (midY + 36);
                     html += `
                         <g id="caliper-group-${vpId}-${idx}">
-                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
-                            <circle cx="${m.x1}" cy="${m.y1}" r="4" fill="#facc15" stroke="#0f172a" stroke-width="1.5" />
-                            <circle cx="${m.x2}" cy="${m.y2}" r="4" fill="#facc15" stroke="#0f172a" stroke-width="1.5" />
-                            <rect x="${midX - 44}" y="${midY - 18}" width="88" height="20" rx="10" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
-                            <text x="${midX}" y="${midY - 5}" fill="#facc15" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
-                                ${m.label}: ${m.distCm} cm
-                            </text>
+                            <!-- Invisible Wide Hit-Test Line (Easy to Click) -->
+                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
+                            <!-- Visible Caliper Line -->
+                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} />
+                            <circle cx="${m.x1}" cy="${m.y1}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />
+                            <circle cx="${m.x2}" cy="${m.y2}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />
+                            
+                            <!-- Midpoint Measurement Badge -->
+                            <g transform="translate(${midX}, ${midY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-44" y="-10" width="88" height="20" rx="10" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="4" fill="${strokeColor}" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    ${m.label}: ${m.distCm} cm
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${midX}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
                         </g>
                     `;
                 }
@@ -3631,60 +3938,87 @@
             } else {
                 let html = '<div style="display: flex; flex-direction: column; gap: 0.4rem;">';
                 list.forEach((m, idx) => {
+                    const isSelected = (selectedAnnotation && selectedAnnotation.vpId === activeViewport && selectedAnnotation.index === idx);
+                    const deleteBtnHtml = `
+                        <button type="button" onclick="event.stopPropagation(); deleteSingleMeasurement(${activeViewport}, ${idx})" class="btn-delete-item" title="Hapus ${m.label || 'pengukuran ini'}" aria-label="Hapus">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    `;
+
                     if (m.type === 'ctr') {
-                        const badgeClass = m.isNormal ? 'color: #10b981;' : 'color: #ef4444;';
+                        const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
                         html += `
-                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--ws-border); padding: 0.4rem; border-radius: 4px; font-size: 0.7rem;">
-                                <div style="display: flex; justify-content: space-between; font-weight: 700; ${badgeClass}">
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: ${badgeColor};">
                                     <span>Cardiothoracic Ratio (CTR)</span>
-                                    <span>${m.ratio}% (${m.verdict})</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.ratio}% (${m.verdict})</span>
+                                        ${deleteBtnHtml}
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.15rem;">
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.2rem;">
                                     Jantung: ${m.heart.distCm} cm | Toraks: ${m.thorax.distCm} cm
                                 </div>
                             </div>
                         `;
                     } else if (m.type === 'circle') {
                         html += `
-                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--ws-border); padding: 0.4rem; border-radius: 4px; font-size: 0.7rem;">
-                                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #facc15;">
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
                                     <span>${m.label} (Lingkaran Sempurna)</span>
-                                    <span>${m.areaCm2} cm²</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.15rem;">
+                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.2rem;">
                                     &Oslash; Diameter: ${m.diamCm} cm &bull; Jari-jari: ${(m.r * 0.08).toFixed(2)} cm
                                 </div>
                             </div>
                         `;
                     } else if (m.type === 'ellipse') {
                         html += `
-                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--ws-border); padding: 0.4rem; border-radius: 4px; font-size: 0.7rem;">
-                                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #facc15;">
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
                                     <span>${m.label} (Oval / Ellipse)</span>
-                                    <span>${m.areaCm2} cm²</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.15rem;">
+                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.2rem;">
                                     D1: ${m.d1Cm} cm &bull; D2: ${m.d2Cm} cm
                                 </div>
                             </div>
                         `;
                     } else if (m.type === 'polygon') {
                         html += `
-                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--ws-border); padding: 0.4rem; border-radius: 4px; font-size: 0.7rem;">
-                                <div style="display: flex; justify-content: space-between; font-weight: 700; color: #facc15;">
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
                                     <span>${m.label} (Area ROI)</span>
-                                    <span>${m.areaCm2} cm²</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
                                 </div>
-                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.15rem;">
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.2rem;">
                                     Keliling: ${m.perimeterCm} cm
                                 </div>
                             </div>
                         `;
                     } else {
                         html += `
-                            <div style="background: rgba(15, 23, 42, 0.8); border: 1px solid var(--ws-border); padding: 0.4rem; border-radius: 4px; font-size: 0.7rem; display: flex; justify-content: space-between;">
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})" style="display: flex; justify-content: space-between; align-items: center;">
                                 <span style="color: #facc15; font-weight: 700;">${m.label} (Linear Caliper)</span>
-                                <span style="font-family: monospace; color: #facc15; font-weight: 600;">${m.distCm} cm</span>
+                                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                    <span style="font-family: 'JetBrains Mono', monospace; color: #facc15; font-weight: 600;">${m.distCm} cm</span>
+                                    ${deleteBtnHtml}
+                                </div>
                             </div>
                         `;
                     }
@@ -3808,6 +4142,8 @@
             const linears = list.filter(m => m.type === 'linear');
             if (linears.length < 2) return;
 
+            pushMeasurementHistory(activeViewport);
+
             // Ambil 2 linear terakhir
             const lastTwo = linears.slice(-2);
             const sorted = [...lastTwo].sort((a, b) => parseFloat(a.distCm) - parseFloat(b.distCm));
@@ -3832,6 +4168,7 @@
 
             renderMeasurements(activeViewport);
             updateMeasurementsPanel();
+            updateUndoRedoButtons();
             showToolHint(isNormal ? '✅' : '⚠️', `CTR Berhasil Dikonversi: ${ratio}% (${verdict})`);
         }
 
@@ -3848,28 +4185,86 @@
             setTimeout(hideToolHint, 3000);
         }
 
+        function deleteSingleMeasurement(vpId, index) {
+            if (!measurements[vpId] || !measurements[vpId][index]) return;
+            pushMeasurementHistory(vpId);
+            const itemLabel = measurements[vpId][index].label || 'Pengukuran';
+            measurements[vpId].splice(index, 1);
+
+            if (selectedAnnotation && selectedAnnotation.vpId === vpId) {
+                if (selectedAnnotation.index === index) {
+                    selectedAnnotation = null;
+                } else if (selectedAnnotation.index > index) {
+                    selectedAnnotation.index--;
+                }
+            }
+
+            renderMeasurements(vpId);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('🗑️', `${itemLabel} berhasil dihapus.`);
+            setTimeout(hideToolHint, 2000);
+        }
+
         function undoLastMeasurement() {
             if (activeTool === 'polygon' && currentPolygonPoints.length > 0) {
                 currentPolygonPoints.pop();
                 polygonHoverPoint = null;
                 isPolygonSnapping = false;
                 renderMeasurements(activeViewport);
+                updateUndoRedoButtons();
                 return;
             }
-            if (measurements[activeViewport].length > 0) {
-                measurements[activeViewport].pop();
+
+            if (undoStack[activeViewport] && undoStack[activeViewport].length > 0) {
+                redoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport] = undoStack[activeViewport].pop();
+                selectedAnnotation = null;
                 renderMeasurements(activeViewport);
                 updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↺', 'Undo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
+            } else if (measurements[activeViewport] && measurements[activeViewport].length > 0) {
+                redoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport].pop();
+                selectedAnnotation = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↺', 'Undo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
+            }
+        }
+
+        function redoLastMeasurement() {
+            if (redoStack[activeViewport] && redoStack[activeViewport].length > 0) {
+                undoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport] = redoStack[activeViewport].pop();
+                selectedAnnotation = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↻', 'Redo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
             }
         }
 
         function clearAllCalipers() {
+            if ((!measurements[activeViewport] || measurements[activeViewport].length === 0) && currentPolygonPoints.length === 0) return;
+            if (measurements[activeViewport] && measurements[activeViewport].length > 0) {
+                pushMeasurementHistory(activeViewport);
+            }
+            selectedAnnotation = null;
             currentPolygonPoints = [];
             polygonHoverPoint = null;
             isPolygonSnapping = false;
             measurements[activeViewport] = [];
             renderMeasurements(activeViewport);
             updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('🗑️', 'Semua anotasi pengukuran berhasil dihapus.');
+            setTimeout(hideToolHint, 2000);
         }
 
         // ==========================================
@@ -3896,9 +4291,51 @@
             return { clientX, clientY, x, y, rect };
         }
 
+        function getSvgCoords(e, svgElement) {
+            if (!svgElement) return { x: 0, y: 0, clientX: 0, clientY: 0 };
+            let clientX = 0, clientY = 0;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else if (e.clientX !== undefined) {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            try {
+                const ctm = svgElement.getScreenCTM();
+                if (ctm) {
+                    const pt = svgElement.createSVGPoint();
+                    pt.x = clientX;
+                    pt.y = clientY;
+                    const transPt = pt.matrixTransform(ctm.inverse());
+                    return {
+                        x: Math.round(transPt.x),
+                        y: Math.round(transPt.y),
+                        clientX,
+                        clientY
+                    };
+                }
+            } catch (err) {
+                console.warn('CTM transform fallback:', err);
+            }
+
+            const rect = svgElement.getBoundingClientRect();
+            return {
+                x: Math.round(clientX - rect.left),
+                y: Math.round(clientY - rect.top),
+                clientX,
+                clientY
+            };
+        }
+
         function handleViewportStart(vpId, e) {
             const cell = (vpId === 1) ? vp1 : vp2;
-            if (!cell) return;
+            const targetSvg = (vpId === 1) ? svgMeasure1 : svgMeasure2;
+            if (!cell || !targetSvg) return;
 
             // Multi-touch Pinch to Zoom
             if (e.touches && e.touches.length === 2) {
@@ -3915,11 +4352,14 @@
             }
 
             selectViewport(vpId);
-            const pos = getEventCoords(e, cell);
+            
+            // Svg-relative coordinates (100% attached to image anatomy regardless of zoom/pan)
+            const pos = getSvgCoords(e, targetSvg);
             const clickX = pos.x;
             const clickY = pos.y;
 
             if (activeTool === 'polygon') {
+                deselectMeasurement();
                 if (currentPolygonPoints.length >= 2 && isPolygonSnapping) {
                     finishPolygon(vpId);
                     return;
@@ -3930,6 +4370,7 @@
             }
 
             if (activeTool === 'circle') {
+                deselectMeasurement();
                 isCircleDrawing = true;
                 activeCircleDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
                 renderMeasurements(vpId);
@@ -3937,6 +4378,7 @@
             }
 
             if (activeTool === 'ellipse') {
+                deselectMeasurement();
                 isEllipseDrawing = true;
                 activeEllipseDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
                 renderMeasurements(vpId);
@@ -3944,6 +4386,7 @@
             }
 
             if (activeTool === 'box') {
+                deselectMeasurement();
                 isBoxDrawing = true;
                 activeBoxDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
                 renderMeasurements(vpId);
@@ -3951,12 +4394,14 @@
             }
 
             if (activeTool === 'caliper' || activeTool === 'ctr') {
+                deselectMeasurement();
                 isMeasuring = true;
                 activeDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
                 renderMeasurements(vpId);
                 return;
             }
 
+            deselectMeasurement();
             isDragging = true;
             startX = pos.clientX - vpState[vpId].translateX;
             startY = pos.clientY - vpState[vpId].translateY;
@@ -3994,19 +4439,20 @@
                 return;
             }
 
+            const targetSvg = (activeViewport === 1) ? svgMeasure1 : svgMeasure2;
+
             // 3. Polygon in progress
             if (activeTool === 'polygon' && currentPolygonPoints.length > 0) {
                 if (e.cancelable) e.preventDefault();
-                const cell = (activeViewport === 1) ? vp1 : vp2;
-                if (!cell) return;
-                const pos = getEventCoords(e, cell);
-                const curX = Math.max(0, Math.min(pos.rect.width, pos.x));
-                const curY = Math.max(0, Math.min(pos.rect.height, pos.y));
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                const curX = pos.x;
+                const curY = pos.y;
 
                 if (currentPolygonPoints.length >= 2) {
                     const firstP = currentPolygonPoints[0];
                     const distToFirst = Math.hypot(curX - firstP.x, curY - firstP.y);
-                    if (distToFirst <= 35) {
+                    if (distToFirst <= 30) {
                         isPolygonSnapping = true;
                         polygonHoverPoint = { x: firstP.x, y: firstP.y };
                     } else {
@@ -4025,11 +4471,10 @@
             // 4. Circle active drawing
             if (activeTool === 'circle' && isCircleDrawing && activeCircleDrawing) {
                 if (e.cancelable) e.preventDefault();
-                const cell = (activeViewport === 1) ? vp1 : vp2;
-                if (!cell) return;
-                const pos = getEventCoords(e, cell);
-                activeCircleDrawing.x2 = Math.max(0, Math.min(pos.rect.width, pos.x));
-                activeCircleDrawing.y2 = Math.max(0, Math.min(pos.rect.height, pos.y));
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeCircleDrawing.x2 = pos.x;
+                activeCircleDrawing.y2 = pos.y;
                 renderMeasurements(activeViewport);
                 return;
             }
@@ -4037,11 +4482,10 @@
             // 5. Ellipse active drawing
             if (activeTool === 'ellipse' && isEllipseDrawing && activeEllipseDrawing) {
                 if (e.cancelable) e.preventDefault();
-                const cell = (activeViewport === 1) ? vp1 : vp2;
-                if (!cell) return;
-                const pos = getEventCoords(e, cell);
-                activeEllipseDrawing.x2 = Math.max(0, Math.min(pos.rect.width, pos.x));
-                activeEllipseDrawing.y2 = Math.max(0, Math.min(pos.rect.height, pos.y));
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeEllipseDrawing.x2 = pos.x;
+                activeEllipseDrawing.y2 = pos.y;
                 renderMeasurements(activeViewport);
                 return;
             }
@@ -4049,11 +4493,10 @@
             // 6. Box ROI active drawing
             if (activeTool === 'box' && isBoxDrawing && activeBoxDrawing) {
                 if (e.cancelable) e.preventDefault();
-                const cell = (activeViewport === 1) ? vp1 : vp2;
-                if (!cell) return;
-                const pos = getEventCoords(e, cell);
-                activeBoxDrawing.x2 = Math.max(0, Math.min(pos.rect.width, pos.x));
-                activeBoxDrawing.y2 = Math.max(0, Math.min(pos.rect.height, pos.y));
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeBoxDrawing.x2 = pos.x;
+                activeBoxDrawing.y2 = pos.y;
                 renderMeasurements(activeViewport);
                 return;
             }
@@ -4061,11 +4504,10 @@
             // 7. Linear Caliper or CTR active measurement
             if (isMeasuring && activeDrawing) {
                 if (e.cancelable) e.preventDefault();
-                const cell = (activeViewport === 1) ? vp1 : vp2;
-                if (!cell) return;
-                const pos = getEventCoords(e, cell);
-                activeDrawing.x2 = Math.max(0, Math.min(pos.rect.width, pos.x));
-                activeDrawing.y2 = Math.max(0, Math.min(pos.rect.height, pos.y));
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeDrawing.x2 = pos.x;
+                activeDrawing.y2 = pos.y;
                 renderMeasurements(activeViewport);
                 return;
             }
@@ -4110,6 +4552,7 @@
                             const isNormal = (ratio <= 50);
                             const verdict = isNormal ? 'Normal' : 'Suspek Kardiomegali';
 
+                            pushMeasurementHistory(activeViewport);
                             measurements[activeViewport].push({
                                 type: 'ctr',
                                 heart: ctrWorkflow.heartLine,
@@ -4125,6 +4568,7 @@
                             showToolHint(isNormal ? '✅' : '⚠️', `CTR: ${ratio}% (${verdict})`);
                         }
                     } else {
+                        pushMeasurementHistory(activeViewport);
                         const countLinear = measurements[activeViewport].filter(m => m.type === 'linear').length + 1;
                         measurements[activeViewport].push({
                             type: 'linear',
@@ -4140,6 +4584,7 @@
                 activeDrawing = null;
                 renderMeasurements(activeViewport);
                 updateMeasurementsPanel();
+                updateUndoRedoButtons();
             }
 
             if (isCircleDrawing && activeCircleDrawing) {
@@ -4152,6 +4597,7 @@
                 if (r > 4) {
                     const diamCm = (r * 2 * 0.08).toFixed(2);
                     const areaCm2 = (Math.PI * r * r * 0.08 * 0.08).toFixed(2);
+                    pushMeasurementHistory(activeViewport);
                     const countCircle = measurements[activeViewport].filter(m => m.type === 'circle').length + 1;
                     measurements[activeViewport].push({
                         type: 'circle',
@@ -4166,6 +4612,7 @@
                 activeCircleDrawing = null;
                 renderMeasurements(activeViewport);
                 updateMeasurementsPanel();
+                updateUndoRedoButtons();
             }
 
             if (isEllipseDrawing && activeEllipseDrawing) {
@@ -4182,6 +4629,7 @@
                     const d1Cm = (rx * 2 * 0.08).toFixed(2);
                     const d2Cm = (ry * 2 * 0.08).toFixed(2);
                     const areaCm2 = (Math.PI * rx * ry * 0.08 * 0.08).toFixed(2);
+                    pushMeasurementHistory(activeViewport);
                     const countEllipse = measurements[activeViewport].filter(m => m.type === 'ellipse').length + 1;
                     measurements[activeViewport].push({
                         type: 'ellipse',
@@ -4198,6 +4646,7 @@
                 activeEllipseDrawing = null;
                 renderMeasurements(activeViewport);
                 updateMeasurementsPanel();
+                updateUndoRedoButtons();
             }
 
             if (isBoxDrawing && activeBoxDrawing) {
@@ -4216,6 +4665,7 @@
                         { x: minX, y: maxY }
                     ];
                     const metrics = calculatePolygonMetrics(pts);
+                    pushMeasurementHistory(activeViewport);
                     const countRoi = measurements[activeViewport].filter(m => m.type === 'polygon').length + 1;
                     measurements[activeViewport].push({
                         type: 'polygon',
@@ -4230,6 +4680,7 @@
                 activeBoxDrawing = null;
                 renderMeasurements(activeViewport);
                 updateMeasurementsPanel();
+                updateUndoRedoButtons();
             }
 
             isDragging = false;
@@ -4263,6 +4714,16 @@
         window.addEventListener('mouseup', handleViewportEnd);
         window.addEventListener('touchend', handleViewportEnd);
         window.addEventListener('touchcancel', handleViewportEnd);
+
+        // Keyboard Shortcut: Delete / Backspace key to remove selected measurement
+        window.addEventListener('keydown', (e) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAnnotation) {
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+                e.preventDefault();
+                deleteSingleMeasurement(selectedAnnotation.vpId, selectedAnnotation.index);
+            }
+        });
 
         // Quick Templates
         function insertTemplate(type) {
@@ -5037,6 +5498,26 @@
                 scanImg.src = activeSrc;
             }
         }
+
+        // Global Keyboard Shortcuts for Workstation (Ctrl+Z: Undo, Ctrl+Y / Ctrl+Shift+Z: Redo)
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    redoLastMeasurement();
+                } else {
+                    e.preventDefault();
+                    undoLastMeasurement();
+                }
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                redoLastMeasurement();
+            }
+        });
+
+        // Initial update for Undo/Redo buttons
+        updateUndoRedoButtons();
     </script>
 
     <!-- Modal DICOM Tags Inspector -->
