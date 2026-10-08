@@ -168,65 +168,65 @@ class PatientScanController extends Controller
         } else {
             // Susun seri citra nyata berdasarkan modalitas
             $isUsg = str_contains(strtoupper($scan->modality), 'USG');
+            $primarySeries = [
+                'id'          => 'series-1',
+                'name'        => $scan->modality ?: ($isUsg ? 'USG Abdomen' : 'Thorax PA (CR)'),
+                'modality'    => $isUsg ? 'US / Ultrasonografi' : 'CR / Rontgen Dada',
+                'badge'       => $isUsg ? 'US' : 'CR',
+                'badge_color' => '#38bdf8',
+                'study'       => $scan->study_description ?: ($isUsg ? 'Pemeriksaan USG Hepar & Abdomen Upper' : 'Pemeriksaan Paru & Jantung PA'),
+                'station'     => $scan->station_name ?: ($isUsg ? 'USG_MINDRAY_02' : 'FUJIFILM_FDR_01'),
+                'matrix'      => $isUsg ? 'B-Mode 3.5MHz (1920x1080)' : '2048 x 2048',
+                'image_path'  => $scan->preview_image_path ?: ($isUsg ? 'scan-assets/usg_sample.jpg' : 'scan-assets/raw_toraks.jpg'),
+                'has_image'   => true,
+                'is_primary'  => true,
+            ];
 
-            if ($isUsg) {
-                $patientSeries = [
-                    [
-                        'id'          => 'series-1',
-                        'name'        => $scan->modality ?: 'USG Abdomen',
-                        'modality'    => 'US / Ultrasonografi',
-                        'badge'       => 'US',
-                        'badge_color' => '#38bdf8',
-                        'study'       => $scan->study_description ?: 'Pemeriksaan USG Hepar & Abdomen Upper',
-                        'station'     => $scan->station_name ?: 'USG_MINDRAY_02',
-                        'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
-                        'image_path'  => $scan->preview_image_path ?: 'scan-assets/usg_sample.jpg',
-                        'has_image'   => true,
-                        'is_primary'  => true,
-                    ],
-                    [
-                        'id'          => 'series-2',
-                        'name'        => 'Thorax PA (CR)',
-                        'modality'    => 'CR / Rontgen Dada',
-                        'badge'       => 'CR',
-                        'badge_color' => '#38bdf8',
-                        'study'       => 'Pemeriksaan Paru & Jantung PA',
-                        'station'     => 'FUJIFILM_FDR',
-                        'matrix'      => '2048 x 2048',
-                        'image_path'  => 'scan-assets/raw_toraks.jpg',
-                        'has_image'   => true,
-                        'is_primary'  => false,
-                    ],
+            // Pasien Demo #1 tetap disiapkan 2 seri untuk keperluan demo komparasi multimodal
+            // Sedangkan pasien riil (dari alat Fujifilm) akan otomatis menampilkan sejumlah citra riil yang dikirim
+            if ($scan->id === 1) {
+                $secondarySeries = [
+                    'id'          => 'series-2',
+                    'name'        => $isUsg ? 'Thorax PA (CR)' : 'USG Abdomen',
+                    'modality'    => $isUsg ? 'CR / Rontgen Dada' : 'US / Ultrasonografi',
+                    'badge'       => $isUsg ? 'CR' : 'US',
+                    'badge_color' => '#38bdf8',
+                    'study'       => $isUsg ? 'Pemeriksaan Paru & Jantung PA' : 'Pemeriksaan USG Hepar & Abdomen Upper',
+                    'station'     => $isUsg ? 'FUJIFILM_FDR' : 'USG_MINDRAY_02',
+                    'matrix'      => $isUsg ? '2048 x 2048' : 'B-Mode 3.5MHz (1920x1080)',
+                    'image_path'  => $isUsg ? 'scan-assets/raw_toraks.jpg' : 'scan-assets/usg_sample.jpg',
+                    'has_image'   => true,
+                    'is_primary'  => false,
                 ];
+                $patientSeries = [$primarySeries, $secondarySeries];
             } else {
-                $patientSeries = [
-                    [
-                        'id'          => 'series-1',
-                        'name'        => $scan->modality ?: 'Thorax PA (CR)',
-                        'modality'    => 'CR / Rontgen Dada',
-                        'badge'       => 'CR',
+                // Periksa apakah pasien ini memiliki pemeriksaan seri lain yang sudah masuk
+                $relatedScans = MedicalScan::where('patient_id', $scan->patient_id)
+                    ->where('id', '!=', $scan->id)
+                    ->where('mcu_status', '!=', 'siap_rontgen')
+                    ->where(function($q) {
+                        $q->whereNotNull('preview_image_path')->orWhereNotNull('scan_image_path');
+                    })
+                    ->get();
+
+                $patientSeries = [$primarySeries];
+
+                foreach ($relatedScans as $rIdx => $rScan) {
+                    $rIsUsg = str_contains(strtoupper($rScan->modality), 'USG');
+                    $patientSeries[] = [
+                        'id'          => 'series-' . ($rIdx + 2),
+                        'name'        => $rScan->modality ?: 'Seri Tambahan',
+                        'modality'    => $rIsUsg ? 'US / Ultrasonografi' : 'CR / Rontgen Dada',
+                        'badge'       => $rIsUsg ? 'US' : 'CR',
                         'badge_color' => '#38bdf8',
-                        'study'       => $scan->study_description ?: 'Pemeriksaan Paru & Jantung PA',
-                        'station'     => $scan->station_name ?: 'FUJIFILM_FDR_01',
-                        'matrix'      => '2048 x 2048',
-                        'image_path'  => $scan->preview_image_path ?: 'scan-assets/raw_toraks.jpg',
-                        'has_image'   => true,
-                        'is_primary'  => true,
-                    ],
-                    [
-                        'id'          => 'series-2',
-                        'name'        => 'USG Abdomen',
-                        'modality'    => 'US / Ultrasonografi',
-                        'badge'       => 'US',
-                        'badge_color' => '#38bdf8',
-                        'study'       => 'Pemeriksaan USG Hepar & Abdomen Upper',
-                        'station'     => 'USG_MINDRAY_02',
-                        'matrix'      => 'B-Mode 3.5MHz (1920x1080)',
-                        'image_path'  => 'scan-assets/usg_sample.jpg',
+                        'study'       => $rScan->study_description ?: 'Pemeriksaan Lanjutan',
+                        'station'     => $rScan->station_name ?: 'STATION_01',
+                        'matrix'      => 'DICOM Series',
+                        'image_path'  => $rScan->preview_image_path ?: $rScan->scan_image_path,
                         'has_image'   => true,
                         'is_primary'  => false,
-                    ],
-                ];
+                    ];
+                }
             }
 
             $defaultVp2Series = $patientSeries[1] ?? $patientSeries[0];
