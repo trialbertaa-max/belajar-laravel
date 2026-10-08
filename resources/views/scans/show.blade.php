@@ -1573,21 +1573,6 @@
                     </div>
                 @endforeach
 
-                @if(isset($otherScans) && count($otherScans) > 0)
-                    <div style="margin-top: 0.6rem; padding-top: 0.5rem; border-top: 1px dashed #1e293b;">
-                        <div style="font-size: 0.68rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem; padding-left: 0.2rem;">
-                            PASIEN LAIN (HISTORIS MCU)
-                        </div>
-                        @foreach($otherScans as $os)
-                            <a href="{{ route('scans.show', $os->id) }}" style="text-decoration: none; display: block; margin-bottom: 0.35rem;">
-                                <div style="background: rgba(15, 23, 42, 0.7); border: 1px solid #1e293b; border-radius: 4px; padding: 0.35rem 0.45rem; font-size: 0.68rem; color: #94a3b8; transition: all 0.15s;">
-                                    <strong style="color: #e2e8f0; display: block;">{{ (!empty($os->patient_name) && $os->patient_name !== 'UNKNOWN') ? $os->patient_name : 'Pasien MCU CDC #' . str_pad($os->id, 4, '0', STR_PAD_LEFT) }}</strong>
-                                    <span>{{ ($os->modality && $os->modality !== '?') ? $os->modality : 'Thorax PA (CR)' }} &bull; {{ $os->patient_id ?: 'CDC-' . str_pad($os->id, 5, '0', STR_PAD_LEFT) }}</span>
-                                </div>
-                            </a>
-                        @endforeach
-                    </div>
-                @endif
             </div>
         </aside>
 

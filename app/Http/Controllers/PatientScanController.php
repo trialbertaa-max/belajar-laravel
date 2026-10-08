@@ -240,11 +240,8 @@ class PatientScanController extends Controller
             'modality_ae' => env('DICOM_MODALITY_SOURCE', 'FUJIFILM (CR) & MINDRAY (US)'),
         ];
 
-        // Daftar pasien historis lainnya untuk drawer navigasi cepat
-        $otherScans = MedicalScan::where('id', '!=', $id)->orderBy('created_at', 'desc')->take(10)->get();
-
         return view('scans.show', compact(
-            'scan', 'patientSeries', 'defaultVp2Series', 'otherScans', 'pacsConfig', 'hasExamined'
+            'scan', 'patientSeries', 'defaultVp2Series', 'pacsConfig', 'hasExamined'
         ));
     }
 
