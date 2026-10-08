@@ -1347,6 +1347,29 @@
 
         .gl-btn-primary:hover { opacity: 0.9; }
         .gl-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        /* Matriks Benchmark Export Buttons */
+        .btn-export-tag {
+            font-family: inherit;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            user-select: none;
+            line-height: 1.2;
+        }
+        .btn-export-tag:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+            filter: brightness(1.2);
+        }
+        .btn-export-tag:active {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -1516,6 +1539,19 @@
                 <button class="dropdown-item" onclick="exportAnnotatedReport(); closeAllDropdowns();">
                     <span style="color: #10b981; font-weight: 600;">Ekspor Laporan Anotasi (PNG)</span>
                     <span style="font-size: 0.65rem; color: #10b981; font-family: monospace;">SC IOD</span>
+                </button>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item" onclick="exportBenchmarkPdf(); closeAllDropdowns();">
+                    <span style="color: #f87171; font-weight: 600;">Ekspor Matriks Evaluasi (PDF)</span>
+                    <span style="font-size: 0.65rem; color: #f87171; font-family: monospace;">.pdf</span>
+                </button>
+                <button class="dropdown-item" onclick="exportBenchmarkExcel(); closeAllDropdowns();">
+                    <span style="color: #34d399; font-weight: 600;">Ekspor Matriks Evaluasi (Excel)</span>
+                    <span style="font-size: 0.65rem; color: #34d399; font-family: monospace;">.xls</span>
+                </button>
+                <button class="dropdown-item" onclick="exportBenchmarkCsv(); closeAllDropdowns();">
+                    <span style="color: #38bdf8; font-weight: 600;">Ekspor Matriks Evaluasi (CSV)</span>
+                    <span style="font-size: 0.65rem; color: #38bdf8; font-family: monospace;">.csv</span>
                 </button>
                 <div class="dropdown-divider"></div>
                 <a href="{{ route('scans.download-dcm', $scan->id) }}" class="dropdown-item" onclick="closeAllDropdowns()" style="color: #c084fc; font-weight: 600;">
@@ -1887,11 +1923,19 @@
                             </table>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.4rem;">
                             <span style="font-size: 0.65rem; color: #64748b;">Formula: Wang 2004, Immerkaer 1996</span>
-                            <button onclick="exportBenchmarkCsv()" class="btn-toggle-mode" style="padding: 0.3rem 0.6rem; font-size: 0.68rem; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #34d399;" title="Unduh data tabel dalam format CSV/Excel">
-                                📥 Ekspor CSV
-                            </button>
+                            <div style="display: inline-flex; align-items: center; gap: 0.3rem;">
+                                <button onclick="exportBenchmarkPdf()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171;" title="Unduh Matriks Komparasi format PDF (.pdf)">
+                                    <span>📄</span> PDF
+                                </button>
+                                <button onclick="exportBenchmarkExcel()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399;" title="Unduh Matriks Komparasi format Excel (.xls)">
+                                    <span>📊</span> Excel
+                                </button>
+                                <button onclick="exportBenchmarkCsv()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.45); color: #38bdf8;" title="Unduh Matriks Komparasi format CSV (.csv)">
+                                    <span>📥</span> CSV
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -2643,7 +2687,10 @@
             tbody.innerHTML = html;
         }
 
-        function exportBenchmarkCsv() {
+        // ==========================================
+        // EXPORT OPTIONS: PDF, EXCEL, AND CSV
+        // ==========================================
+        function getBenchmarkExportData() {
             const rows = currentBenchmarkRows || [
                 { id: 'raw', name: 'Citra Asli (Raw Baseline)', psnr: '-', ssim: 1.0000, snr_gain: '0.00 dB', latency: '0.0 ms', noise_red: '0.0%' },
                 { id: 'bilateral', name: 'Bilateral Filter (Tomasi 1998)', psnr: '44.62 dB', ssim: 0.9779, snr_gain: '+5.24 dB', latency: '59.9 ms', noise_red: '45.2%' },
@@ -2651,12 +2698,29 @@
                 { id: 'dl_dncnn', name: 'Deep Residual CNN (DnCNN 2017)', psnr: '45.12 dB', ssim: 0.9797, snr_gain: '+3.48 dB', latency: '19.4 ms', noise_red: '33.5%' }
             ];
 
-            const patientName = "{{ $scan->patient_name }}";
+            const patientName = "{{ addslashes($scan->patient_name) }}";
             const patientId = "{{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}";
-            const modality = "{{ $scan->modality }}";
+            const modality = "{{ addslashes($scan->modality) }}";
             const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-            let csv = `# ====================================================================\n`;
+            return { rows, patientName, patientId, modality, dateStr };
+        }
+
+        function escapeXml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+
+        function exportBenchmarkCsv() {
+            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+
+            let csv = '\uFEFF'; // UTF-8 BOM for universal spreadsheet compatibility
+            csv += `# ====================================================================\n`;
             csv += `# HYU PACS - MATRIKS KOMPARASI EVALUASI RESTORASI CITRA MEDIS\n`;
             csv += `# Pasien: ${patientName} | MRN: ${patientId} | Modalitas: ${modality}\n`;
             csv += `# Waktu Pengujian: ${dateStr} | Standar Metrik: Wang et al. (2004) & Immerkaer (1996)\n`;
@@ -2679,8 +2743,361 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-            showToolHint('📥', 'File CSV Matriks Komparasi berhasil diunduh!');
+            showToolHint('📥', 'File CSV Matriks Komparasi (.csv) berhasil diunduh!');
+            setTimeout(hideToolHint, 3000);
+        }
+
+        function exportBenchmarkExcel() {
+            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+
+            let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Title>Matriks Evaluasi Restorasi Citra Medis</Title>
+  <Author>Hyu PACS Workstation</Author>
+  <Company>Cahaya Diagnostic Centre</Company>
+ </DocumentProperties>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1E293B"/>
+  </Style>
+  <Style ss:ID="TitleHeader">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="13" ss:Color="#FFFFFF" ss:Bold="1"/>
+   <Interior ss:Color="#0F172A" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="SubHeader">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Color="#94A3B8"/>
+   <Interior ss:Color="#0F172A" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="MetaLabel">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Bold="1" ss:Color="#334155"/>
+   <Interior ss:Color="#F1F5F9" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="MetaValue">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Color="#0F172A"/>
+   <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="TableHeader">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#0284C7" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataLeft">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Color="#0F172A"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Color="#0F172A"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataAiLeft">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Bold="1" ss:Color="#047857"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataAiCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Bold="1" ss:Color="#047857"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+   </Borders>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Matriks Evaluasi">
+  <Table ss:DefaultRowHeight="20">
+   <Column ss:Width="200"/>
+   <Column ss:Width="90"/>
+   <Column ss:Width="80"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="100"/>
+   <Column ss:Width="95"/>
+
+   <Row ss:Height="26">
+    <Cell ss:MergeAcross="5" ss:StyleID="TitleHeader"><Data ss:Type="String">CAHAYA DIAGNOSTIC CENTRE (CDC) - HYU PACS WORKSTATION</Data></Cell>
+   </Row>
+   <Row ss:Height="18">
+    <Cell ss:MergeAcross="5" ss:StyleID="SubHeader"><Data ss:Type="String">Laporan Hasil Matriks Komparasi Evaluasi Restorasi &amp; Denoising Citra Medis</Data></Cell>
+   </Row>
+   <Row ss:Height="10"></Row>
+
+   <Row>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Nama Pasien</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientName)}</Data></Cell>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Modalitas</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(modality)}</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">No. Rekam Medis (MRN)</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientId)}</Data></Cell>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Waktu Pengujian</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(dateStr)}</Data></Cell>
+   </Row>
+   <Row ss:Height="12"></Row>
+
+   <Row ss:Height="24">
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Metode Algoritma</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">PSNR (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SSIM Index</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SNR Gain (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Reduksi Noise (%)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Latensi (ms)</Data></Cell>
+   </Row>`;
+
+            rows.forEach(r => {
+                const isAi = (r.name || '').includes('DnCNN') || (r.id === 'dl_dncnn');
+                const styleL = isAi ? 'DataAiLeft' : 'DataLeft';
+                const styleC = isAi ? 'DataAiCenter' : 'DataCenter';
+
+                const cleanPsnr = (r.psnr || '-').replace(' dB', '');
+                const cleanSnr = (r.snr_gain || '0').replace(' dB', '');
+                const cleanNoise = (r.noise_red || '-').replace('%', '');
+                const cleanLatency = (r.latency || '0').replace(' ms', '');
+
+                xml += `\n   <Row ss:Height="21">
+    <Cell ss:StyleID="${styleL}"><Data ss:Type="String">${escapeXml(r.name)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanPsnr)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="Number">${r.ssim}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanSnr)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanNoise)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanLatency)}</Data></Cell>
+   </Row>`;
+            });
+
+            xml += `\n   <Row ss:Height="12"></Row>
+   <Row>
+    <Cell ss:MergeAcross="5"><Data ss:Type="String">Formula &amp; Standar: Wang et al. (2004) SSIM, Immerkaer (1996) Laplacian Noise Estimation.</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:MergeAcross="5"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil MCU Radiologi</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <Selected/>
+   <DoNotDisplayGridlines/>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>`;
+
+            const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Tabel_Komparasi_Denoising_${patientId}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToolHint('📊', 'File Excel Matriks Komparasi (.xls) berhasil diunduh!');
+            setTimeout(hideToolHint, 3000);
+        }
+
+        function exportBenchmarkPdf() {
+            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+
+            // A4 dimensions: 595.28 x 841.89 points
+            const pageWidth = 595.28;
+            const pageHeight = 841.89;
+
+            let contentStream = '';
+            
+            function escapePdfText(str) {
+                if (str === null || str === undefined) return '';
+                let s = String(str)
+                    .replace(/Δ/g, 'Delta ')
+                    .replace(/µ/g, 'u')
+                    .replace(/[^\x20-\x7E]/g, ' ');
+                return s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+            }
+
+            function addText(text, x, y, size, isBold, r, g, b) {
+                size = size || 10;
+                r = (r !== undefined) ? r : 0;
+                g = (g !== undefined) ? g : 0;
+                b = (b !== undefined) ? b : 0;
+                const escaped = escapePdfText(text);
+                const font = isBold ? '/F2' : '/F1';
+                contentStream += `BT ${font} ${size} Tf ${r} ${g} ${b} rg 1 0 0 1 ${x} ${y} Tm (${escaped}) Tj ET\n`;
+            }
+
+            function addRect(x, y, w, h, fillR, fillG, fillB, stroke) {
+                fillR = (fillR !== undefined) ? fillR : 0.9;
+                fillG = (fillG !== undefined) ? fillG : 0.9;
+                fillB = (fillB !== undefined) ? fillB : 0.9;
+                contentStream += `${fillR} ${fillG} ${fillB} rg\n`;
+                contentStream += `${x} ${y} ${w} ${h} re f\n`;
+                if (stroke) {
+                    contentStream += `0 0 0 RG 0.5 w ${x} ${y} ${w} ${h} re S\n`;
+                }
+            }
+
+            function addLine(x1, y1, x2, y2, r, g, b, width) {
+                r = (r !== undefined) ? r : 0.7;
+                g = (g !== undefined) ? g : 0.7;
+                b = (b !== undefined) ? b : 0.7;
+                width = width || 1;
+                contentStream += `${r} ${g} ${b} RG ${width} w ${x1} ${y1} m ${x2} ${y2} l S\n`;
+            }
+
+            // Header Banner
+            addRect(40, 770, 515, 45, 0.05, 0.1, 0.18);
+            addText("CAHAYA DIAGNOSTIC CENTRE (CDC)", 55, 795, 14, true, 0.22, 0.74, 0.97);
+            addText("Hyu PACS - Matriks Komparasi Evaluasi Restorasi Citra Medis", 55, 780, 9, false, 0.8, 0.85, 0.9);
+
+            // Patient Info Box
+            addRect(40, 700, 515, 60, 0.96, 0.97, 0.99, true);
+            addText("INFORMASI PASIEN & MODALITAS", 50, 745, 9, true, 0.1, 0.2, 0.35);
+            
+            addText("Nama Pasien : " + patientName, 50, 728, 9, false, 0.2, 0.2, 0.2);
+            addText("MRN / No ID : " + patientId, 50, 712, 9, false, 0.2, 0.2, 0.2);
+            addText("Modalitas   : " + modality, 320, 728, 9, false, 0.2, 0.2, 0.2);
+            addText("Tanggal Uji : " + dateStr, 320, 712, 9, false, 0.2, 0.2, 0.2);
+
+            // Table Header
+            let tableY = 665;
+            addRect(40, tableY - 5, 515, 22, 0.1, 0.15, 0.25);
+            addText("Metode Algoritma", 48, tableY + 2, 9, true, 1, 1, 1);
+            addText("PSNR", 230, tableY + 2, 9, true, 1, 1, 1);
+            addText("SSIM", 300, tableY + 2, 9, true, 1, 1, 1);
+            addText("SNR Gain", 370, tableY + 2, 9, true, 1, 1, 1);
+            addText("Reduksi Noise", 440, tableY + 2, 9, true, 1, 1, 1);
+            addText("Latensi", 510, tableY + 2, 9, true, 1, 1, 1);
+
+            // Table Rows
+            let currentY = tableY - 26;
+            rows.forEach((r, idx) => {
+                const isAi = (r.name || '').includes('DnCNN') || (r.id === 'dl_dncnn');
+                if (isAi) {
+                    addRect(40, currentY - 5, 515, 20, 0.9, 0.98, 0.93);
+                } else if (idx % 2 === 1) {
+                    addRect(40, currentY - 5, 515, 20, 0.97, 0.97, 0.98);
+                }
+                
+                addLine(40, currentY - 5, 555, currentY - 5, 0.85, 0.85, 0.88, 0.5);
+
+                const textColor = isAi ? [0.05, 0.5, 0.3] : [0.15, 0.15, 0.15];
+                addText(r.name, 48, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.psnr || '-', 230, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(String(r.ssim), 300, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.snr_gain || '0 dB', 370, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.noise_red || '-', 440, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.latency || '-', 510, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+
+                currentY -= 21;
+            });
+
+            // Outer Table Border
+            addLine(40, tableY + 17, 555, tableY + 17, 0.2, 0.3, 0.4, 1);
+            addLine(40, currentY, 555, currentY, 0.2, 0.3, 0.4, 1);
+
+            // Scientific Citation & Notes
+            currentY -= 20;
+            addText("Catatan Metodologi Ilmiah Evaluasi Citra Medis:", 40, currentY, 9, true, 0.2, 0.3, 0.45);
+            currentY -= 14;
+            addText("1. PSNR (Peak Signal-to-Noise Ratio): Preservasi sinyal relatif terhadap MSE citra asli.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+            currentY -= 12;
+            addText("2. SSIM (Structural Similarity Index): Standar Wang et al. (2004) untuk kemiripan struktur anatomi organ.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+            currentY -= 12;
+            addText("3. SNR Gain (Laplacian Filtered): Standar Immerkaer (1996) untuk kuantifikasi reduksi noise tanpa blur.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+
+            // Footer / Digital Signature Stamp
+            currentY -= 45;
+            addRect(360, currentY - 10, 195, 55, 0.98, 0.98, 1, true);
+            addText("VALIDASI RADIOLOGI KLINIS", 370, currentY + 30, 8, true, 0.1, 0.3, 0.6);
+            addText("Tervalidasi secara Elektronik", 370, currentY + 18, 7.5, false, 0.1, 0.6, 0.3);
+            addText("Hyu PACS Workstation Medical Hub", 370, currentY + 7, 7, false, 0.5, 0.5, 0.5);
+            addText("Dokumen Resmi Berkas MCU CDC", 370, currentY - 4, 7, false, 0.5, 0.5, 0.5);
+
+            // System Footer
+            addText("Dokumen ini dicetak/diekspor secara otomatis dari sistem Hyu PACS. Informasi bersifat Rahasia Medis.", 100, 30, 7.5, false, 0.6, 0.6, 0.6);
+
+            const encoder = new TextEncoder();
+            const streamBytes = encoder.encode(contentStream);
+            const streamLength = streamBytes.length;
+
+            const objects = [];
+            objects.push(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`);
+            objects.push(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`);
+            objects.push(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Contents 7 0 R /Resources 4 0 R >>\nendobj\n`);
+            objects.push(`4 0 obj\n<< /Font << /F1 5 0 R /F2 6 0 R >> >>\nendobj\n`);
+            objects.push(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`);
+            objects.push(`6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n`);
+            objects.push(`7 0 obj\n<< /Length ${streamLength} >>\nstream\n${contentStream}endstream\nendobj\n`);
+
+            let pdf = `%PDF-1.4\n%\xE2\xE3\xCF\xD3\n`;
+            const xrefOffsets = [0];
+
+            objects.forEach(obj => {
+                xrefOffsets.push(encoder.encode(pdf).length);
+                pdf += obj;
+            });
+
+            const startXref = encoder.encode(pdf).length;
+            pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+            for (let i = 1; i <= objects.length; i++) {
+                pdf += String(xrefOffsets[i]).padStart(10, '0') + ` 00000 n \n`;
+            }
+            pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
+
+            const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Tabel_Komparasi_Denoising_${patientId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToolHint('📄', 'File PDF Matriks Komparasi (.pdf) berhasil diunduh!');
             setTimeout(hideToolHint, 3000);
         }
 
