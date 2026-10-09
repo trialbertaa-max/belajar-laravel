@@ -579,12 +579,13 @@
         .annotation-quick-delete-badge {
             cursor: pointer;
             pointer-events: all;
-            transition: transform 0.15s cubic-bezier(0.34, 1.56, 0.64, 1);
+            user-select: none;
+            -webkit-user-select: none;
         }
 
-        .annotation-quick-delete-badge:hover rect {
+        .annotation-quick-delete-badge:hover .quick-delete-bg {
             fill: #dc2626 !important;
-            filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.9)) !important;
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.95)) !important;
         }
 
         .annotation-quick-delete-badge:hover text {
@@ -3502,6 +3503,7 @@
         }
 
         function selectMeasurement(vpId, idx) {
+            selectViewport(vpId);
             if (selectedAnnotation && selectedAnnotation.vpId === vpId && selectedAnnotation.index === idx) {
                 return;
             }
@@ -3544,10 +3546,10 @@
                     html += `
                         <g id="circle-group-${vpId}-${idx}">
                             <!-- Invisible Wide Hit-Test Circle Area -->
-                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
 
                             <!-- True Circle Body (1:1 Locked) -->
-                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
                             
                             <!-- Crosshair Axes -->
                             <line x1="${m.cx - m.r}" y1="${m.cy}" x2="${m.cx + m.r}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
@@ -3564,7 +3566,7 @@
                             <circle cx="${m.cx}" cy="${m.cy + m.r}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
                             
                             <!-- Compact Rim Badge (Anti-Occlusion) -->
-                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-65" y="-11" width="130" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
                                 <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: &Oslash; ${m.diamCm} cm &bull; ${m.areaCm2} cm²
@@ -3573,9 +3575,10 @@
 
                             <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
                             ${isSelected ? `
-                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
-                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
-                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
                                 </g>
                             ` : ''}
                         </g>
@@ -3586,10 +3589,10 @@
                     html += `
                         <g id="ellipse-group-${vpId}-${idx}">
                             <!-- Invisible Wide Hit-Test Ellipse Area -->
-                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx + 8}" ry="${m.ry + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx + 8}" ry="${m.ry + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
 
                             <!-- Ellipse Body -->
-                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx}" ry="${m.ry}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx}" ry="${m.ry}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
                             
                             <!-- Orthogonal Diameter Lines (Major & Minor Axis) -->
                             <line x1="${m.cx - m.rx}" y1="${m.cy}" x2="${m.cx + m.rx}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
@@ -3606,7 +3609,7 @@
                             <circle cx="${m.cx}" cy="${m.cy + m.ry}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
                             
                             <!-- Compact Rim Badge (Anti-Occlusion) -->
-                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-70" y="-11" width="140" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
                                 <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: ${m.d1Cm}&times;${m.d2Cm} &bull; ${m.areaCm2} cm²
@@ -3615,9 +3618,10 @@
 
                             <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
                             ${isSelected ? `
-                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
-                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
-                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
                                 </g>
                             ` : ''}
                         </g>
@@ -3628,10 +3632,10 @@
                     html += `
                         <g id="roi-group-${vpId}-${idx}">
                             <!-- Polygon Body with Hit Handler -->
-                            <polygon points="${ptsString}" fill="rgba(250, 204, 21, ${isSelected ? '0.32' : '0.2'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-linejoin="round" ${glowFilter} class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <polygon points="${ptsString}" fill="rgba(250, 204, 21, ${isSelected ? '0.32' : '0.2'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-linejoin="round" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
                             ${m.points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />`).join('')}
                             
-                            <g transform="translate(${m.cx}, ${m.cy})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${m.cx}, ${m.cy})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-55" y="-11" width="110" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
                                 <text x="0" y="3" fill="${strokeColor}" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: ${m.areaCm2} cm²
@@ -3640,9 +3644,10 @@
 
                             <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
                             ${isSelected ? `
-                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
-                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
-                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
                                 </g>
                             ` : ''}
                         </g>
@@ -3662,14 +3667,14 @@
                     html += `
                         <g id="ctr-group-${vpId}-${idx}">
                             <!-- Invisible Hit Test Lines -->
-                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
-                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
 
                             <!-- Heart Line (Transversal Cor) -->
                             <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="#f43f5e" stroke-width="${isSelected ? '3.2' : '2.5'}" ${glowFilter} />
                             <circle cx="${h.x1}" cy="${h.y1}" r="4.5" fill="#f43f5e" stroke="#000" />
                             <circle cx="${h.x2}" cy="${h.y2}" r="4.5" fill="#f43f5e" stroke="#000" />
-                            <g transform="translate(${midHX}, ${midHY - 11})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${midHX}, ${midHY - 11})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#f43f5e" stroke-width="1" />
                                 <text x="0" y="4" fill="#f43f5e" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     Jantung: ${h.distCm} cm
@@ -3680,7 +3685,7 @@
                             <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="#facc15" stroke-width="${isSelected ? '3.2' : '2.5'}" stroke-dasharray="4,4" ${glowFilter} />
                             <circle cx="${t.x1}" cy="${t.y1}" r="4.5" fill="#facc15" stroke="#000" />
                             <circle cx="${t.x2}" cy="${t.y2}" r="4.5" fill="#facc15" stroke="#000" />
-                            <g transform="translate(${midTX}, ${midTY - 11})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${midTX}, ${midTY - 11})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#facc15" stroke-width="1" />
                                 <text x="0" y="4" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     Toraks: ${t.distCm} cm
@@ -3688,7 +3693,7 @@
                             </g>
 
                             <!-- Center Overall CTR Badge -->
-                            <g transform="translate(${centerCtrX}, ${centerCtrY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${centerCtrX}, ${centerCtrY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-85" y="-13" width="170" height="26" rx="13" fill="rgba(15, 23, 42, 0.95)" stroke="${isSelected ? '#38bdf8' : badgeColor}" stroke-width="${isSelected ? '2.5' : '1.5'}" ${glowFilter} />
                                 <text x="0" y="3" fill="${badgeColor}" font-size="11" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     CTR: ${m.ratio}% (${m.verdict})
@@ -3697,9 +3702,10 @@
 
                             <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
                             ${isSelected ? `
-                                <g class="annotation-quick-delete-badge" transform="translate(${centerCtrX}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
-                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
-                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                <g class="annotation-quick-delete-badge" transform="translate(${centerCtrX}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
                                 </g>
                             ` : ''}
                         </g>
@@ -3712,7 +3718,7 @@
                     html += `
                         <g id="caliper-group-${vpId}-${idx}">
                             <!-- Invisible Wide Hit-Test Line (Easy to Click) -->
-                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
 
                             <!-- Visible Caliper Line -->
                             <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} />
@@ -3720,7 +3726,7 @@
                             <circle cx="${m.x2}" cy="${m.y2}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />
                             
                             <!-- Midpoint Measurement Badge -->
-                            <g transform="translate(${midX}, ${midY})" class="measurement-interactive-item" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                            <g transform="translate(${midX}, ${midY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
                                 <rect x="-44" y="-10" width="88" height="20" rx="10" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
                                 <text x="0" y="4" fill="${strokeColor}" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
                                     ${m.label}: ${m.distCm} cm
@@ -3729,9 +3735,10 @@
 
                             <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
                             ${isSelected ? `
-                                <g class="annotation-quick-delete-badge" transform="translate(${midX}, ${deleteBtnY})" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
-                                    <rect x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
-                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle">🗑️ Hapus</text>
+                                <g class="annotation-quick-delete-badge" transform="translate(${midX}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
                                 </g>
                             ` : ''}
                         </g>
@@ -4151,8 +4158,13 @@
             setTimeout(hideToolHint, 3000);
         }
 
+        let isDeletingMeasurement = false;
         function deleteSingleMeasurement(vpId, index) {
+            if (isDeletingMeasurement) return;
             if (!measurements[vpId] || !measurements[vpId][index]) return;
+            isDeletingMeasurement = true;
+            setTimeout(() => { isDeletingMeasurement = false; }, 200);
+
             pushMeasurementHistory(vpId);
             const itemLabel = measurements[vpId][index].label || 'Pengukuran';
             measurements[vpId].splice(index, 1);
@@ -4302,6 +4314,20 @@
             const cell = (vpId === 1) ? vp1 : vp2;
             const targetSvg = (vpId === 1) ? svgMeasure1 : svgMeasure2;
             if (!cell || !targetSvg) return;
+
+            // Prevent interaction conflicts when interacting with quick delete badge or existing measurements
+            const targetEl = e.target;
+            if (targetEl && typeof targetEl.closest === 'function') {
+                if (targetEl.closest('.annotation-quick-delete-badge')) {
+                    // Do NOT intercept or deselect; allow quick delete badge handlers to process cleanly
+                    return;
+                }
+                if (targetEl.closest('.measurement-interactive-item') || targetEl.closest('.measurement-shape-hit')) {
+                    // Do NOT start drawing or panning; allow selection handler to process
+                    selectViewport(vpId);
+                    return;
+                }
+            }
 
             // Multi-touch Pinch to Zoom
             if (e.touches && e.touches.length === 2) {
