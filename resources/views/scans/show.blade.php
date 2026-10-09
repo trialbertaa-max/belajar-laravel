@@ -1491,29 +1491,6 @@
 
         .gl-btn-primary:hover { opacity: 0.9; }
         .gl-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
-
-        /* Matriks Benchmark Export Buttons */
-        .btn-export-tag {
-            font-family: inherit;
-            border-radius: 4px;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.25rem;
-            transition: all 0.15s ease;
-            text-decoration: none;
-            user-select: none;
-            line-height: 1.2;
-        }
-        .btn-export-tag:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
-            filter: brightness(1.2);
-        }
-        .btn-export-tag:active {
-            transform: translateY(0);
-        }
     </style>
 </head>
 <body>
@@ -2086,19 +2063,8 @@
                             </table>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem; flex-wrap: wrap; gap: 0.4rem;">
+                        <div style="margin-top: 0.75rem;">
                             <span style="font-size: 0.65rem; color: #64748b;">Formula: Wang 2004, Immerkaer 1996</span>
-                            <div style="display: inline-flex; align-items: center; gap: 0.3rem;">
-                                <button onclick="exportBenchmarkPdf()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171;" title="Unduh Matriks Komparasi format PDF (.pdf)">
-                                    <span>📄</span> PDF
-                                </button>
-                                <button onclick="exportBenchmarkExcel()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399;" title="Unduh Matriks Komparasi format Excel (.xls)">
-                                    <span>📊</span> Excel
-                                </button>
-                                <button onclick="exportBenchmarkCsv()" class="btn-export-tag" style="padding: 0.28rem 0.55rem; font-size: 0.68rem; background: rgba(2, 132, 199, 0.15); border: 1px solid rgba(56, 189, 248, 0.45); color: #38bdf8;" title="Unduh Matriks Komparasi format CSV (.csv)">
-                                    <span>📥</span> CSV
-                                </button>
-                            </div>
                         </div>
                     </div>
 
@@ -2950,9 +2916,9 @@
         function exportBenchmarkExcel() {
             const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
 
-            let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+            let xml = '<' + '?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<' + '?mso-application progid="Excel.Sheet"?>\n' +
+                `<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:o="urn:schemas-microsoft-com:office:office"
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
