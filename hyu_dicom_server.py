@@ -13,7 +13,7 @@ import sqlite3
 import numpy as np
 import pydicom
 from pydicom.dataset import Dataset
-from pydicom.uid import ExplicitVRLittleEndian, ImplicitVRLittleEndian, DeflatedExplicitVRLittleEndian
+from pydicom.uid import ExplicitVRLittleEndian, ImplicitVRLittleEndian, DeflatedExplicitVRLittleEndian, generate_uid
 
 import cv2
 from pynetdicom import (
@@ -25,6 +25,8 @@ from pynetdicom import (
 from pynetdicom.sop_class import (
     Verification,
     ModalityWorklistInformationFind,
+    PatientRootQueryRetrieveInformationModelFind,
+    StudyRootQueryRetrieveInformationModelFind,
     ComputedRadiographyImageStorage,
     DigitalXRayImageStorageForPresentation,
     DigitalXRayImageStorageForProcessing,
@@ -186,33 +188,87 @@ def handle_echo(event):
 
 def handle_find(event):
     """
-    Menanggapi kueri Modality Worklist (C-FIND) dari konsol Fujifilm.
+    Menanggapi kueri Modality Worklist (C-FIND) dari konsol Modality (DROC / Fujifilm, dll.)
     Mengirimkan daftar antrian pasien yang siap diperiksa di ruang rontgen.
     """
-    model = event.model
-    identifier = event.identifier
-    requestor_ae = event.assoc.requestor.ae_title
-    print(f"[HYU PACS] [WORKLIST] Worklist Query (C-FIND) diterima dari: {requestor_ae}")
-
     try:
+        requestor_ae = getattr(event.assoc.requestor, 'ae_title', 'UNKNOWN')
+        requestor_ip = getattr(event.assoc.requestor, 'address', '0.0.0.0')
+        print(f"\n[HYU PACS] [WORKLIST] >>> Kueri Worklist (C-FIND) diterima dari: {requestor_ae} ({requestor_ip})")
+
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM medical_scans WHERE mcu_status = 'siap_rontgen' ORDER BY id ASC")
         patients = cursor.fetchall()
         conn.close()
 
+        count = 0
+        now_dt = datetime.datetime.now()
+        today_str = now_dt.strftime("%Y%m%d")
+        time_str = now_dt.strftime("%H%M%S")
+
+        # Cek apakah DROC meminta tanggal spesifik di ScheduledProcedureStepSequence
+        query_date = today_str
+        try:
+            if hasattr(event, 'identifier') and event.identifier:
+                if 'ScheduledProcedureStepSequence' in event.identifier and len(event.identifier.ScheduledProcedureStepSequence) > 0:
+                    sps_req = event.identifier.ScheduledProcedureStepSequence[0]
+                    if hasattr(sps_req, 'ScheduledProcedureStepStartDate') and sps_req.ScheduledProcedureStepStartDate:
+                        query_date = str(sps_req.ScheduledProcedureStepStartDate)
+                        print(f"[HYU PACS] [WORKLIST] DROC memfilter tanggal: {query_date}")
+        except Exception:
+            pass
+
         for p in patients:
-            # Buat dataset respon DICOM Worklist
+            count += 1
+            # Buat dataset respon DICOM Worklist standar NEMA PS 3.4 Annex K
             res = Dataset()
+            res.SpecificCharacterSet = "ISO_IR 100"
             res.PatientName = p['patient_name'] or "Pasien MCU"
             res.PatientID = p['patient_id'] or f"CDC-{p['id']:04d}"
-            res.AccessionNumber = p['accession_number'] or f"ACC-{p['id']:04d}"
-            res.Modality = p['modality'] or "DX"
-            res.RequestedProcedureDescription = p['study_description'] or "Thorax PA"
-            res.ScheduledStationAETitle = requestor_ae
-            res.ScheduledProcedureStepStatus = "SCHEDULED"
+            
+            # Format tanggal lahir (YYYYMMDD)
+            if p['birth_date']:
+                res.PatientBirthDate = str(p['birth_date']).replace('-', '')
+            else:
+                res.PatientBirthDate = ""
 
+            gender = (p['gender'] or 'O').upper()[:1]
+            res.PatientSex = gender if gender in ['M', 'F'] else 'O'
+
+            # Sanitasi nilai Modality ke kode standar DICOM (DX / CR) agar filter alat rontgen cocok
+            raw_mod = (p['modality'] or 'DX').strip().upper()
+            if raw_mod in ['CR', 'DX', 'CT', 'MR', 'US', 'XA', 'MG', 'RG']:
+                clean_modality = raw_mod
+            else:
+                clean_modality = 'DX'
+
+            procedure_desc = p['study_description'] or p['modality'] or "Thorax PA"
+
+            res.AccessionNumber = p['accession_number'] or f"ACC-{p['id']:04d}"
+            res.StudyInstanceUID = p['study_instance_uid'] or generate_uid()
+            res.RequestedProcedureID = f"RP-{p['id']:04d}"
+            res.RequestedProcedureDescription = procedure_desc
+            res.Modality = clean_modality
+
+            # Scheduled Procedure Step Sequence (Wajib untuk konsol DROC / Fuji)
+            sps_item = Dataset()
+            sps_item.ScheduledStationAETitle = requestor_ae
+            sps_item.ScheduledProcedureStepStartDate = query_date
+            sps_item.ScheduledProcedureStepStartTime = time_str
+            sps_item.Modality = clean_modality
+            sps_item.ScheduledPerformingPhysicianName = p['doctor_name'] or "Dokter Radiologi"
+            sps_item.ScheduledProcedureStepDescription = procedure_desc
+            sps_item.ScheduledProcedureStepID = f"SPS-{p['id']:04d}"
+            sps_item.ScheduledStationName = p['station_name'] or "DROC"
+            sps_item.ScheduledProcedureStepStatus = "SCHEDULED"
+
+            res.ScheduledProcedureStepSequence = [sps_item]
+
+            print(f"[HYU PACS] [WORKLIST] -> Kirim antrian #{p['id']}: {res.PatientName} (ID: {res.PatientID}, Modality: {clean_modality}, Ket: {procedure_desc})")
             yield 0xFF00, res
+
+        print(f"[HYU PACS] [WORKLIST] Selesai mengirim total {count} pasien ke {requestor_ae}.\n")
 
     except Exception as e:
         print(f"[HYU PACS WORKLIST ERROR] {e}")
@@ -229,6 +285,8 @@ def start_server(host="0.0.0.0", port=4242, ae_title="HYU_PACS"):
     ae.supported_contexts = AllStoragePresentationContexts
     ae.add_supported_context(Verification)
     ae.add_supported_context(ModalityWorklistInformationFind)
+    ae.add_supported_context(PatientRootQueryRetrieveInformationModelFind)
+    ae.add_supported_context(StudyRootQueryRetrieveInformationModelFind)
 
     handlers = [
         (evt.EVT_C_STORE, handle_store),
@@ -241,7 +299,7 @@ def start_server(host="0.0.0.0", port=4242, ae_title="HYU_PACS"):
     print(f" * Server AE Title : {ae_title}")
     print(f" * IP Address      : {host}")
     print(f" * Port Listener   : {port}")
-    print(f" * Modalitas Target: Fujifilm FDR/FDL, CR, DX, Ultrasound")
+    print(f" * Modalitas Target: DROC, Fujifilm FDR/FDL, CR, DX, Ultrasound")
     print(f" * Status Database : Terhubung ke {DB_PATH}")
     print("=" * 70)
     print("[HYU PACS] Menunggu koneksi pengiriman citra dari alat medis...")

@@ -345,7 +345,7 @@ class PatientScanController extends Controller
             $cleanRelPath = null;
         }
 
-        $pythonBinary = env('PYTHON_BINARY', 'C:\\Python310\\python.exe');
+        $pythonBinary = $this->getPythonBinary();
         $scriptPath   = base_path('test_dicom.py');
 
         // Tentukan path DICOM file atau image file pasien
@@ -379,7 +379,7 @@ class PatientScanController extends Controller
             'SystemRoot'     => getenv('SystemRoot') ?: 'C:\\Windows',
             'SYSTEMROOT'     => getenv('SYSTEMROOT') ?: 'C:\\Windows',
             'WINDIR'         => getenv('WINDIR') ?: 'C:\\Windows',
-            'PATH'           => getenv('PATH') ?: 'C:\\Python310;C:\\Windows\\system32;C:\\Windows',
+            'PATH'           => getenv('PATH') ?: 'C:\\Windows\\system32;C:\\Windows',
             'TEMP'           => getenv('TEMP') ?: 'C:\\Windows\\Temp',
             'TMP'            => getenv('TMP') ?: 'C:\\Windows\\Temp',
             'PYTHONHASHSEED' => '0',
@@ -448,7 +448,7 @@ class PatientScanController extends Controller
             $cleanRelPath = null;
         }
 
-        $pythonBinary = env('PYTHON_BINARY', 'C:\\Python310\\python.exe');
+        $pythonBinary = $this->getPythonBinary();
         $scriptPath   = base_path('test_dicom.py');
 
         $dicomPath = base_path('sample_toraks.dcm');
@@ -470,7 +470,7 @@ class PatientScanController extends Controller
             'SystemRoot'     => getenv('SystemRoot') ?: 'C:\\Windows',
             'SYSTEMROOT'     => getenv('SYSTEMROOT') ?: 'C:\\Windows',
             'WINDIR'         => getenv('WINDIR') ?: 'C:\\Windows',
-            'PATH'           => getenv('PATH') ?: 'C:\\Python310;C:\\Windows\\system32;C:\\Windows',
+            'PATH'           => getenv('PATH') ?: 'C:\\Windows\\system32;C:\\Windows',
             'TEMP'           => getenv('TEMP') ?: 'C:\\Windows\\Temp',
             'TMP'            => getenv('TMP') ?: 'C:\\Windows\\Temp',
             'PYTHONHASHSEED' => '0',
@@ -500,24 +500,34 @@ class PatientScanController extends Controller
 
 
     /**
+     * Dapatkan path executable Python yang tersedia di sistem
+     */
+    private function getPythonBinary(): string
+    {
+        $candidates = [
+            env('PYTHON_BINARY'),
+            'C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
+            'C:\\laragon\\bin\\python\\python-3.13\\python.exe',
+            'C:\\Python310\\python.exe',
+            'py',
+            'python'
+        ];
+
+        foreach ($candidates as $cand) {
+            if ($cand && (file_exists($cand) || in_array($cand, ['py', 'python']))) {
+                return $cand;
+            }
+        }
+
+        return 'py';
+    }
+
+    /**
      * Memicu Simulasi Transmisi DICOM C-STORE dari Mesin Fujifilm ke Hyu PACS
      */
     public function simulateFuji(Request $request)
     {
-        $pythonBinary = null;
-        $candidates = [
-            env('PYTHON_BINARY'),
-            'C:\\laragon\\bin\\python\\python-3.13\\python.exe',
-            'C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
-            'C:\\Python310\\python.exe',
-            'python'
-        ];
-        foreach ($candidates as $cand) {
-            if ($cand && (file_exists($cand) || $cand === 'python')) {
-                $pythonBinary = $cand;
-                break;
-            }
-        }
+        $pythonBinary = $this->getPythonBinary();
 
         $scriptPath = base_path('test_fujifilm_sender.py');
         $dcmFile    = base_path('sample_toraks.dcm');
