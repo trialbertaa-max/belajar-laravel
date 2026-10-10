@@ -699,13 +699,9 @@
                                         🔍 Viewer
                                     </a>
                                 @endif
-                                <form action="{{ route('scans.destroy', $scan->id) }}" method="POST" onsubmit="return confirm('Hapus data pemeriksaan ini?')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.78rem; color: #ef4444;" title="Hapus Order">
-                                        🗑️
-                                    </button>
-                                </form>
+                                <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.78rem; color: #ef4444;" title="Hapus Order" onclick="openDeleteModal('{{ route('scans.destroy', $scan->id) }}', '{{ addslashes($scan->patient_name) }}', '{{ addslashes($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)) }}', '{{ addslashes($scan->accession_number ?: '-') }}')">
+                                    🗑️
+                                </button>
                             </div>
                         </td>
                     </tr>
@@ -926,6 +922,63 @@
     </div>
 </div>
 
+<!-- MODAL: KONFIRMASI HAPUS PEMERIKSAAN -->
+<div id="modalConfirmDelete" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 35px rgba(239, 68, 68, 0.2);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.25rem;">⚠️</span>
+                <span style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; color: #f87171;">
+                    KONFIRMASI HAPUS DATA PEMERIKSAAN
+                </span>
+            </div>
+            <button class="btn-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+
+        <div style="padding-top: 0.5rem;">
+            <!-- Warning Badge -->
+            <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171;">
+                <span>●</span>
+                <span>TINDAKAN PERMANEN</span>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1rem;">
+                Apakah Anda yakin ingin menghapus data pemeriksaan pasien ini? Rekam sesi, arsip citra DICOM, dan hasil ekspertise terkait akan dihapus secara permanen dari server Hyu PACS.
+            </p>
+
+            <!-- Details Telemetry Box -->
+            <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 0.85rem; font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; line-height: 1.6; margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.35rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">NAMA PASIEN</span>
+                    <strong id="delModalPatientName" style="color: #f1f5f9;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.35rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">NO. REKAM MEDIS (MRN)</span>
+                    <strong id="delModalPatientId" style="color: #38bdf8;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b;">ACCESSION NO.</span>
+                    <span id="delModalAccession" style="color: #cbd5e1;">-</span>
+                </div>
+            </div>
+
+            <!-- Form submission -->
+            <form id="formConfirmDelete" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #dc2626, #b91c1c); border: 1px solid #ef4444; color: #ffffff; font-weight: 700; letter-spacing: 0.03em; padding: 0.5rem 1.15rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); cursor: pointer;">
+                        🗑️ Ya, Hapus Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
     function openOrderModal() {
         document.getElementById('modalOrder').style.display = 'flex';
@@ -952,14 +1005,37 @@
         window.location.reload();
     }
 
+    function openDeleteModal(deleteUrl, patientName, patientId, accessionNo) {
+        document.getElementById('formConfirmDelete').action = deleteUrl;
+        document.getElementById('delModalPatientName').textContent = patientName || '-';
+        document.getElementById('delModalPatientId').textContent = patientId || '-';
+        document.getElementById('delModalAccession').textContent = accessionNo || '-';
+        document.getElementById('modalConfirmDelete').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('modalConfirmDelete').style.display = 'none';
+    }
+
     window.onclick = function(event) {
         const modalOrder = document.getElementById('modalOrder');
         const modalDicom = document.getElementById('modalDicomConfig');
         const modalCstore = document.getElementById('modalCstoreResult');
+        const modalDelete = document.getElementById('modalConfirmDelete');
         if (event.target === modalOrder) closeOrderModal();
         if (event.target === modalDicom) closeDicomModal();
         if (event.target === modalCstore) closeCstoreModal();
+        if (event.target === modalDelete) closeDeleteModal();
     };
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeOrderModal();
+            closeDicomModal();
+            closeCstoreModal();
+            closeDeleteModal();
+        }
+    });
 
     function showCstoreModal(info) {
         const modal = document.getElementById('modalCstoreResult');
