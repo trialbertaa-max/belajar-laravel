@@ -870,6 +870,62 @@
     </div>
 </div>
 
+<!-- MODAL: HASIL TRANSMISI DICOM C-STORE (SCP) -->
+<div id="modalCstoreResult" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 520px; border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(2, 132, 199, 0.15);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span id="cstoreModalHeaderIcon" style="font-size: 1.25rem;">📡</span>
+                <span id="cstoreModalHeaderTitle" style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; color: #f1f5f9;">
+                    TRANSMISI DICOM C-STORE
+                </span>
+            </div>
+            <button class="btn-close" onclick="closeCstoreModal()">&times;</button>
+        </div>
+
+        <div style="padding-top: 0.5rem;">
+            <!-- Status Badge -->
+            <div id="cstoreStatusBadge" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem;">
+                <span id="cstoreStatusDot">●</span>
+                <span id="cstoreStatusText">STATUS 0x0000 (SUCCESS)</span>
+            </div>
+
+            <!-- Message Text -->
+            <p id="cstoreMessageText" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1rem;">
+                Citra rontgen dari mesin Fujifilm FDR D-EVO berhasil diterima dan diarsipkan oleh Hyu PACS SCP.
+            </p>
+
+            <!-- Telemetry Details Box -->
+            <div id="cstoreDetailsBox" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 0.85rem; font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; line-height: 1.6; margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">PASIEN / MRN</span>
+                    <strong id="cstoreDetailPatient" style="color: #f1f5f9;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">ACCESSION NO.</span>
+                    <strong id="cstoreDetailAccession" style="color: #38bdf8;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">STASIUN AKUISISI</span>
+                    <span id="cstoreDetailStation" style="color: #cbd5e1;">FUJIFILM_FDR_D-EVO</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b;">SOP CLASS UID</span>
+                    <span id="cstoreDetailSop" style="color: #cbd5e1; font-size: 0.7rem;">Digital X-Ray (PS 3.4)</span>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeCstoreModal()">Tutup</button>
+                <button type="button" class="btn btn-primary" id="btnCstoreAction" onclick="refreshAfterCstore()" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 1px solid #38bdf8; font-weight: 700; letter-spacing: 0.03em;">
+                    🔄 Buka Daftar & Sesi Pasien
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     function openOrderModal() {
         document.getElementById('modalOrder').style.display = 'flex';
@@ -887,12 +943,65 @@
         document.getElementById('modalDicomConfig').style.display = 'none';
     }
 
+    function closeCstoreModal() {
+        document.getElementById('modalCstoreResult').style.display = 'none';
+    }
+
+    function refreshAfterCstore() {
+        closeCstoreModal();
+        window.location.reload();
+    }
+
     window.onclick = function(event) {
         const modalOrder = document.getElementById('modalOrder');
         const modalDicom = document.getElementById('modalDicomConfig');
+        const modalCstore = document.getElementById('modalCstoreResult');
         if (event.target === modalOrder) closeOrderModal();
         if (event.target === modalDicom) closeDicomModal();
+        if (event.target === modalCstore) closeCstoreModal();
     };
+
+    function showCstoreModal(info) {
+        const modal = document.getElementById('modalCstoreResult');
+        const iconEl = document.getElementById('cstoreModalHeaderIcon');
+        const titleEl = document.getElementById('cstoreModalHeaderTitle');
+        const badgeEl = document.getElementById('cstoreStatusBadge');
+        const statusTextEl = document.getElementById('cstoreStatusText');
+        const msgEl = document.getElementById('cstoreMessageText');
+        const detailsBox = document.getElementById('cstoreDetailsBox');
+        const actionBtn = document.getElementById('btnCstoreAction');
+
+        titleEl.textContent = info.title;
+        msgEl.textContent = info.message;
+
+        if (info.success) {
+            iconEl.textContent = '📡';
+            badgeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+            badgeEl.style.border = '1px solid rgba(16, 185, 129, 0.45)';
+            badgeEl.style.color = '#34d399';
+            statusTextEl.textContent = info.statusCode || 'STATUS 0x0000 (SUCCESS)';
+
+            detailsBox.style.display = 'block';
+            document.getElementById('cstoreDetailPatient').textContent = info.patientName || '-';
+            document.getElementById('cstoreDetailAccession').textContent = info.accessionNumber || '-';
+            document.getElementById('cstoreDetailStation').textContent = info.station || 'FUJIFILM_FDR_D-EVO';
+            document.getElementById('cstoreDetailSop').textContent = info.sopClass || 'Digital X-Ray (PS 3.4)';
+
+            actionBtn.style.display = 'inline-flex';
+            actionBtn.textContent = '🔄 Buka Daftar & Sesi Pasien';
+        } else {
+            iconEl.textContent = '⚠️';
+            badgeEl.style.background = 'rgba(239, 68, 68, 0.15)';
+            badgeEl.style.border = '1px solid rgba(239, 68, 68, 0.45)';
+            badgeEl.style.color = '#f87171';
+            statusTextEl.textContent = info.statusCode || 'STATUS 0x0110 (FAILURE)';
+
+            detailsBox.style.display = 'none';
+            actionBtn.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+    }
 
     function saveDicomConfig(e) {
         e.preventDefault();
@@ -923,14 +1032,33 @@
                 document.getElementById('lblIdxAeTitle').innerText = data.ae_title;
                 document.getElementById('lblIdxPort').innerText = data.port;
                 document.getElementById('lblIdxTarget').innerText = data.modality_source;
-                alert("✅ " + data.message + "\nAE Title: " + data.ae_title + " | Port: " + data.port);
                 closeDicomModal();
+                showCstoreModal({
+                    success: true,
+                    title: 'KONFIGURASI DICOM NODE TERSIMPAN',
+                    message: data.message || 'Parameter jaringan DICOM SCP berhasil diperbarui.',
+                    patientName: 'Application Entity: ' + data.ae_title,
+                    accessionNumber: 'Port Listener: ' + data.port,
+                    station: data.modality_source || 'FUJIFILM / MINDRAY',
+                    sopClass: 'NEMA PS 3.4 DICOM SCP Service',
+                    statusCode: 'STATUS 0x0000 (CONFIG SAVED)'
+                });
             } else {
-                alert("❌ Gagal menyimpan konfigurasi.");
+                showCstoreModal({
+                    success: false,
+                    title: 'GAGAL MENYIMPAN KONFIGURASI',
+                    message: 'Parameter konfigurasi DICOM tidak valid atau gagal disimpan.',
+                    statusCode: 'STATUS 0x0110 (CONFIG ERROR)'
+                });
             }
         })
         .catch(err => {
-            alert("❌ Terjadi kesalahan: " + err.message);
+            showCstoreModal({
+                success: false,
+                title: 'TERJADI KESALAHAN JARINGAN',
+                message: err.message || 'Gagal berkomunikasi dengan server.',
+                statusCode: 'STATUS 0x0110 (NETWORK ERROR)'
+            });
         })
         .finally(() => {
             btn.innerHTML = origText;
@@ -951,13 +1079,32 @@
                 "X-CSRF-TOKEN": "{{ csrf_token() }}"
             }
         })
-        .then(res => res.json())
+        .then(async res => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok && data.status !== 'success') {
+                throw new Error(data.message || 'Gagal simulasi transmisi C-STORE dari stasiun modalitas.');
+            }
+            return data;
+        })
         .then(data => {
-            alert("✅ " + data.message);
-            window.location.reload();
+            showCstoreModal({
+                success: true,
+                title: data.title || 'TRANSMISI DICOM C-STORE BERHASIL',
+                message: data.message || 'Citra rontgen dari mesin Fujifilm FDR D-EVO berhasil diterima dan diarsipkan oleh Hyu PACS SCP.',
+                patientName: data.patient_name ? `${data.patient_name} (${data.patient_id || '-'})` : 'Pasien MCU Terkini',
+                accessionNumber: data.accession_number || '-',
+                station: data.station || 'FUJIFILM_FDR_D-EVO',
+                sopClass: data.sop_class || 'Digital X-Ray (1.2.840.10008.5.1.4.1.1.1)',
+                statusCode: data.status_code || 'STATUS 0x0000 (SUCCESS)'
+            });
         })
         .catch(err => {
-            alert("❌ Gagal simulasi: " + err.message);
+            showCstoreModal({
+                success: false,
+                title: 'GAGAL TRANSMISI DICOM C-STORE',
+                message: err.message || 'Terjadi kesalahan saat memproses transmisi C-STORE.',
+                statusCode: 'STATUS 0x0110 (FAILURE)'
+            });
         })
         .finally(() => {
             btn.innerHTML = origText;
