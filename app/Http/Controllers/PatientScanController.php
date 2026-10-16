@@ -337,25 +337,33 @@ class PatientScanController extends Controller
         $viewport    = (int) $request->input('viewport', 1);
         $targetImage = $request->input('target_image');
 
-        // Bersihkan jika formatnya full URL
+        // Bersihkan jika formatnya full URL atau memiliki subdirektori web server
+        $cleanRelPath = null;
         if ($targetImage) {
             $parsedUrl = parse_url($targetImage, PHP_URL_PATH);
-            $cleanRelPath = ltrim($parsedUrl, '/');
-        } else {
-            $cleanRelPath = null;
+            $rawPath = $parsedUrl ? ltrim($parsedUrl, '/') : '';
+            if (str_contains($rawPath, 'scan-assets/')) {
+                $cleanRelPath = 'scan-assets/' . substr($rawPath, strpos($rawPath, 'scan-assets/') + strlen('scan-assets/'));
+            } elseif (str_contains($rawPath, 'storage/')) {
+                $cleanRelPath = 'storage/' . substr($rawPath, strpos($rawPath, 'storage/') + strlen('storage/'));
+            } else {
+                $cleanRelPath = $rawPath;
+            }
         }
 
         $pythonBinary = $this->getPythonBinary();
         $scriptPath   = base_path('test_dicom.py');
 
-        // Tentukan path DICOM file atau image file pasien
-        $dicomPath = base_path('sample_toraks.dcm');
+        // Tentukan path citra yang persis aktif di viewport (prioritaskan 100% citra aktif)
+        $dicomPath = null;
         if ($cleanRelPath && file_exists(public_path($cleanRelPath))) {
             $dicomPath = public_path($cleanRelPath);
-        } elseif ($viewport === 2) {
-            if (file_exists(public_path('scan-assets/usg_sample.jpg'))) {
-                $dicomPath = public_path('scan-assets/usg_sample.jpg');
-            }
+        } elseif ($cleanRelPath && str_starts_with($cleanRelPath, 'storage/') && file_exists(storage_path('app/public/' . substr($cleanRelPath, 8)))) {
+            $dicomPath = storage_path('app/public/' . substr($cleanRelPath, 8));
+        } elseif ($cleanRelPath && file_exists(base_path($cleanRelPath))) {
+            $dicomPath = base_path($cleanRelPath);
+        } elseif ($viewport === 2 && file_exists(public_path('scan-assets/usg_sample.jpg'))) {
+            $dicomPath = public_path('scan-assets/usg_sample.jpg');
         } elseif ($scan->dicom_raw_path) {
             $possiblePath1 = storage_path('app/public/' . $scan->dicom_raw_path);
             $possiblePath2 = base_path($scan->dicom_raw_path);
@@ -364,6 +372,12 @@ class PatientScanController extends Controller
             } elseif (file_exists($possiblePath2)) {
                 $dicomPath = $possiblePath2;
             }
+        }
+
+        if (!$dicomPath || !file_exists($dicomPath)) {
+            $dicomPath = file_exists(public_path('scan-assets/raw_toraks.jpg')) 
+                ? public_path('scan-assets/raw_toraks.jpg') 
+                : base_path('sample_toraks.dcm');
         }
 
         // Folder output denoised JPG & Residual Map

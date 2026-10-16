@@ -1,0 +1,160 @@
+import xml.etree.ElementTree as ET
+
+# Generate Draw.io XML for A4 Portrait standard (2 Columns x 3 Rows)
+# Fits standard A4 Portrait Word page (14 cm printable width) without shrinking fonts!
+
+xml_content = """<mxfile host="app.diagrams.net" modified="2026-10-13T01:50:00.000Z" agent="5.0" version="24.0.0" type="device">
+  <diagram id="a4_portrait_hyu_pacs" name="Diagram Alur Hyu PACS Format A4">
+    <mxGraphModel dx="1200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Header Judul Diagram -->
+        <mxCell id="title_header" value="&lt;b style=&quot;font-size: 15px; color: #0f172a;&quot;&gt;GAMBAR 3.4. DIAGRAM ALUR KERJA &amp;amp; ARSITEKTUR HYU PACS WORKSTATION&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 11px; color: #475569;&quot;&gt;Integrasi Ingesti Transmisi DICOM, Core Backend EMR, Engine AI, Workstation Diagnostik CTR, dan Pelaporan Medis&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="64" y="25" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="title_sep" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#334155;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="64" y="70" as="sourcePoint" />
+            <mxPoint x="764" y="70" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- ==================== BARIS 1: INGESTI & TRANSMISI ==================== -->
+        <!-- Box 1 (Kiri): Modalitas DR -->
+        <mxCell id="b1_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#06b6d4;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="95" width="310" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="b1_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODALITAS RONTGEN DR&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0891b2;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="85" y="107" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b1_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #0891b2; font-weight: bold;&quot;&gt;Konsol Radiografi Digital (CDC Surabaya)&lt;/i&gt;&lt;br&gt;• Detektor Flat-Panel (FPD) 16-bit Grayscale&lt;br&gt;• Matriks Citra: 2999 × 2999 Piksel Resolusi Tinggi&lt;br&gt;• Layanan Transmisi DICOM C-STORE SCU&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="75" y="139" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Box 2 (Kanan): Modul 1 DICOM Listener -->
+        <mxCell id="b2_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f43f5e;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="95" width="310" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="b2_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODUL 1: DICOM LISTENER (C-STORE SCP)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e11d48;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="465" y="107" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b2_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #e11d48; font-weight: bold;&quot;&gt;Daemon Latar Belakang (pynetdicom Service)&lt;/i&gt;&lt;br&gt;• Listening Port 4242 | AE Title: HYU_PACS_SERVER&lt;br&gt;• Kepatuhan NEMA PS 3.4 &amp;amp; Validasi SOP Class UID&lt;br&gt;• Ekstraksi Header: Pixel Spacing, W/L, &amp;amp; Intercept&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="455" y="139" width="300" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- Connector 1 -> 2 (Horizontal dengan Pill) -->
+        <mxCell id="conn_1_2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#06b6d4;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="b1_outer" target="b2_outer">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pill_1_2" value="&lt;span style=&quot;font-size: 9px; color: #475569; font-family: Times New Roman;&quot;&gt;TCP/IP LAN&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#06b6d4;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="388" y="143" width="54" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Connector Baris 1 -> Baris 2 (S-Curve Turun ke Box 3) -->
+        <mxCell id="conn_2_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#f43f5e;strokeWidth=1.8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="b2_outer" target="b3_outer">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="605" y="245" />
+              <mxPoint x="225" y="245" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pill_2_3" value="&lt;span style=&quot;font-size: 9.5px; color: #475569; font-family: Times New Roman;&quot;&gt;Ekstraksi Tag Metadata &amp;amp; Penyimpanan Berkas Raw .dcm&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f43f5e;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="270" y="233" width="280" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== BARIS 2: BACKEND & AI RESTORASI ==================== -->
+        <!-- Box 3 (Kiri): Modul 2 Core Backend Laravel -->
+        <mxCell id="b3_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3b82f6;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="285" width="310" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="b3_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODUL 2: CORE BACKEND &amp;amp; BASIS DATA&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#2563eb;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="85" y="297" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b3_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #2563eb; font-weight: bold;&quot;&gt;Framework Laravel 11 &amp;amp; Database MySQL&lt;/i&gt;&lt;br&gt;• Manajemen Pasien MCU, No. RM, &amp;amp; Study UID&lt;br&gt;• Repositori File: storage/app/dicom/raw/ &amp;amp; restored/&lt;br&gt;• Otentikasi Role-Based &amp;amp; Live Form Ekspertise EMR&lt;br&gt;• Dispatch Antrean Komputasi Restorasi AI&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="75" y="329" width="300" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- Box 4 (Kanan): Modul 3 Engine Restorasi AI -->
+        <mxCell id="b4_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#06b6d4;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="285" width="310" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="b4_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODUL 3: ENGINE RESTORASI CITRA &amp;amp; AI&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0891b2;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="465" y="297" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b4_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #0891b2; font-weight: bold;&quot;&gt;Python Denoising Engine (CLI &amp;amp; REST API)&lt;/i&gt;&lt;br&gt;• Multi-Filter: Bilateral Filter &amp;amp; Non-Local Means (NLM)&lt;br&gt;• Deep Residual CNN (DnCNN): 17 Lapisan Konvolusi&lt;br&gt;• Rekonstruksi Citra: Residual Learning x = y - R(y)&lt;br&gt;• Telemetri Real-Time: Nilai PSNR, SSIM, Latensi (ms)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="455" y="329" width="300" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- Connector 3 <-> 4 (Bi-directional dengan Pill) -->
+        <mxCell id="conn_3_4" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;strokeColor=#3b82f6;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="b3_outer" target="b4_outer">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pill_3_4" value="&lt;span style=&quot;font-size: 8.5px; color: #1e293b; font-family: Times New Roman;&quot;&gt;Dispatch Task &amp;amp;&lt;br&gt;Hasil Restorasi&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3b82f6;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="385" y="335" width="60" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Connector Baris 2 -> Baris 3 (Turun Tegak ke Box 5) -->
+        <mxCell id="conn_3_5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#3b82f6;strokeWidth=1.8;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="b3_outer" target="b5_outer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pill_3_5" value="&lt;span style=&quot;font-size: 9.5px; color: #475569; font-family: Times New Roman;&quot;&gt;Streaming Citra Medis 16-bit &amp;amp; Tag Kalibrasi Spacing&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#3b82f6;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="85" y="432" width="280" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== BARIS 3: WORKSTATION & PELAPORAN ==================== -->
+        <!-- Box 5 (Kiri): Modul 4 Hyu PACS Viewer -->
+        <mxCell id="b5_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#06b6d4;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="70" y="475" width="310" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="b5_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODUL 4: WEB WORKSTATION (HYU PACS)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0891b2;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="85" y="487" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b5_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #0891b2; font-weight: bold;&quot;&gt;Web Clinical Viewer (HTML5 Canvas &amp;amp; SVG Layer)&lt;/i&gt;&lt;br&gt;• Inverse Affine Mapping (CTM⁻¹) Lockstep Anchoring&lt;br&gt;• Manipulasi Citra: Windowing (W/L), Zoom/Pan, Rotasi/Flip&lt;br&gt;• Kaliper Biometri CTR Danzer ((A+B)/C × 100%)&lt;br&gt;• Split-Curtain Slider &amp;amp; Residual Noise Difference Map&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="75" y="519" width="300" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Box 6 (Kanan): Modul 5 Pelaporan & Ekspor -->
+        <mxCell id="b6_outer" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#f43f5e;strokeWidth=2;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="450" y="475" width="310" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="b6_pill" value="&lt;b style=&quot;color: #ffffff; font-size: 11px;&quot;&gt;MODUL 5: PELAPORAN &amp;amp; EKSPOR (PS 3.3)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e11d48;strokeColor=none;arcSize=50;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="465" y="487" width="280" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="b6_text" value="&lt;div style=&quot;text-align: center; font-size: 10.5px; line-height: 1.35; font-family: Times New Roman; color: #1e293b;&quot;&gt;&lt;i style=&quot;color: #e11d48; font-weight: bold;&quot;&gt;Output Medis Resmi &amp;amp; Evaluasi Radiolog&lt;/i&gt;&lt;br&gt;• Cetak Lembar Hasil Pemeriksaan Radiologi (PDF)&lt;br&gt;• Ekspor Secondary Capture (DICOM SC Standar PS 3.3)&lt;br&gt;• Burn-in Anotasi: Garis CTR Danzer &amp;amp; Identitas Pasien&lt;br&gt;• Evaluasi Diagnostik Dokter Spesialis Radiologi&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=top;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="455" y="519" width="300" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Connector 5 -> 6 (Horizontal dengan Pill) -->
+        <mxCell id="conn_5_6" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#06b6d4;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="b5_outer" target="b6_outer">
+          <mxGeometry width="50" height="50" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="pill_5_6" value="&lt;span style=&quot;font-size: 8.5px; color: #1e293b; font-family: Times New Roman;&quot;&gt;Rasio CTR &amp;amp;&lt;br&gt;Anotasi SVG&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#06b6d4;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="385" y="525" width="60" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Feedback Loop: Box 6 kembali sync ke Box 3 (Overhead loop kiri) -->
+        <mxCell id="conn_loop_emr" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#64748b;strokeWidth=1.5;strokeDashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" parent="1" source="b6_outer" target="b3_outer">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="605" y="630" />
+              <mxPoint x="225" y="630" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="pill_loop_emr" value="&lt;span style=&quot;font-size: 9.5px; color: #475569; font-family: Times New Roman;&quot;&gt;Sinkronisasi Status Diagnostik &amp;amp; Laporan Ekspertise ke Rekam Medis EMR&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=1.2;strokeDashed=1;arcSize=50;" vertex="1" parent="1">
+          <mxGeometry x="220" y="618" width="390" height="24" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+"""
+
+with open('Gambar_3_4_A4_Portrait_Template_Hyu_PACS.drawio', 'w', encoding='utf-8') as f:
+    f.write(xml_content.strip())
+
+print("Successfully written A4 Portrait Draw.io file: Gambar_3_4_A4_Portrait_Template_Hyu_PACS.drawio")

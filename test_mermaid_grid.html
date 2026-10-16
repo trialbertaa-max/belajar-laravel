@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Test 2-Row Grid Mermaid</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body style="font-family: 'Times New Roman'; padding: 20px;">
+    <h2>Uji Coba Trik Grid 2-Baris Mermaid</h2>
+    <div class="mermaid">
+flowchart TB
+    %% Definisi Kolom Vertikal (Memaksa Baris 1 di Atas dan Baris 2 di Bawah)
+    S1["1. Modalitas DR"] ~~~ S5["5. Engine AI"]
+    S2["2. DICOM Listener"] ~~~ S6["6. Hyu PACS Viewer"]
+    S3["3. Backend Laravel"] ~~~ S7["7. Kaliper CTR"]
+    S4["4. Database & Storage"] ~~~ S8["8. Pelaporan & Ekspor"]
+
+    %% Alur Baris 1 (Horizontal Kiri ke Kanan)
+    S1 -->|"TCP/IP"| S2
+    S2 -->|"File & Tag"| S3
+    S3 -->|"SQL"| S4
+
+    %% Transisi Turun: dari S4 atau S3 ke S5
+    S4 ==>|"Dispatch AI"| S5
+
+    %% Alur Baris 2 (Horizontal Kiri ke Kanan)
+    S5 -->|"Citra Bersih"| S6
+    S6 -->|"Anotasi"| S7
+    S7 -->|"Rasio CTR"| S8
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true });
+    </script>
+</body>
+</html>

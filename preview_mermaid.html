@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Preview Mermaid Diagram 3.4</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        body { font-family: 'Times New Roman', serif; padding: 20px; background: #ffffff; }
+        .mermaid { display: flex; justify-content: center; }
+    </style>
+</head>
+<body>
+    <div class="mermaid">
+flowchart TD
+    %% Styling Akademik PTN (Monokromatik Formal, Bersih, Kontras Tinggi)
+    classDef mainBox fill:#FFFFFF,stroke:#1A365D,stroke-width:1.5px,color:#0F172A,font-family:'Times New Roman',font-size:12px;
+    classDef actorBox fill:#F8FAFC,stroke:#334155,stroke-width:1.5px,color:#0F172A,font-family:'Times New Roman',font-size:12px;
+    classDef dbBox fill:#F1F5F9,stroke:#475569,stroke-width:1.2px,stroke-dasharray: 4 4,color:#0F172A,font-family:'Times New Roman',font-size:11px;
+
+    %% 1. Modalitas Input
+    MOD["<b>MODALITAS RADIOGRAFI DIGITAL (DR)</b><br/>Konsol Rontgen Digital (Klinik CDC Surabaya)<br/>Standar DICOM 3.0 | Transmisi C-STORE SCU"]:::actorBox
+
+    %% 2. Modul 1 DICOM Listener
+    M1["<b>MODUL 1: DICOM LISTENER (C-STORE SCP DAEMON)</b><br/>• Layanan Latar Belakang (pynetdicom - Port Jaringan 4242)<br/>• Application Entity Title (AET): HYU_PACS_SERVER<br/>• Validasi SOP Class UID & Kompatibilitas Transfer Syntax<br/>• Ekstraksi Tag Kritis: Pixel Spacing, Slope, Intercept, W/L"]:::mainBox
+
+    %% 3. Modul 2 Backend Laravel
+    M2["<b>MODUL 2: CORE BACKEND & INTEGRASI EMR (LARAVEL 11)</b><br/>• Basis Data Relasional MySQL: Metadata Pasien, Study & Series UID<br/>• Pengorganisasian Berkas: Direktori Raw storage/app/dicom/<br/>• Sistem Keamanan: Otentikasi Pengguna & Role-Based Access Control<br/>• Controller API: Routing Data Klinis & Live Insertion Templat EMR"]:::mainBox
+
+    %% 4. Modul 3 AI & Restorasi
+    M3["<b>MODUL 3: ENGINE RESTORASI CITRA & AI (PYTHON ENVIRONMENT)</b><br/>• Multi-Algorithm Pipeline: Bilateral Filter, NLM, & DnCNN (17-Layer)<br/>• Rekonstruksi Citra Bersih: Residual Noise Learning x = y - R(y)<br/>• Telemetri Kuantitatif Real-Time: Nilai PSNR (dB), SSIM, & Latensi (ms)<br/>• Penyimpanan Citra Terestorasi ke Repositori Server"]:::mainBox
+
+    %% 5. Modul 4 Diagnostic Workstation
+    M4["<b>MODUL 4: WEB DIAGNOSTIC WORKSTATION (HYU PACS VIEWER)</b><br/>• Arsitektur Zero-Footprint HTML5 Canvas & Custom SVG Stage Layer<br/>• Manipulasi Citra: Windowing (W/L), Lockstep Zoom/Pan, Rotasi & Flip<br/>• Kaliper Biometri CTR Danzer (1919): Formula Rasio (A+B)/C × 100%<br/>• Fitur Komparasi: Split-Curtain Slider & Difference Map |Inoisy - Iclean|"]:::mainBox
+
+    %% 6. Modul 5 Pelaporan & Ekspor
+    M5["<b>MODUL 5: PELAPORAN MEDIS & EKSPOR CITRA STANDAR PS 3.3</b><br/>• Penerbitan Lembar Hasil Pemeriksaan Radiologi Siap Cetak (PDF)<br/>• Ekspor DICOM Secondary Capture (SC) & PNG Resolusi Tinggi (300 DPI)<br/>• Burn-In Overlay Permanen: Identitas Pasien, Garis Ukur CTR & Rasio"]:::mainBox
+
+    %% 7. Aktor Pengguna Akhir
+    RAD["<b>RADIOLOG / DOKTER SPESIALIS RADIOLOGI</b><br/>Evaluasi Diagnostik Klinis, Verifikasi Status Kardiomegali, & Cetak Ekspertise"]:::actorBox
+
+    %% Alur Kerja Sekuensial Lurus (Top-to-Bottom Tanpa Silang)
+    MOD -->|"1. Transmisi Berkas DICOM Mentah (TCP/IP DIMSE)"| M1
+    M1 -->|"2. Header Metadata Terurai & File .dcm Mentah"| M2
+    M2 -->|"3. Ekstraksi Matriks Piksel 16-bit & Trigger Job Restorasi"| M3
+    M3 -->|"4. Citra Tereduksi Derau & Telemetri Evaluasi (PSNR/SSIM)"| M4
+    M4 -->|"5. Nilai Rasio CTR (%), Status Diagnostik, & Koordinat Anotasi"| M5
+    M5 -->|"6. Lembar Ekspertise Radiologi & Citra Beranotasi Final"| RAD
+
+    %% Direct Arrow Style
+    linkStyle default stroke:#1A365D,stroke-width:1.5px;
+    </div>
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+</body>
+</html>

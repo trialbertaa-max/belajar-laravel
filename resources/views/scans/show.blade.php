@@ -498,14 +498,14 @@
             transition: transform 0.05s ease-out;
             user-select: none;
             touch-action: none;
-            max-width: 86%;
-            max-height: 86%;
+            max-width: 100%;
+            max-height: 100%;
         }
 
         .medical-image {
             display: block;
             max-width: 100%;
-            max-height: 100%;
+            max-height: calc(100vh - 140px);
             width: auto;
             height: auto;
             object-fit: contain;
@@ -516,12 +516,14 @@
         }
 
         .medical-image-denoised {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            max-height: none !important;
+            object-fit: contain !important;
             z-index: 3;
             box-shadow: none;
             display: none;
@@ -2383,6 +2385,10 @@
         // Init Initial Image Sources & Drawer Responsive State
         if (img1) vpState[1].rawSrc = img1.src;
         if (img2) vpState[2].rawSrc = img2.src;
+        @if(!empty($scan->denoised_image_path) && file_exists(public_path($scan->denoised_image_path)))
+            vpState[1].denoisedSrc = "{{ asset($scan->denoised_image_path) }}?v={{ time() }}";
+            if (img1Denoised) img1Denoised.src = vpState[1].denoisedSrc;
+        @endif
         if (seriesDrawer) {
             seriesDrawer.classList.toggle('collapsed', !isDrawerOpen);
             const icon = document.getElementById('btnDrawerIcon');
@@ -2744,7 +2750,10 @@
 
                 if (vpState[targetVp].isCurtain) {
                     targetImg.src = vpState[targetVp].rawSrc;
-                    if (targetDenoisedImg) targetDenoisedImg.style.display = 'block';
+                    if (targetDenoisedImg) {
+                        targetDenoisedImg.style.display = 'block';
+                        applyCurtainSplit(targetVp);
+                    }
                 } else if (vpState[targetVp].isResidual) {
                     targetImg.src = data.residual_url;
                 } else {
@@ -3266,6 +3275,37 @@
             setTimeout(hideToolHint, 3000);
         }
 
+        function applyCurtainSplit(vpId, pct) {
+            if (pct === undefined || pct === null) {
+                pct = (vpState[vpId] && vpState[vpId].curtainPos !== undefined) ? vpState[vpId].curtainPos : 50;
+            }
+            if (vpState[vpId]) vpState[vpId].curtainPos = pct;
+
+            const divider = document.getElementById('curtainDivider' + vpId);
+            if (divider) divider.style.left = `${pct}%`;
+
+            const targetDenoisedImg = (vpId === 1) ? img1Denoised : img2Denoised;
+            const baseImg = (vpId === 1) ? img1 : img2;
+            const vpEl = (vpId === 1) ? vp1 : vp2;
+
+            if (targetDenoisedImg && baseImg && vpEl) {
+                const vpRect = vpEl.getBoundingClientRect();
+                const imgRect = baseImg.getBoundingClientRect();
+
+                let imgPct = pct;
+                if (imgRect.width > 0 && vpRect.width > 0) {
+                    const dividerX = vpRect.left + (vpRect.width * (pct / 100));
+                    imgPct = ((dividerX - imgRect.left) / imgRect.width) * 100;
+                    imgPct = Math.max(0, Math.min(100, imgPct));
+                }
+                const st = vpState[vpId];
+                if (st && st.flipH) {
+                    imgPct = 100 - imgPct;
+                }
+                targetDenoisedImg.style.clipPath = `polygon(${imgPct.toFixed(2)}% 0, 100% 0, 100% 100%, ${imgPct.toFixed(2)}% 100%)`;
+            }
+        }
+
         function toggleCurtainWipe() {
             const targetVp = activeViewport;
             const st = vpState[targetVp];
@@ -3291,12 +3331,16 @@
                 }
 
                 if (cContainer) cContainer.style.display = 'block';
+                targetImg.src = st.rawSrc;
                 if (targetDenoisedImg) {
                     targetDenoisedImg.src = st.denoisedSrc;
                     targetDenoisedImg.style.display = 'block';
-                    targetDenoisedImg.style.clipPath = `polygon(${st.curtainPos || 50}% 0, 100% 0, 100% 100%, ${st.curtainPos || 50}% 100%)`;
+                    targetDenoisedImg.onload = () => { if (st.isCurtain) applyCurtainSplit(targetVp); };
+                    applyCurtainSplit(targetVp, st.curtainPos || 50);
                 }
-                targetImg.src = st.rawSrc;
+                if (targetImg) {
+                    targetImg.onload = () => { if (st.isCurtain) applyCurtainSplit(targetVp); };
+                }
                 updateTransform(targetVp);
                 updateFilter(targetVp);
 
@@ -3433,6 +3477,9 @@
             else {
                 const lbl2 = document.getElementById('lblZoom2');
                 if (lbl2) lbl2.innerText = Math.round(st.zoom * 100) + '%';
+            }
+            if (st.isCurtain) {
+                applyCurtainSplit(id);
             }
         }
 
@@ -4420,13 +4467,7 @@
                     const pos = getEventCoords(e, vpEl);
                     const posX = Math.max(10, Math.min(pos.rect.width - 10, pos.x));
                     const pct = Math.round((posX / pos.rect.width) * 100);
-                    vpState[activeDraggingCurtainVp].curtainPos = pct;
-                    const divider = document.getElementById('curtainDivider' + activeDraggingCurtainVp);
-                    if (divider) divider.style.left = `${pct}%`;
-                    const targetDenoisedImg = (activeDraggingCurtainVp === 1) ? img1Denoised : img2Denoised;
-                    if (targetDenoisedImg) {
-                        targetDenoisedImg.style.clipPath = `polygon(${pct}% 0, 100% 0, 100% 100%, ${pct}% 100%)`;
-                    }
+                    applyCurtainSplit(activeDraggingCurtainVp, pct);
                 }
                 return;
             }
@@ -4706,6 +4747,11 @@
         window.addEventListener('mouseup', handleViewportEnd);
         window.addEventListener('touchend', handleViewportEnd);
         window.addEventListener('touchcancel', handleViewportEnd);
+
+        window.addEventListener('resize', () => {
+            if (vpState[1] && vpState[1].isCurtain) applyCurtainSplit(1);
+            if (vpState[2] && vpState[2].isCurtain) applyCurtainSplit(2);
+        });
 
         // Keyboard Shortcut: Delete / Backspace key to remove selected measurement
         window.addEventListener('keydown', (e) => {

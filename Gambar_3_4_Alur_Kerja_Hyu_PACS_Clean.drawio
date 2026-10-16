@@ -1,0 +1,88 @@
+<mxfile host="app.diagrams.net" modified="2026-10-13T01:30:00.000Z" agent="5.0" version="24.0.0" type="device">
+  <diagram id="hyu_pacs_workflow_ptn" name="Diagram Alur Kerja Hyu PACS">
+    <mxGraphModel dx="1200" dy="1600" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- JUDUL DIAGRAM STANDAR AKADEMIK -->
+        <mxCell id="title_box" value="&lt;b style=&quot;font-size: 14px; color: #0f172a;&quot;&gt;GAMBAR 3.4. DIAGRAM ALUR KERJA PERANGKAT LUNAK HYU PACS WORKSTATION&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 11px; color: #475569;&quot;&gt;Alur Integrasi Ingesti Transmisi DICOM, Manajemen EMR, Engine AI, Diagnostik CTR, dan Pelaporan Medis&lt;/i&gt;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Times New Roman;" vertex="1" parent="1">
+          <mxGeometry x="64" y="25" width="700" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="title_divider" value="" style="endArrow=none;html=1;rounded=0;strokeColor=#334155;strokeWidth=1.5;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="64" y="72" as="sourcePoint" />
+            <mxPoint x="764" y="72" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- STEP 0: MODALITAS DR -->
+        <mxCell id="step0" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODALITAS RADIOGRAFI DIGITAL (DR)&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #334155;&quot;&gt;Konsol Radiografi Digital Klinik CDC Surabaya (Standar DICOM 3.0)&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Detektor:&lt;/b&gt; Flat-Panel Detector (FPD) 16-bit Grayscale (Matriks 2999 × 2999 Piksel)&lt;br&gt;• &lt;b&gt;Protokol:&lt;/b&gt; DICOM C-STORE SCU via Jaringan Lokal (TCP/IP LAN)&lt;br&gt;• &lt;b&gt;Tag Kalibrasi:&lt;/b&gt; (0028,0030) Pixel Spacing = 0.140 mm/px, Slope, &amp;amp; Intercept&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#1e293b;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="90" width="600" height="95" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 1: MODUL 1 DICOM LISTENER -->
+        <mxCell id="step1" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODUL 1: DICOM LISTENER (C-STORE SCP DAEMON)&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #0369a1;&quot;&gt;Layanan Penerima Transmisi Latar Belakang (pynetdicom &amp;amp; pydicom)&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Parameter Layanan:&lt;/b&gt; Listening Port 4242 | AE Title: &lt;i&gt;HYU_PACS_SERVER&lt;/i&gt;&lt;br&gt;• &lt;b&gt;Validasi NEMA PS 3.4:&lt;/b&gt; Verifikasi SOP Class UID &amp;amp; Transfer Syntax Medis&lt;br&gt;• &lt;b&gt;Ekstraksi Metadata:&lt;/b&gt; Parsing Tag DICOM Pasien, Window Width/Level, &amp;amp; Array Citra&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="235" width="600" height="95" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 2: MODUL 2 BACKEND LARAVEL & DATABASE -->
+        <mxCell id="step2" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODUL 2: CORE BACKEND &amp;amp; INTEGRASI EMR (LARAVEL 11)&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #0f172a;&quot;&gt;Manajemen Basis Data, Repositori Berkas, &amp;amp; Routing API&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Basis Data MySQL:&lt;/b&gt; Manajemen Rekam Medis (Nama Pasien, NIK, No. RM, Study UID)&lt;br&gt;• &lt;b&gt;Penyimpanan Berkas:&lt;/b&gt; Pengarsipan Berkas Raw .dcm ke storage/app/dicom/raw/&lt;br&gt;• &lt;b&gt;Keamanan &amp;amp; Otentikasi:&lt;/b&gt; Hak Akses Berbasis Peran (Radiolog, Radiografer, MCU Admin)&lt;br&gt;• &lt;b&gt;Integrasi EMR:&lt;/b&gt; Live Insertion Templat Ekspertise &amp;amp; Dispatch Worker Restorasi AI&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="380" width="600" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 3: MODUL 3 ENGINE RESTORASI AI -->
+        <mxCell id="step3" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODUL 3: ENGINE RESTORASI CITRA &amp;amp; AI (PYTHON ENVIRONMENT)&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #047857;&quot;&gt;Multi-Algorithm Denoising Engine &amp;amp; Telemetri Evaluasi Kinerja&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Bilateral Filter:&lt;/b&gt; Domain Spasial (σ_s) &amp;amp; Range (σ_r) Preservasi Tepi Batas Organ&lt;br&gt;• &lt;b&gt;Non-Local Means (NLM):&lt;/b&gt; Eksploitasi Redundansi Patch Mandiri (Self-Similarity)&lt;br&gt;• &lt;b&gt;Deep Residual CNN (DnCNN):&lt;/b&gt; 17 Lapisan Konvolusi (Conv+BN+ReLU), Residual x = y - R(y)&lt;br&gt;• &lt;b&gt;Telemetri Real-Time:&lt;/b&gt; Kalkulasi Nilai PSNR (dB), SSIM, Latensi (ms), &amp;amp; Penggunaan Memori&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="540" width="600" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 4: MODUL 4 WEB DIAGNOSTIC WORKSTATION -->
+        <mxCell id="step4" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODUL 4: WEB DIAGNOSTIC WORKSTATION (HYU PACS VIEWER)&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #3730a3;&quot;&gt;Zero-Footprint Clinical Viewer (HTML5 Canvas &amp;amp; Custom SVG Stage Layer)&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Manipulasi Citra:&lt;/b&gt; Windowing (W/L), Zoom/Pan Sinkron, Rotasi (90°, 180°, 270°), &amp;amp; Flip (H/V)&lt;br&gt;• &lt;b&gt;Lockstep Anchoring:&lt;/b&gt; Matriks CTM⁻¹ menjaga titik anotasi tetap melekat pada piksel anatomi&lt;br&gt;• &lt;b&gt;Kaliper Biometri CTR Danzer:&lt;/b&gt; Penarikan 2-Langkah ((A+B)/C × 100%), Klasifikasi Kardiomegali&lt;br&gt;• &lt;b&gt;Komparasi Klinis:&lt;/b&gt; Split-Curtain Comparison Slider &amp;amp; Residual Noise Difference Map |Inoisy - Iclean|&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="700" width="600" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 5: MODUL 5 PELAPORAN & EKSPOR -->
+        <mxCell id="step5" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;MODUL 5: PELAPORAN MEDIS &amp;amp; EKSPOR CITRA BERSTANDAR PS 3.3&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #b45309;&quot;&gt;Output Medis Resmi, Lembar Hasil Pemeriksaan, &amp;amp; Secondary Capture&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Penerbitan Dokumen PDF:&lt;/b&gt; Lembar Hasil Ekspertise Radiologi Siap Cetak (KOP Klinik CDC)&lt;br&gt;• &lt;b&gt;Ekspor Secondary Capture (SC):&lt;/b&gt; Burn-In Overlay Data Identitas Pasien, Anotasi &amp;amp; Garis CTR&lt;br&gt;• &lt;b&gt;Format Output:&lt;/b&gt; Berkas DICOM SC Terstandarisasi NEMA PS 3.3 &amp;amp; PNG Resolusi Tinggi (300 DPI)&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="860" width="600" height="95" as="geometry" />
+        </mxCell>
+
+        <!-- STEP 6: RADIOLOG / PENGGUNA AKHIR -->
+        <mxCell id="step6" value="&lt;b style=&quot;font-size: 12px;&quot;&gt;RADIOLOG / DOKTER SPESIALIS RADIOLOGI&lt;/b&gt;&lt;br&gt;&lt;i style=&quot;font-size: 10px; color: #334155;&quot;&gt;Pengguna Akhir Workstation Klinis (Clinical End-User)&lt;/i&gt;&lt;hr style=&quot;margin: 3px 0;&quot;&gt;&lt;div style=&quot;text-align: left; font-size: 10.5px; line-height: 1.3;&quot;&gt;• &lt;b&gt;Aktivitas Klinis:&lt;/b&gt; Evaluasi Diagnostik Toraks, Verifikasi Garis Danzer CTR, &amp;amp; Penegakan Diagnosis&lt;br&gt;• &lt;b&gt;Pengarsipan EMR:&lt;/b&gt; Persetujuan Laporan Ekspertise Radiologi ke Sistem Rekam Medis Elektronik&lt;/div&gt;" style="rounded=4;whiteSpace=wrap;html=1;fillColor=#f8fafc;strokeColor=#1e293b;strokeWidth=1.5;fontFamily=Times New Roman;align=center;verticalAlign=top;spacingTop=6;" vertex="1" parent="1">
+          <mxGeometry x="114" y="1005" width="600" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- PENGHUBUNG ALUR (CONNECTORS) TEGAK LURUS & RAPI -->
+        <!-- Conn 0 -> 1 -->
+        <mxCell id="conn_0_1" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;1. Transmisi Berkas DICOM Mentah (C-STORE SCU via TCP/IP)&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step0" target="step1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conn 1 -> 2 -->
+        <mxCell id="conn_1_2" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;2. Parsing Header Metadata &amp;amp; Penyimpanan Berkas .dcm Mentah&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step1" target="step2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conn 2 -> 3 -->
+        <mxCell id="conn_2_3" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;3. Ekstraksi Matriks Piksel 16-bit &amp;amp; Dispatch Eksekusi Restorasi AI&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step2" target="step3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conn 3 -> 4 -->
+        <mxCell id="conn_3_4" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;4. Citra Tereduksi Derau &amp;amp; Telemetri Kuantitatif (PSNR, SSIM, Latensi)&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step3" target="step4">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conn 4 -> 5 -->
+        <mxCell id="conn_4_5" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;5. Hasil Ukur CTR (%), Status Diagnostik, &amp;amp; Koordinat Anotasi SVG&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step4" target="step5">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Conn 5 -> 6 -->
+        <mxCell id="conn_5_6" value="&lt;b style=&quot;font-size: 10px; background-color: #ffffff;&quot;&gt;6. Penerbitan Laporan PDF &amp;amp; Berkas DICOM Secondary Capture&lt;/b&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;strokeColor=#0f172a;strokeWidth=1.5;fontFamily=Times New Roman;fontColor=#0f172a;" edge="1" parent="1" source="step5" target="step6">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
