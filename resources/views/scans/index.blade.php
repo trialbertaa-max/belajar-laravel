@@ -793,6 +793,7 @@
                         <option value="Thorax PA">Thorax PA (Rontgen Dada)</option>
                         <option value="Thorax AP">Thorax AP</option>
                         <option value="Thorax Lateral">Thorax Lateral</option>
+                        <option value="Waters">Waters (Sinus Paranasal / SPN)</option>
                         <option value="USG Abdomen">USG Abdomen</option>
                         <option value="USG Pelvic">USG Pelvic</option>
                     </select>
