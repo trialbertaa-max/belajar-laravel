@@ -1494,8 +1494,407 @@
 
         .gl-btn-primary:hover { opacity: 0.9; }
         .gl-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        /* =========================================
+           CONTRAST PROCESSING PANEL (cp-*)
+           ========================================= */
+        .cp-section-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            text-transform: uppercase;
+            margin: 0.6rem 0 0.4rem;
+        }
+        .cp-preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            margin-bottom: 0.65rem;
+        }
+        .cp-preset-btn {
+            background: rgba(17,26,44,0.8);
+            border: 1px solid #1e2d42;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.35rem 0.4rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: inherit;
+        }
+        .cp-preset-btn:hover {
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        .cp-preset-btn.cp-preset-active {
+            background: rgba(2,132,199,0.2);
+            border-color: rgba(56,189,248,0.6);
+            color: #38bdf8;
+        }
+        .cp-curve-wrap {
+            position: relative;
+            background: #0a1020;
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.65rem;
+        }
+        #cpCurveCanvas {
+            display: block;
+            width: 100%;
+            height: 150px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .cp-curve-label {
+            position: absolute;
+            bottom: 3px;
+            right: 5px;
+            font-size: 0.58rem;
+            color: #334155;
+            pointer-events: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cp-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.45rem;
+        }
+        .cp-slider-label {
+            font-size: 0.68rem;
+            color: #94a3b8;
+            min-width: 68px;
+        }
+        .cp-step-btn {
+            width: 22px;
+            height: 22px;
+            border: 1px solid #1e2d42;
+            background: rgba(17,26,44,0.9);
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.12s;
+            font-family: inherit;
+        }
+        .cp-step-btn:hover { border-color: #334155; color: #e2e8f0; }
+        .cp-range {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(to right, #0284c7 0%, #0284c7 50%, #1e293b 50%, #1e293b 100%);
+            outline: none;
+            cursor: pointer;
+        }
+        .cp-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            border: 2px solid #0c121e;
+            box-shadow: 0 0 6px rgba(56,189,248,0.5);
+        }
+        .cp-val-badge {
+            font-size: 0.68rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #38bdf8;
+            min-width: 28px;
+            text-align: right;
+        }
+        .cp-reset-btn {
+            width: 100%;
+            padding: 0.45rem;
+            background: rgba(17,26,44,0.6);
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .cp-reset-btn:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #38bdf8;
+        }
+
+        /* Advance button (opens advanced panel) */
+        .cp-advance-btn {
+            width: 100%;
+            padding: 0.42rem;
+            background: rgba(2,132,199,0.12);
+            border: 1px solid rgba(56,189,248,0.35);
+            border-radius: 6px;
+            color: #38bdf8;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.45rem;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            letter-spacing: 0.04em;
+        }
+        .cp-advance-btn:hover {
+            background: rgba(2,132,199,0.25);
+            border-color: rgba(56,189,248,0.7);
+            box-shadow: 0 0 8px rgba(56,189,248,0.2);
+        }
+
+        /* =========================================
+           ADVANCED ADJUSTMENT PANEL (cp-adv-*)
+           ========================================= */
+        .cp-basic-view,
+        .cp-adv-view {
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .cp-adv-view {
+            display: none;
+        }
+        .cp-adv-view.cp-adv-visible {
+            display: block;
+            animation: cpSlideIn 0.2s ease;
+        }
+        .cp-basic-view.cp-basic-hidden {
+            display: none;
+        }
+        @keyframes cpSlideIn {
+            from { opacity: 0; transform: translateX(8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .cp-adv-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            letter-spacing: 0.05em;
+            text-align: center;
+            padding: 0.35rem 0 0.5rem;
+            border-bottom: 1px solid rgba(56,189,248,0.25);
+            margin-bottom: 0.6rem;
+        }
+
+        /* Fujifilm Console style sliders */
+        .cp-fuji-group {
+            margin-bottom: 0.3rem;
+        }
+        .cp-fuji-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1px;
+        }
+        .cp-fuji-title {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            letter-spacing: 0.02em;
+        }
+        .cp-fuji-stepper {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            padding: 0 1px;
+        }
+        .cp-fuji-step-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 1px 7px;
+            line-height: 1.1;
+            transition: color 0.12s;
+        }
+        .cp-fuji-step-btn:hover {
+            color: #38bdf8;
+        }
+        .cp-fuji-sep {
+            color: #334155;
+            font-size: 0.62rem;
+            user-select: none;
+        }
+        .cp-fuji-track-box {
+            position: relative;
+            width: 100%;
+            height: 25px;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 2px;
+        }
+        .cp-fuji-bubble {
+            position: absolute;
+            top: -1px;
+            transform: translateX(-50%);
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: #38bdf8;
+            background: #090f1d;
+            border: 1px solid rgba(56,189,248,0.7);
+            border-radius: 3px;
+            padding: 0px 5px;
+            line-height: 1.25;
+            pointer-events: none;
+            box-shadow: 0 0 6px rgba(56,189,248,0.3);
+            white-space: nowrap;
+        }
+        .cp-fuji-range {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #38bdf8 0%, #38bdf8 var(--pct, 50%), #1e293b var(--pct, 50%), #1e293b 100%);
+            outline: none;
+            cursor: pointer;
+            margin: 0;
+        }
+        .cp-fuji-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            border: 2px solid #0284c7;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(56,189,248,0.85);
+        }
+        .cp-adv-range-hint {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-align: right;
+            margin-top: 1px;
+            margin-bottom: 0.35rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Dropdown rows */
+        .cp-adv-dropdown-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.45rem;
+        }
+        .cp-adv-dropdown-label {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            min-width: 65px;
+        }
+        .cp-adv-select {
+            flex: 1;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid #1e2d42;
+            border-radius: 5px;
+            color: #38bdf8;
+            font-size: 0.72rem;
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2338bdf8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 22px;
+            transition: border-color 0.12s;
+        }
+        .cp-adv-select:hover, .cp-adv-select:focus {
+            border-color: rgba(56,189,248,0.5);
+        }
+        .cp-adv-select option {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        /* Bottom action buttons of advanced panel */
+        .cp-adv-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+            margin-top: 0.65rem;
+        }
+        .cp-adv-return-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+            margin-top: 0.4rem;
+        }
+        .cp-adv-action-btn {
+            padding: 0.42rem 0.3rem;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            text-align: center;
+        }
+        .cp-adv-action-btn:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #38bdf8;
+        }
+        .cp-adv-action-btn.cp-adv-save {
+            background: rgba(2,132,199,0.15);
+            border-color: rgba(56,189,248,0.3);
+            color: #38bdf8;
+        }
+        .cp-adv-action-btn.cp-adv-save:hover {
+            background: rgba(2,132,199,0.3);
+            box-shadow: 0 0 6px rgba(56,189,248,0.25);
+        }
+        .cp-adv-action-btn.cp-adv-return {
+            background: rgba(17,26,44,0.6);
+            border-color: #1e2d42;
+            color: #94a3b8;
+        }
+        .cp-adv-action-btn.cp-adv-return:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #e2e8f0;
+        }
+
+        /* Saved param indicator */
+        .cp-adv-saved-flash {
+            display: none;
+            font-size: 0.64rem;
+            color: #22d3ee;
+            text-align: center;
+            margin-top: 0.3rem;
+            animation: cpFadeFlash 1.5s forwards;
+        }
+        @keyframes cpFadeFlash {
+            0%   { opacity: 1; }
+            70%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
     </style>
 </head>
+
 <body>
 
     <!-- 1. TOP CLINICAL COMMAND NAVBAR -->
@@ -1645,8 +2044,13 @@
         <div class="toolbar-divider"></div>
 
         <!-- Denoising Quick Toggle -->
-        <button class="tool-btn" id="btnQuickDenoise" onclick="switchDockTab('denoise')" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.35); color: #38bdf8;">
+        <button class="tool-btn" id="btnQuickDenoise" onclick="switchDockTab('denoise')" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.35); color: #38bdf8;" title="Restorasi Citra & Quantum Noise Filtering">
             <span>🔬 Restorasi & Denoising</span>
+        </button>
+
+        <!-- Image Processing Quick Toggle -->
+        <button class="tool-btn" id="btnQuickContrast" onclick="switchDockTab('contrast')" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.35); color: #38bdf8;" title="Image Processing & Penyesuaian Nada (FDR Console)">
+            <span>🎨 Image Processing</span>
         </button>
 
         <!-- DICOM & Export (Far Right) -->
@@ -1848,6 +2252,9 @@
             <div class="dock-tabs-nav">
                 <button class="dock-tab-btn active-tab" id="tabBtnDenoise" onclick="switchDockTab('denoise')">
                     Restorasi & Filter
+                </button>
+                <button class="dock-tab-btn" id="tabBtnContrast" onclick="switchDockTab('contrast')">
+                    Image Processing
                 </button>
                 <div class="dock-history-nav-group" title="Riwayat Anotasi & Pengukuran (Undo / Redo)">
                     <button type="button" class="dock-undo-redo-btn" id="btnDockUndo" onclick="undoLastMeasurement()" title="Undo Anotasi (Ctrl+Z)" aria-label="Undo">
@@ -2176,6 +2583,235 @@
                     </div>
                 </div>
 
+                <!-- TAB 5: IMAGE PROCESSING -->
+                <div class="tab-pane" id="paneContrast">
+                    <div class="dock-card" style="border-color: rgba(56,189,248,0.25);">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title" style="color: #38bdf8; display:flex; align-items:center; gap:0.35rem;">
+                                <span>🎨</span> Image Processing
+                            </span>
+                            <span id="cpTargetBadge" style="font-size:0.65rem; color:#38bdf8; font-family:monospace; background:rgba(2,132,199,0.2); padding:2px 6px; border-radius:4px; border:1px solid rgba(56,189,248,0.3);">VP-A</span>
+                        </div>
+
+                        <!-- ══ BASIC VIEW ══ -->
+                        <div class="cp-basic-view" id="cpBasicView">
+                            <!-- Preset buttons -->
+                            <p class="cp-section-title">Preset Kurva Nada</p>
+                            <div class="cp-preset-grid" id="cpPresetGrid"></div>
+
+                            <!-- Curve + Histogram canvas -->
+                            <p class="cp-section-title">Kurva Nada / LUT</p>
+                            <div class="cp-curve-wrap">
+                                <canvas id="cpCurveCanvas" width="220" height="150"
+                                        aria-label="Editor kurva nada — seret titik untuk mengubah kurva"
+                                        role="img"></canvas>
+                                <span class="cp-curve-label">Input →</span>
+                            </div>
+
+                            <!-- Brightness slider -->
+                            <p class="cp-section-title">Kecerahan &amp; Kontras</p>
+                            <div class="cp-slider-row">
+                                <span class="cp-slider-label">Kecerahan:</span>
+                                <button class="cp-step-btn" id="cpBrightnessMinus" aria-label="Kurangi kecerahan">−</button>
+                                <input type="range" class="cp-range" id="cpBrightness"
+                                       min="-8" max="8" step="1" value="0"
+                                       aria-label="Kecerahan">
+                                <button class="cp-step-btn" id="cpBrightnessPlus" aria-label="Tambah kecerahan">+</button>
+                                <span class="cp-val-badge" id="cpBrightnessVal">0</span>
+                            </div>
+
+                            <!-- Contrast slider -->
+                            <div class="cp-slider-row">
+                                <span class="cp-slider-label">Kontras:</span>
+                                <button class="cp-step-btn" id="cpContrastMinus" aria-label="Kurangi kontras">−</button>
+                                <input type="range" class="cp-range" id="cpContrast"
+                                       min="-8" max="8" step="1" value="0"
+                                       aria-label="Kontras">
+                                <button class="cp-step-btn" id="cpContrastPlus" aria-label="Tambah kontras">+</button>
+                                <span class="cp-val-badge" id="cpContrastVal">0</span>
+                            </div>
+
+                            <!-- Reset -->
+                            <button class="cp-reset-btn" id="cpResetBtn">
+                                🔄 Reset Kontras ke Balanced
+                            </button>
+
+                            <!-- Advance button -->
+                            <button class="cp-advance-btn" id="cpAdvanceBtn" aria-label="Buka penyesuaian lanjutan">
+                                Advance &rarr;
+                            </button>
+                        </div><!-- end .cp-basic-view -->
+
+                        <!-- ══ ADVANCED VIEW ══ -->
+                        <div class="cp-adv-view" id="cpAdvView">
+                            <div class="cp-adv-title">Advanced Adjustment</div>
+
+                            <!-- Amplifier (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Amplifier</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvAmpMinus" aria-label="Kurangi Amplifier">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvAmpPlus" aria-label="Tambah Amplifier">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvAmplifierBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvAmplifier"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Amplifier">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Latitude (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Latitude</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvLatMinus" aria-label="Kurangi Latitude">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvLatPlus" aria-label="Tambah Latitude">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvLatitudeBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvLatitude"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Latitude">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Detail (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Detail</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvDetMinus" aria-label="Kurangi Detail">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvDetPlus" aria-label="Tambah Detail">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvDetailBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvDetail"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Detail">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Noise Mode (1–20) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Noise Mode</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvNoiseMinus" aria-label="Kurangi Noise Mode">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvNoisePlus" aria-label="Tambah Noise Mode">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvNoiseModeBubble">10</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvNoiseMode"
+                                           min="1" max="20" step="1" value="10"
+                                           aria-label="Noise Mode">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~20)</div>
+                            </div>
+
+                            <!-- Brightness (adv mirror) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Brightness</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvBrightMinus" aria-label="Kurangi Kecerahan">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvBrightPlus" aria-label="Tambah Kecerahan">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvBrightnessBubble">0</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvBrightness"
+                                           min="-8" max="8" step="1" value="0"
+                                           aria-label="Brightness (advanced)">
+                                </div>
+                                <div class="cp-adv-range-hint">(-8~8)</div>
+                            </div>
+
+                            <!-- Contrast (adv mirror) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Contrast</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvContMinus" aria-label="Kurangi Kontras">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvContPlus" aria-label="Tambah Kontras">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvContrastBubble">0</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvContrast"
+                                           min="-8" max="8" step="1" value="0"
+                                           aria-label="Contrast (advanced)">
+                                </div>
+                                <div class="cp-adv-range-hint">(-8~8)</div>
+                            </div>
+
+                            <!-- Algorithm dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">Algorithm</span>
+                                <select class="cp-adv-select" id="cpAdvAlgorithm" aria-label="Algorithm">
+                                    <option value="symphony">Symphony</option>
+                                    <option value="classic">Classic</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="fuji">Fuji-Linear</option>
+                                </select>
+                            </div>
+
+                            <!-- LUT dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">LUT</span>
+                                <select class="cp-adv-select" id="cpAdvLUT" aria-label="LUT">
+                                    <option value="sigmoid1">SIGMOID1</option>
+                                    <option value="sigmoid2">SIGMOID2</option>
+                                    <option value="linear">LINEAR</option>
+                                    <option value="gamma">GAMMA</option>
+                                    <option value="log">LOG</option>
+                                </select>
+                            </div>
+
+                            <!-- Style dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">Style</span>
+                                <select class="cp-adv-select" id="cpAdvStyle" aria-label="Style">
+                                    <option value="Bone">Bone</option>
+                                    <option value="Balanced">Balanced</option>
+                                    <option value="Soft Tissue">Soft Tissue</option>
+                                    <option value="HighContrast">HighContrast</option>
+                                    <option value="LUT">LUT</option>
+                                </select>
+                            </div>
+
+                            <!-- Action buttons row -->
+                            <div class="cp-adv-btn-row">
+                                <button class="cp-adv-action-btn" id="cpAdvResetParam">Reset Param</button>
+                                <button class="cp-adv-action-btn cp-adv-save" id="cpAdvSaveParam">Save Param</button>
+                            </div>
+                            <!-- Return button on right side -->
+                            <div class="cp-adv-return-row">
+                                <div></div>
+                                <button class="cp-adv-action-btn cp-adv-return" id="cpAdvReturnBtn">Return</button>
+                            </div>
+                            <div class="cp-adv-saved-flash" id="cpAdvSavedFlash">✔ Parameter tersimpan</div>
+                        </div><!-- end .cp-adv-view -->
+
+                    </div>
+                </div>
+
+
             </div>
         </aside>
 
@@ -2302,6 +2938,8 @@
             1: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' },
             2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
         };
+        window.vpState = vpState; // Exposed for ContrastPanel module
+
 
         // Measurements Store & Undo/Redo Stacks
         const measurements = { 1: [], 2: [] };
@@ -2448,6 +3086,7 @@
                 if (cContainer) cContainer.style.display = 'none';
                 updateTransform(targetVp);
                 updateFilter(targetVp);
+                if (window.ContrastPanel) window.ContrastPanel.onImageLoad(targetVp);
             }
 
             if (targetVp === 1) {
@@ -2484,6 +3123,21 @@
             document.querySelectorAll('.dock-tab-btn').forEach(btn => btn.classList.remove('active-tab'));
             document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active-pane'));
 
+            const qDenoise = document.getElementById('btnQuickDenoise');
+            const qContrast = document.getElementById('btnQuickContrast');
+            if (qDenoise) {
+                qDenoise.style.background = tabId === 'denoise' ? 'rgba(2, 132, 199, 0.4)' : 'rgba(2, 132, 199, 0.15)';
+                qDenoise.style.borderColor = tabId === 'denoise' ? '#38bdf8' : 'rgba(2, 132, 199, 0.35)';
+            }
+            if (qContrast) {
+                qContrast.style.background = tabId === 'contrast' ? 'rgba(2, 132, 199, 0.4)' : 'rgba(2, 132, 199, 0.15)';
+                qContrast.style.borderColor = tabId === 'contrast' ? '#38bdf8' : 'rgba(2, 132, 199, 0.35)';
+            }
+
+            if (tabId !== 'contrast' && window.ContrastPanel) {
+                window.ContrastPanel.deactivate();
+            }
+
             if (tabId === 'denoise') {
                 document.getElementById('tabBtnDenoise').classList.add('active-tab');
                 document.getElementById('paneDenoise').classList.add('active-pane');
@@ -2496,6 +3150,10 @@
             } else if (tabId === 'dicom') {
                 document.getElementById('tabBtnDicom').classList.add('active-tab');
                 document.getElementById('paneDicom').classList.add('active-pane');
+            } else if (tabId === 'contrast') {
+                document.getElementById('tabBtnContrast').classList.add('active-tab');
+                document.getElementById('paneContrast').classList.add('active-pane');
+                if (window.ContrastPanel) window.ContrastPanel.activate(activeViewport);
             }
         }
 
@@ -2543,6 +3201,13 @@
                     badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
                     badge.style.background = 'rgba(16, 185, 129, 0.2)';
                 }
+            }
+
+            // Update Contrast Panel if active
+            const cpBadge = document.getElementById('cpTargetBadge');
+            if (cpBadge) cpBadge.textContent = id === 1 ? 'VP-A' : 'VP-B';
+            if (window.ContrastPanel && document.getElementById('paneContrast')?.classList.contains('active-pane')) {
+                window.ContrastPanel.activate(id);
             }
 
             updateInspectionButtons();
@@ -3461,6 +4126,7 @@
             clearAllCalipers();
             setTool('pan');
             document.getElementById('btnInvert').classList.remove('active');
+            if (window.ContrastPanel) window.ContrastPanel.onResetViewer();
             lblWwWl.innerText = 'WW: 400 | WL: 40 (Default)';
             document.getElementById('lblActivePreset').innerText = 'Window: Default';
             updateInspectionButtons();
@@ -5880,5 +6546,8 @@
             function trapFocusRemove()   { document.removeEventListener('keydown', trapFocusHandler); }
         })();
     </script>
+
+    {{-- Contrast Processing Panel (ES module, built by Vite) --}}
+    @vite('resources/js/image-processing/contrast-panel.js')
 </body>
 </html>
