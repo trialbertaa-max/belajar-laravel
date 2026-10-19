@@ -3,10 +3,17 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PatientScanController;
 use App\Http\Controllers\GlossaryController;
+use App\Http\Controllers\McuImportController;
 
 // Halaman utama otomatis diarahkan ke Dashboard Pasien & Viewer
 Route::get('/', function () {
     return redirect()->route('scans.index');
+});
+
+// Endpoint Import Excel MCU (preview & template) dengan rate limiting
+Route::middleware(['throttle:20,1'])->group(function () {
+    Route::post('/mcu/import-preview', [McuImportController::class, 'preview'])->name('mcu.import.preview');
+    Route::get('/mcu/import-template', [McuImportController::class, 'template'])->name('mcu.import.template');
 });
 
 // Halaman Glosarium Singkatan & Istilah Teknis
