@@ -698,7 +698,7 @@
             backdrop-filter: blur(8px);
         }
 
-        /* 3C. RIGHT WORKSTATION DOCK PANEL (TABBED) */
+        /* 3C. RIGHT WORKSTATION DOCK PANEL (WORKSTATION) */
         .dock-panel {
             width: 380px;
             min-width: 380px;
@@ -707,47 +707,143 @@
             display: flex;
             flex-direction: column;
             z-index: 10;
+            transition: width 0.2s ease, min-width 0.2s ease;
         }
 
-        .dock-tabs-nav {
+        .dock-panel.collapsed {
+            width: 0 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+            border-left: none !important;
+            display: none !important;
+        }
+
+        /* Clean Dock Header — now just a thin close row above tabs */
+        .dock-header {
             display: flex;
-            background-color: #080d16;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0.5rem 0 0.85rem;
+            background-color: #060911;
             border-bottom: 1px solid var(--ws-border);
-            padding: 0 4px;
+            min-height: 32px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .dock-header-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 0;
+        }
+
+        .dock-header-icon {
+            font-size: 0.8rem;
+            display: none; /* hidden — tabs replace title */
+        }
+
+        .dock-header-title {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .dock-close-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.9rem;
+            cursor: pointer;
+            padding: 0.15rem 0.35rem;
+            border-radius: 4px;
+            line-height: 1;
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .dock-close-btn:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ── VS Code-style Tab Bar ── */
+        .dock-tabbar {
+            display: flex;
+            align-items: stretch;
+            background: #060911;
+            border-bottom: 1px solid var(--ws-border);
+            flex-shrink: 0;
             overflow-x: auto;
             scrollbar-width: none;
         }
+        .dock-tabbar::-webkit-scrollbar { display: none; }
 
-        .dock-tabs-nav::-webkit-scrollbar {
-            display: none;
-        }
-
-        .dock-tab-btn {
-            flex: 1;
-            padding: 0.65rem 0.2rem;
-            background: transparent;
-            border: none;
-            border-bottom: 2px solid transparent;
-            color: var(--ws-text-secondary);
-            font-size: 0.70rem;
-            font-weight: 600;
-            letter-spacing: -0.15px;
+        .dock-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0 0.75rem;
+            height: 35px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #64748b;
+            border-right: 1px solid var(--ws-border);
+            border-top: 2px solid transparent;
             cursor: pointer;
-            transition: all 0.15s;
-            text-align: center;
             white-space: nowrap;
+            flex-shrink: 0;
+            transition: color 0.15s, background 0.15s;
+            background: transparent;
+            user-select: none;
+            position: relative;
         }
 
-        .dock-tab-btn:hover {
-            color: var(--ws-text-primary);
-            background: rgba(255, 255, 255, 0.02);
+        .dock-tab:hover {
+            color: #94a3b8;
+            background: rgba(255,255,255,0.03);
         }
 
-        .dock-tab-btn.active-tab {
-            color: var(--med-blue-light);
-            border-bottom-color: var(--med-blue-light);
-            background: rgba(2, 132, 199, 0.08);
-            font-weight: 700;
+        .dock-tab.active {
+            color: #f1f5f9;
+            background: var(--ws-surface);
+            border-top-color: #0284c7; /* blue accent like VS Code */
+        }
+
+        .dock-tab-icon {
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+
+        .dock-tab-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            color: #475569;
+            opacity: 0;
+            transition: opacity 0.15s, background 0.15s, color 0.15s;
+            flex-shrink: 0;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .dock-tab:hover .dock-tab-close,
+        .dock-tab.active .dock-tab-close {
+            opacity: 1;
+        }
+
+        .dock-tab-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
         }
 
         /* Undo & Redo Tab Icons */
@@ -1188,6 +1284,11 @@
                 border-top: 1px solid var(--ws-border) !important;
                 flex: none !important;
                 height: auto !important;
+            }
+            .dock-panel.collapsed {
+                display: none !important;
+                height: 0 !important;
+                min-height: 0 !important;
             }
             .series-drawer {
                 position: fixed !important;
@@ -1892,6 +1993,212 @@
             70%  { opacity: 1; }
             100% { opacity: 0; }
         }
+
+        /* =========================================
+           VIEW MENU (VS Code-style cascading menu)
+           ========================================= */
+        .view-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        #viewMenuToggle {
+            background-color: var(--ws-surface);
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            padding: 0.35rem 0.65rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        #viewMenuToggle:hover,
+        #viewMenuToggle.vm-open {
+            background-color: var(--ws-surface-elevated);
+            color: var(--ws-text-primary);
+            border-color: #334155;
+        }
+
+        /* Level-1 Panel */
+        .view-menu__panel {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 260px;
+            background: #0d1424;
+            border: 1px solid #23334d;
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+            z-index: 9999;
+            padding: 0.3rem 0;
+            backdrop-filter: blur(12px);
+            animation: vmSlideIn 0.12s ease;
+        }
+
+        @keyframes vmSlideIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-menu__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0.75rem 0.3rem 0.85rem;
+            border-bottom: 1px solid #1a2538;
+            margin-bottom: 0.2rem;
+        }
+
+        .view-menu__header span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        #viewMenuClose {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: color 0.12s, background 0.12s;
+            line-height: 1;
+        }
+
+        #viewMenuClose:hover {
+            color: #f1f5f9;
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Group row (Level 1 item with submenu) */
+        .vm-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 0.6rem 0 0.85rem;
+            height: 34px;
+            cursor: pointer;
+            transition: background 0.1s;
+            user-select: none;
+        }
+
+        .vm-group:hover {
+            background: #1a47a8;
+        }
+
+        .vm-check-col {
+            width: 18px;
+            flex-shrink: 0;
+            font-size: 0.78rem;
+            color: #38bdf8;
+            text-align: center;
+        }
+
+        .vm-label {
+            flex: 1;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--ws-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vm-value {
+            font-size: 0.68rem;
+            color: #64748b;
+            margin-right: 0.4rem;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+        .vm-arrow {
+            font-size: 0.65rem;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        /* Submenu (Level 2) */
+        .vm-submenu {
+            display: none;
+            position: absolute;
+            top: -1px;
+            left: calc(100% - 2px);
+            min-width: 220px;
+            background: #0d1424;
+            border: 1px solid #23334d;
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+            z-index: 10000;
+            padding: 0.3rem 0;
+            animation: vmSlideIn 0.1s ease;
+        }
+
+        /* Open submenu on hover (with delay handled by JS) */
+        .vm-group.vm-sub-open > .vm-submenu {
+            display: block;
+        }
+
+        /* Submenu item */
+        .vm-item {
+            display: flex;
+            align-items: center;
+            padding: 0 0.6rem 0 0.85rem;
+            height: 34px;
+            cursor: pointer;
+            transition: background 0.1s;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .vm-item:hover {
+            background: #1a47a8;
+        }
+
+        .vm-item .vm-check-col {
+            color: #38bdf8;
+        }
+
+        .vm-item .vm-label {
+            font-weight: 500;
+        }
+
+        .vm-item .vm-shortcut {
+            font-size: 0.65rem;
+            color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+            flex-shrink: 0;
+        }
+
+        .vm-divider {
+            height: 1px;
+            background: #1a2538;
+            margin: 0.25rem 0;
+        }
+
+        /* Submenu: open to left when near right edge */
+        .vm-submenu.vm-sub-left {
+            left: auto;
+            right: calc(100% - 2px);
+        }
     </style>
 </head>
 
@@ -1905,9 +2212,183 @@
             </a>
 
             @if($hasExamined)
-            <button class="tool-btn" onclick="toggleSeriesDrawer()" title="Sembunyikan / Munculkan Seri Pasien">
-                <span id="btnDrawerIcon">◀</span> Seri Pasien ({{ count($patientSeries) }})
-            </button>
+            <!-- VIEW MENU — menggantikan posisi tombol Seri Pasien -->
+            <!-- CATATAN: Logika toggleSeriesDrawer() dipertahankan; tombol Seri Pasien hanya dihilangkan dari UI. Navigasi antar seri tidak lagi punya tombol di UI, perlu keputusan pemilik proyek apakah dipindah ke tempat lain. -->
+            <div class="view-menu" id="viewMenu">
+                <button id="viewMenuToggle" aria-haspopup="true" aria-expanded="false"
+                    onclick="vmToggle(event)">
+                    View <span style="font-size:0.65rem;opacity:0.7;">▾</span>
+                </button>
+
+                <!-- Level-1 Panel -->
+                <div id="viewMenuPanel" class="view-menu__panel" role="menu" hidden>
+                    <div class="view-menu__header">
+                        <span>View</span>
+                        <button id="viewMenuClose" aria-label="Tutup menu" onclick="vmCloseAll()">×</button>
+                    </div>
+
+                    <!-- ── Kelompok 1: Window ── -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupWindow"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col" id="vmWindowCheckCol"></span>
+                        <span class="vm-label">Window</span>
+                        <span class="vm-value" id="vmWindowValue">Default</span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubWindow"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupWindow'))">
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('default')">
+                                <span class="vm-check-col" id="vmChkDefault">✓</span>
+                                <span class="vm-label">Default</span>
+                                <span class="vm-shortcut">400/40</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('lung')">
+                                <span class="vm-check-col" id="vmChkLung"></span>
+                                <span class="vm-label" style="color:#38bdf8;">Lung</span>
+                                <span class="vm-shortcut" style="color:#38bdf8;">1500/-600</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('bone')">
+                                <span class="vm-check-col" id="vmChkBone"></span>
+                                <span class="vm-label" style="color:#facc15;">Bone</span>
+                                <span class="vm-shortcut" style="color:#facc15;">2500/480</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('soft')">
+                                <span class="vm-check-col" id="vmChkSoft"></span>
+                                <span class="vm-label" style="color:#c084fc;">Soft tissue</span>
+                                <span class="vm-shortcut" style="color:#c084fc;">350/50</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Kelompok 2: Orientasi ── -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupOrientasi"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col"></span>
+                        <span class="vm-label">Orientasi</span>
+                        <span class="vm-value"></span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubOrientasi"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupOrientasi'))">
+                            <button class="vm-item" role="menuitem" onclick="rotateImage()">
+                                <span class="vm-check-col"></span>
+                                <span class="vm-label">Putar 90 clockwise</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemFlipH"
+                                onclick="vmFlipH()">
+                                <span class="vm-check-col" id="vmChkFlipH"></span>
+                                <span class="vm-label">Cermin horizontal</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemFlipV"
+                                onclick="vmFlipV()">
+                                <span class="vm-check-col" id="vmChkFlipV"></span>
+                                <span class="vm-label">Cermin vertikal</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemInvert"
+                                onclick="vmInvert()">
+                                <span class="vm-check-col" id="vmChkInvert"></span>
+                                <span class="vm-label">Invert grayscale</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Kelompok 3: View ── -->
+                    <!-- CATATAN: Nama kelompok ketiga adalah "View" sesuai daftar yang diberikan pemilik proyek. Sama dengan nama tombol induk — pemilik proyek dapat memutuskan penggantian nama jika dirasa janggal. -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupView"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col"></span>
+                        <span class="vm-label">Tools</span>
+                        <span class="vm-value"></span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubView"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupView'))">
+                            <!-- Item yang membuka panel/modal menutup menu otomatis -->
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('denoise'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDenoise"></span>
+                                <span class="vm-label">Restorasi &amp; Denoising</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('contrast'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkContrast"></span>
+                                <span class="vm-label">Image processing</span>
+                            </button>
+                            <div class="vm-divider"></div>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('measure'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkMeasure"></span>
+                                <span class="vm-label">Hasil ukur / CTR</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('diagnosis'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDiagnosis"></span>
+                                <span class="vm-label">Expertise radiology</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('dicom'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDicom"></span>
+                                <span class="vm-label">Tags DICOM</span>
+                            </button>
+                            <div class="vm-divider"></div>
+                            <!-- ── Alat Ukur & ROI (nested group) ── -->
+                            <div class="vm-group" role="menuitem" aria-haspopup="true"
+                                 id="vmGroupAlatUkur"
+                                 onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                                 onclick="vmSubOpen(this)">
+                                <span class="vm-check-col" id="vmChkAlatUkur"></span>
+                                <span class="vm-label" style="color: #facc15;">📐 Alat Ukur</span>
+                                <span class="vm-value"></span>
+                                <span class="vm-arrow">▸</span>
+                                <div class="vm-submenu" role="menu" id="vmSubAlatUkur"
+                                     onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupAlatUkur'))">
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('circle'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCircle"></span>
+                                        <span class="vm-label">⭕ Lingkaran Sempurna</span>
+                                        <span class="vm-shortcut">1:1</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('caliper'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCaliper"></span>
+                                        <span class="vm-label">📏 Linear Caliper</span>
+                                        <span class="vm-shortcut">2-Point</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('ellipse'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolEllipse"></span>
+                                        <span class="vm-label">🥚 Oval / Ellipse</span>
+                                        <span class="vm-shortcut">Major/Minor</span>
+                                    </button>
+                                    <div class="vm-divider"></div>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('ctr'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCtr"></span>
+                                        <span class="vm-label" style="color: #fb7185;">🫀 CTR (Danzer 1919)</span>
+                                        <span class="vm-shortcut" style="color: #fb7185;">Ratio</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('box'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolBox"></span>
+                                        <span class="vm-label">🔲 Box ROI</span>
+                                        <span class="vm-shortcut">Rectangle</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('polygon'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolPolygon"></span>
+                                        <span class="vm-label">📐 Polygon ROI</span>
+                                        <span class="vm-shortcut">Contour</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /viewMenuPanel -->
+            </div><!-- /viewMenu -->
             @endif
 
             <div class="patient-demographics-strip">
@@ -1946,112 +2427,36 @@
     @if($hasExamined)
     <!-- 2. CLINICAL WORKSTATION TOOLBAR (hanya tampil jika pemeriksaan sudah dilakukan) -->
     <div class="pacs-toolbar">
-        <!-- Navigation & Zoom -->
-        <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser / Pan Gambar">Pan</button>
-        <button class="tool-btn" id="btnZoomTool" onclick="setTool('zoom')" title="Mode Perbesar / Zoom Gambar">Zoom</button>
+        <!-- Navigation & History -->
+        <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser & Perbesar (Pan & Zoom) Gambar">PAN & ZOOM</button>
+        <button class="tool-btn" id="btnToolbarUndo" onclick="undoLastMeasurement()" title="Undo Anotasi / Titik Terakhir (Ctrl+Z)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                <path d="M3 3v5h5"/>
+            </svg>
+            Undo
+        </button>
+        <button class="tool-btn" id="btnToolbarRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                <path d="M21 3v5h-5"/>
+            </svg>
+            Redo
+        </button>
 
         <div class="toolbar-divider"></div>
 
-        <!-- Unified Alat Ukur & ROI Dropdown -->
-        <div class="tool-dropdown" id="ddMeasure">
-            <button class="tool-btn" id="btnMeasureMain" onclick="toggleDropdown(event, 'ddMeasure')" style="background: rgba(250, 204, 21, 0.12); border-color: rgba(250, 204, 21, 0.35); color: #facc15; font-weight: 700;" title="Pilihan Alat Ukur Medis & ROI">
-                <span id="lblMeasureIcon">📐</span>
-                <span id="lblMeasureTitle">Alat Ukur</span>
-                <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
-            </button>
-            <div class="dropdown-menu">
-                <button class="dropdown-item" onclick="setTool('circle'); closeAllDropdowns();">
-                    <span style="color: #facc15; font-weight: 600;">⭕ Lingkaran Sempurna (True Circle)</span>
-                    <span style="font-size: 0.65rem; color: #facc15; font-family: monospace;">1:1 locked</span>
-                </button>
-                <button class="dropdown-item" onclick="setTool('caliper'); closeAllDropdowns();">
-                    <span style="color: #facc15; font-weight: 600;">📏 Linear Caliper (Jarak 2-Titik)</span>
-                    <span style="font-size: 0.65rem; color: #facc15; font-family: monospace;">2-Point</span>
-                </button>
-                <button class="dropdown-item" onclick="setTool('ellipse'); closeAllDropdowns();">
-                    <span style="color: #facc15; font-weight: 600;">🥚 Oval / Ellipse (D1 &times; D2)</span>
-                    <span style="font-size: 0.65rem; color: #facc15; font-family: monospace;">Major/Minor</span>
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" onclick="setTool('ctr'); closeAllDropdowns();">
-                    <span style="color: #fb7185; font-weight: 600;">🫀 Cardiothoracic Ratio (CTR)</span>
-                    <span style="font-size: 0.65rem; color: #fb7185; font-family: monospace;">Danzer 1919</span>
-                </button>
-                <button class="dropdown-item" onclick="setTool('box'); closeAllDropdowns();">
-                    <span>🔲 Box ROI (Area Segiempat)</span>
-                    <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">Rectangle</span>
-                </button>
-                <button class="dropdown-item" onclick="setTool('polygon'); closeAllDropdowns();">
-                    <span>📐 Polygon ROI (Magnetik Snap)</span>
-                    <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">Contour</span>
-                </button>
-            </div>
-        </div>
+        <!-- lblMeasureIcon & lblMeasureTitle dipertahankan (hidden) agar JS setTool() yg memperbarui label tetap bekerja -->
+        <span id="lblMeasureIcon" style="display:none;">📐</span>
+        <span id="lblMeasureTitle" style="display:none;">Alat Ukur</span>
 
-        <!-- Windowing / Preset Dropdown -->
-        <div class="tool-dropdown" id="ddPreset">
-            <button class="tool-btn" onclick="toggleDropdown(event, 'ddPreset')">
-                <span id="lblActivePreset">Window: Default</span>
-                <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
-            </button>
-            <div class="dropdown-menu">
-                <button class="dropdown-item" onclick="applyPreset('default'); closeAllDropdowns();">
-                    <span>Default Window</span>
-                    <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">400/40</span>
-                </button>
-                <button class="dropdown-item" onclick="applyPreset('lung'); closeAllDropdowns();">
-                    <span style="color: #38bdf8;">Lung Window (Paru)</span>
-                    <span style="font-size: 0.65rem; color: #38bdf8; font-family: monospace;">1500/-600</span>
-                </button>
-                <button class="dropdown-item" onclick="applyPreset('bone'); closeAllDropdowns();">
-                    <span style="color: #facc15;">Bone Window (Tulang)</span>
-                    <span style="font-size: 0.65rem; color: #facc15; font-family: monospace;">2500/480</span>
-                </button>
-                <button class="dropdown-item" onclick="applyPreset('soft'); closeAllDropdowns();">
-                    <span style="color: #c084fc;">Soft Tissue Window</span>
-                    <span style="font-size: 0.65rem; color: #c084fc; font-family: monospace;">350/50</span>
-                </button>
-            </div>
-        </div>
+        <!-- [Window, Orientasi, Restorasi & Denoising, Image Processing dipindah ke menu View ▾ di navbar] -->
+        <!-- Element id="btnInvert" dipertahankan di sini (hidden) agar JS yang mereferensikannya tetap bekerja -->
+        <button id="btnInvert" style="display:none;" onclick="toggleInvert()"></button>
+        <!-- lblActivePreset dipertahankan (hidden) agar JS applyPreset() tetap bekerja -->
+        <span id="lblActivePreset" style="display:none;">Window: Default</span>
 
-        <!-- Orientation & Display -->
-        <div class="tool-dropdown" id="ddOrientation">
-            <button class="tool-btn" onclick="toggleDropdown(event, 'ddOrientation')">
-                <span>Orientasi</span>
-                <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
-            </button>
-            <div class="dropdown-menu">
-                <button class="dropdown-item" onclick="rotateImage(); closeAllDropdowns();">
-                    <span>Putar 90° Clockwise</span>
-                </button>
-                <button class="dropdown-item" onclick="flipHorizontal(); closeAllDropdowns();">
-                    <span>Cermin Horisontal (Flip H)</span>
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" id="btnInvert" onclick="toggleInvert(); closeAllDropdowns();">
-                    <span>Invert Grayscale (Monochrome)</span>
-                </button>
-            </div>
-        </div>
-
-        <div class="toolbar-divider"></div>
-
-        <!-- Quick Annotation Management -->
-        <button class="tool-btn" onclick="undoLastMeasurement()" title="Hapus titik atau pengukuran terakhir">Undo</button>
-        <button class="tool-btn" onclick="clearAllCalipers()" title="Hapus semua anotasi" style="color: #f87171;">Hapus</button>
         <button class="tool-btn" onclick="resetViewer()" title="Reset tampilan citra">Reset View</button>
-
-        <div class="toolbar-divider"></div>
-
-        <!-- Denoising Quick Toggle -->
-        <button class="tool-btn" id="btnQuickDenoise" onclick="switchDockTab('denoise')" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.35); color: #38bdf8;" title="Restorasi Citra & Quantum Noise Filtering">
-            <span>🔬 Restorasi & Denoising</span>
-        </button>
-
-        <!-- Image Processing Quick Toggle -->
-        <button class="tool-btn" id="btnQuickContrast" onclick="switchDockTab('contrast')" style="background: rgba(2, 132, 199, 0.15); border-color: rgba(2, 132, 199, 0.35); color: #38bdf8;" title="Image Processing & Penyesuaian Nada (FDR Console)">
-            <span>🎨 Image Processing</span>
-        </button>
 
         <!-- DICOM & Export (Far Right) -->
         <div class="tool-dropdown" id="ddDicom" style="margin-left: auto;">
@@ -2247,39 +2652,19 @@
 
         </div>
 
-        <!-- 3C. RIGHT DOCK PANEL (TABBED WORKSTATION) -->
-        <aside class="dock-panel">
-            <div class="dock-tabs-nav">
-                <button class="dock-tab-btn active-tab" id="tabBtnDenoise" onclick="switchDockTab('denoise')">
-                    Restorasi & Filter
-                </button>
-                <button class="dock-tab-btn" id="tabBtnContrast" onclick="switchDockTab('contrast')">
-                    Image Processing
-                </button>
-                <div class="dock-history-nav-group" title="Riwayat Anotasi & Pengukuran (Undo / Redo)">
-                    <button type="button" class="dock-undo-redo-btn" id="btnDockUndo" onclick="undoLastMeasurement()" title="Undo Anotasi (Ctrl+Z)" aria-label="Undo">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                            <path d="M3 3v5h5"/>
-                        </svg>
-                    </button>
-                    <button type="button" class="dock-undo-redo-btn" id="btnDockRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)" aria-label="Redo">
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                            <path d="M21 3v5h-5"/>
-                        </svg>
-                    </button>
+        <!-- 3C. RIGHT DOCK PANEL (WORKSTATION) -->
+        <aside class="dock-panel collapsed" id="dockPanel">
+            <!-- Thin top bar with panel label + close all -->
+            <div class="dock-header" id="dockHeader">
+                <div class="dock-header-title-wrap">
+                    <span id="dockHeaderIcon" class="dock-header-icon"></span>
+                    <span id="dockHeaderTitle" class="dock-header-title">PANEL</span>
                 </div>
-                <button class="dock-tab-btn" id="tabBtnMeasure" onclick="switchDockTab('measure')">
-                    Hasil Ukur / CTR
-                </button>
-                <button class="dock-tab-btn" id="tabBtnDiagnosis" onclick="switchDockTab('diagnosis')">
-                    Ekspertise Radiologi
-                </button>
-                <button class="dock-tab-btn" id="tabBtnDicom" onclick="switchDockTab('dicom')">
-                    Tags DICOM
-                </button>
+                <button type="button" class="dock-close-btn" onclick="closeDockPanel()" title="Tutup Semua Panel (Esc)" aria-label="Tutup Panel">✕</button>
             </div>
+
+            <!-- VS Code-style tab bar (populated by JS) -->
+            <div class="dock-tabbar" id="dockTabBar"></div>
 
             <div class="dock-content">
 
@@ -2935,8 +3320,8 @@
         let isDrawerOpen = (window.innerWidth > 768);
 
         const vpState = {
-            1: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' },
-            2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
+            1: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' },
+            2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
         };
         window.vpState = vpState; // Exposed for ContrastPanel module
 
@@ -2958,6 +3343,8 @@
         function updateUndoRedoButtons() {
             const btnUndo = document.getElementById('btnDockUndo');
             const btnRedo = document.getElementById('btnDockRedo');
+            const btnTbUndo = document.getElementById('btnToolbarUndo');
+            const btnTbRedo = document.getElementById('btnToolbarRedo');
             const canUndo = (activeTool === 'polygon' && currentPolygonPoints.length > 0) || 
                             (undoStack[activeViewport] && undoStack[activeViewport].length > 0) || 
                             (measurements[activeViewport] && measurements[activeViewport].length > 0);
@@ -2972,6 +3359,16 @@
                 btnRedo.disabled = !canRedo;
                 btnRedo.style.opacity = canRedo ? '1' : '0.35';
                 btnRedo.style.cursor = canRedo ? 'pointer' : 'not-allowed';
+            }
+            if (btnTbUndo) {
+                btnTbUndo.disabled = !canUndo;
+                btnTbUndo.style.opacity = canUndo ? '1' : '0.4';
+                btnTbUndo.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+            }
+            if (btnTbRedo) {
+                btnTbRedo.disabled = !canRedo;
+                btnTbRedo.style.opacity = canRedo ? '1' : '0.4';
+                btnTbRedo.style.cursor = canRedo ? 'pointer' : 'not-allowed';
             }
         }
         let activeDrawing = null;
@@ -3118,44 +3515,156 @@
             }
         }
 
-        // Right Dock Tabs Switcher
-        function switchDockTab(tabId) {
-            document.querySelectorAll('.dock-tab-btn').forEach(btn => btn.classList.remove('active-tab'));
-            document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active-pane'));
+        // Right Dock Workstation Controller
+        const DOCK_TAB_META = {
+            denoise:   { title: 'Restorasi & Denoising', icon: '⚡', paneId: 'paneDenoise',   chkId: 'vmChkDenoise' },
+            contrast:  { title: 'Image Processing',      icon: '🎨', paneId: 'paneContrast',  chkId: 'vmChkContrast' },
+            measure:   { title: 'Hasil Ukur / CTR',      icon: '📏', paneId: 'paneMeasure',   chkId: 'vmChkMeasure' },
+            diagnosis: { title: 'Ekspertise Radiologi',  icon: '📝', paneId: 'paneDiagnosis', chkId: 'vmChkDiagnosis' },
+            dicom:     { title: 'Tags DICOM',            icon: '📋', paneId: 'paneDicom',     chkId: 'vmChkDicom' }
+        };
 
-            const qDenoise = document.getElementById('btnQuickDenoise');
-            const qContrast = document.getElementById('btnQuickContrast');
-            if (qDenoise) {
-                qDenoise.style.background = tabId === 'denoise' ? 'rgba(2, 132, 199, 0.4)' : 'rgba(2, 132, 199, 0.15)';
-                qDenoise.style.borderColor = tabId === 'denoise' ? '#38bdf8' : 'rgba(2, 132, 199, 0.35)';
-            }
-            if (qContrast) {
-                qContrast.style.background = tabId === 'contrast' ? 'rgba(2, 132, 199, 0.4)' : 'rgba(2, 132, 199, 0.15)';
-                qContrast.style.borderColor = tabId === 'contrast' ? '#38bdf8' : 'rgba(2, 132, 199, 0.35)';
-            }
+        let currentDockTab = null;
+        // Ordered list of open tab IDs (preserves open order)
+        let _openDockTabs = [];
 
-            if (tabId !== 'contrast' && window.ContrastPanel) {
-                window.ContrastPanel.deactivate();
-            }
+        function _renderDockTabBar() {
+            const bar = document.getElementById('dockTabBar');
+            if (!bar) return;
+            bar.innerHTML = '';
+            _openDockTabs.forEach(function(tabId) {
+                const meta = DOCK_TAB_META[tabId];
+                if (!meta) return;
+                const tab = document.createElement('div');
+                tab.className = 'dock-tab' + (tabId === currentDockTab ? ' active' : '');
+                tab.setAttribute('data-tab', tabId);
+                tab.innerHTML =
+                    '<span class="dock-tab-icon">' + meta.icon + '</span>' +
+                    '<span class="dock-tab-label">' + meta.title + '</span>' +
+                    '<span class="dock-tab-close" data-close="' + tabId + '" title="Tutup tab">✕</span>';
+                // Click on tab label/icon → switch
+                tab.addEventListener('click', function(e) {
+                    if (e.target.closest('.dock-tab-close')) return;
+                    switchDockTab(tabId);
+                });
+                // Click on close × → close that tab
+                tab.querySelector('.dock-tab-close').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeDockTab(tabId);
+                });
+                bar.appendChild(tab);
+            });
+        }
 
-            if (tabId === 'denoise') {
-                document.getElementById('tabBtnDenoise').classList.add('active-tab');
-                document.getElementById('paneDenoise').classList.add('active-pane');
-            } else if (tabId === 'measure') {
-                document.getElementById('tabBtnMeasure').classList.add('active-tab');
-                document.getElementById('paneMeasure').classList.add('active-pane');
-            } else if (tabId === 'diagnosis') {
-                document.getElementById('tabBtnDiagnosis').classList.add('active-tab');
-                document.getElementById('paneDiagnosis').classList.add('active-pane');
-            } else if (tabId === 'dicom') {
-                document.getElementById('tabBtnDicom').classList.add('active-tab');
-                document.getElementById('paneDicom').classList.add('active-pane');
-            } else if (tabId === 'contrast') {
-                document.getElementById('tabBtnContrast').classList.add('active-tab');
-                document.getElementById('paneContrast').classList.add('active-pane');
-                if (window.ContrastPanel) window.ContrastPanel.activate(activeViewport);
+        function closeDockTab(tabId) {
+            _openDockTabs = _openDockTabs.filter(function(t) { return t !== tabId; });
+            // Sync checkmark off
+            const meta = DOCK_TAB_META[tabId];
+            if (meta) {
+                const chk = document.getElementById(meta.chkId);
+                if (chk) chk.textContent = '';
+            }
+            if (currentDockTab === tabId) {
+                // Switch to nearest remaining tab, or close panel
+                if (_openDockTabs.length > 0) {
+                    switchDockTab(_openDockTabs[_openDockTabs.length - 1]);
+                } else {
+                    closeDockPanel();
+                }
+            } else {
+                _renderDockTabBar();
             }
         }
+
+        function closeDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) dock.classList.add('collapsed');
+            if (window.ContrastPanel) window.ContrastPanel.deactivate();
+            // Clear all checkmarks
+            Object.values(DOCK_TAB_META).forEach(function(meta) {
+                const chk = document.getElementById(meta.chkId);
+                if (chk) chk.textContent = '';
+            });
+            _openDockTabs = [];
+            currentDockTab = null;
+            const bar = document.getElementById('dockTabBar');
+            if (bar) bar.innerHTML = '';
+            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active-pane'); });
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        function openDockPanel(tabId) {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) dock.classList.remove('collapsed');
+            if (tabId) switchDockTab(tabId);
+        }
+
+        function switchDockTab(tabId) {
+            const meta = DOCK_TAB_META[tabId];
+            if (!meta) return;
+
+            // Ensure dock panel is open
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) dock.classList.remove('collapsed');
+
+            // Add to open tabs if not already there
+            if (!_openDockTabs.includes(tabId)) {
+                _openDockTabs.push(tabId);
+            }
+
+            // Deactivate all panes, activate target
+            document.querySelectorAll('.tab-pane').forEach(function(pane) { pane.classList.remove('active-pane'); });
+            const targetPane = document.getElementById(meta.paneId);
+            if (targetPane) targetPane.classList.add('active-pane');
+
+            // Contrast panel lifecycle
+            if (tabId !== 'contrast' && window.ContrastPanel) {
+                window.ContrastPanel.deactivate();
+            } else if (tabId === 'contrast' && window.ContrastPanel) {
+                window.ContrastPanel.activate(activeViewport);
+            }
+
+            // Sync checkmarks in View menu
+            Object.keys(DOCK_TAB_META).forEach(function(key) {
+                const chk = document.getElementById(DOCK_TAB_META[key].chkId);
+                if (chk) chk.textContent = (_openDockTabs.includes(key)) ? '✓' : '';
+            });
+
+            currentDockTab = tabId;
+
+            // Re-render tab bar
+            _renderDockTabBar();
+
+            // Legacy quick buttons
+            const qDenoise  = document.getElementById('btnQuickDenoise');
+            const qContrast = document.getElementById('btnQuickContrast');
+            if (qDenoise) {
+                qDenoise.style.background   = tabId === 'denoise' ? 'rgba(2,132,199,0.4)' : 'rgba(2,132,199,0.15)';
+                qDenoise.style.borderColor  = tabId === 'denoise' ? '#38bdf8' : 'rgba(2,132,199,0.35)';
+            }
+            if (qContrast) {
+                qContrast.style.background  = tabId === 'contrast' ? 'rgba(2,132,199,0.4)' : 'rgba(2,132,199,0.15)';
+                qContrast.style.borderColor = tabId === 'contrast' ? '#38bdf8' : 'rgba(2,132,199,0.35)';
+            }
+
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        // Close dock panel on Escape key (if no dialog / input is active)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const activeEl = document.activeElement;
+                if (activeEl && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName)) return;
+                const modal = document.getElementById('dicomTagsModal');
+                if (modal && (modal.style.display === 'flex' || modal.classList.contains('show'))) return;
+                const vmPanel = document.getElementById('viewMenuPanel');
+                if (vmPanel && !vmPanel.hidden) return; // handled by View menu handler
+                const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+                if (dock && !dock.classList.contains('collapsed')) {
+                    closeDockPanel();
+                }
+            }
+        });
 
         // Dropdown Menu Controller
         function toggleDropdown(event, dropdownId) {
@@ -3277,18 +3786,16 @@
             const lblMeasureTitle = document.getElementById('lblMeasureTitle');
             const lblMeasureIcon = document.getElementById('lblMeasureIcon');
 
+            if (tool === 'zoom') {
+                tool = 'pan';
+            }
+
             if (tool === 'pan') {
-                document.getElementById('btnPan').classList.add('active');
+                const btnPan = document.getElementById('btnPan');
+                if (btnPan) btnPan.classList.add('active');
                 if (lblMeasureTitle) lblMeasureTitle.innerText = 'Alat Ukur';
                 if (lblMeasureIcon) lblMeasureIcon.innerText = '📐';
                 hideToolHint();
-            } else if (tool === 'zoom') {
-                document.getElementById('btnZoomTool').classList.add('active');
-                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Alat Ukur';
-                if (lblMeasureIcon) lblMeasureIcon.innerText = '📐';
-                vp1.classList.add('cursor-zoom');
-                vp2.classList.add('cursor-zoom');
-                showToolHint('🔍', 'Mode Zoom: Sentuh & geser vertikal, scroll mouse, atau gunakan pinch 2 jari.');
             } else if (tool === 'circle') {
                 if (btnMeasureMain) btnMeasureMain.classList.add('active');
                 if (lblMeasureTitle) lblMeasureTitle.innerText = 'Lingkaran';
@@ -4103,6 +4610,11 @@
             updateTransform(activeViewport);
         }
 
+        function flipVertical() {
+            vpState[activeViewport].flipV = !vpState[activeViewport].flipV;
+            updateTransform(activeViewport);
+        }
+
         function toggleInvert() {
             const st = vpState[activeViewport];
             st.inverted = !st.inverted;
@@ -4113,7 +4625,7 @@
         function resetViewer() {
             selectedAnnotation = null;
             [1, 2].forEach(id => {
-                vpState[id] = { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, inverted: false, brightness: 100, contrast: 100, rawSrc: vpState[id].rawSrc, denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' };
+                vpState[id] = { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: vpState[id].rawSrc, denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' };
                 const cContainer = (id === 1) ? curtainContainer1 : curtainContainer2;
                 const imgDen = (id === 1) ? img1Denoised : img2Denoised;
                 if (cContainer) cContainer.style.display = 'none';
@@ -4137,7 +4649,7 @@
             const stage = (id === 1) ? document.getElementById('vpStageLayer1') : document.getElementById('vpStageLayer2');
             if (!stage) return;
             const st = vpState[id];
-            const transformStr = `translate(${st.translateX}px, ${st.translateY}px) rotate(${st.rotation}deg) scaleX(${st.flipH ? -1 : 1}) scale(${st.zoom})`;
+            const transformStr = `translate(${st.translateX}px, ${st.translateY}px) rotate(${st.rotation}deg) scaleX(${st.flipH ? -1 : 1}) scaleY(${st.flipV ? -1 : 1}) scale(${st.zoom})`;
             stage.style.transform = transformStr;
             if (id === 1 && lblZoom) lblZoom.innerText = Math.round(st.zoom * 100) + '%';
             else {
@@ -6363,6 +6875,218 @@
                 btn.disabled = false;
             });
         }
+
+        // ============================================================
+        // VIEW MENU — VS Code-style cascading menu
+        // ============================================================
+        (function () {
+            'use strict';
+
+            const toggle  = document.getElementById('viewMenuToggle');
+            const panel   = document.getElementById('viewMenuPanel');
+
+            if (!toggle || !panel) return; // guard: only runs when $hasExamined
+
+            // ── State ───────────────────────────────────────────────
+            let _isPanelOpen   = false;
+            let _openGroupEl   = null;
+            let _subLeaveTimer = null;
+            const DELAY_CLOSE  = 300; // ms — cukup panjang untuk pindah ke submenu nested
+
+            // ── Helpers ─────────────────────────────────────────────
+            function _closeAllSubs() {
+                document.querySelectorAll('.vm-group.vm-sub-open').forEach(function (g) {
+                    g.classList.remove('vm-sub-open');
+                });
+                _openGroupEl = null;
+            }
+
+            function _closePanel() {
+                panel.hidden = true;
+                _isPanelOpen = false;
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.classList.remove('vm-open');
+                _closeAllSubs();
+            }
+
+            function _openPanel() {
+                panel.hidden = false;
+                _isPanelOpen = true;
+                toggle.setAttribute('aria-expanded', 'true');
+                toggle.classList.add('vm-open');
+                requestAnimationFrame(_adjustSubMenuDirections);
+            }
+
+            function _adjustSubMenuDirections() {
+                panel.querySelectorAll('.vm-submenu').forEach(function (sub) {
+                    sub.classList.remove('vm-sub-left');
+                    const rect = sub.getBoundingClientRect();
+                    if (rect.right > window.innerWidth - 8) {
+                        sub.classList.add('vm-sub-left');
+                    }
+                    if (rect.bottom > window.innerHeight - 8) {
+                        sub.style.top = (-(rect.bottom - (window.innerHeight - 8)) - 4) + 'px';
+                    } else {
+                        sub.style.top = '-1px';
+                    }
+                });
+            }
+
+            // ── Public API ────────────────────────────────────────────
+            window.vmToggle = function (e) {
+                e.stopPropagation();
+                _isPanelOpen ? _closePanel() : _openPanel();
+            };
+
+            window.vmCloseAll = function () {
+                _closePanel();
+            };
+
+            window.vmSubOpen = function (groupEl) {
+                clearTimeout(_subLeaveTimer);
+                if (groupEl.classList.contains('vm-sub-open')) return;
+
+                // Hanya tutup sibling vm-groups pada level yang sama (parent node yang sama),
+                // sehingga ancestor tetap terbuka
+                var parent = groupEl.parentNode;
+                if (parent) {
+                    parent.querySelectorAll(':scope > .vm-group.vm-sub-open').forEach(function (g) {
+                        if (g !== groupEl) {
+                            g.classList.remove('vm-sub-open');
+                            // Tutup juga nested submenu di dalam sibling
+                            g.querySelectorAll('.vm-group.vm-sub-open').forEach(function (nested) {
+                                nested.classList.remove('vm-sub-open');
+                            });
+                        }
+                    });
+                }
+
+                groupEl.classList.add('vm-sub-open');
+                _openGroupEl = groupEl;
+                requestAnimationFrame(_adjustSubMenuDirections);
+            };
+
+            window.vmSubLeave = function (groupEl) {
+                _subLeaveTimer = setTimeout(function () {
+                    // Tutup groupEl dan semua nested sub-open di dalamnya
+                    groupEl.classList.remove('vm-sub-open');
+                    groupEl.querySelectorAll('.vm-group.vm-sub-open').forEach(function (nested) {
+                        nested.classList.remove('vm-sub-open');
+                    });
+                    if (_openGroupEl === groupEl) _openGroupEl = null;
+                }, DELAY_CLOSE);
+            };
+
+            window.vmSubKeep = function () {
+                clearTimeout(_subLeaveTimer);
+            };
+
+            // ── Window Preset ─────────────────────────────────────────
+            const PRESET_NAMES = { default: 'Default', lung: 'Lung', bone: 'Bone', soft: 'Soft tissue' };
+            const PRESET_KEYS  = ['default', 'lung', 'bone', 'soft'];
+            const PRESET_CHK   = ['vmChkDefault', 'vmChkLung', 'vmChkBone', 'vmChkSoft'];
+
+            function _syncWindowCheck(preset) {
+                PRESET_KEYS.forEach(function (k, i) {
+                    const el = document.getElementById(PRESET_CHK[i]);
+                    if (el) el.textContent = (k === preset) ? '✓' : '';
+                });
+                const valEl = document.getElementById('vmWindowValue');
+                if (valEl) valEl.textContent = PRESET_NAMES[preset] || 'Default';
+            }
+
+            window.vmApplyPreset = function (preset) {
+                applyPreset(preset);
+                _syncWindowCheck(preset);
+            };
+
+            // Observe hidden lblActivePreset to catch resets from elsewhere
+            const lblHidden = document.getElementById('lblActivePreset');
+            if (lblHidden) {
+                new MutationObserver(function () {
+                    const txt = lblHidden.innerText || '';
+                    let key = 'default';
+                    if (txt.includes('Lung'))      key = 'lung';
+                    else if (txt.includes('Bone')) key = 'bone';
+                    else if (txt.includes('Soft')) key = 'soft';
+                    _syncWindowCheck(key);
+                }).observe(lblHidden, { childList: true, subtree: true, characterData: true });
+            }
+
+            // ── Orientasi Toggles ─────────────────────────────────────
+            function _syncOrientasiChecks() {
+                if (typeof vpState === 'undefined' || typeof activeViewport === 'undefined') return;
+                const st = vpState[activeViewport] || {};
+                const chkH = document.getElementById('vmChkFlipH');
+                const chkV = document.getElementById('vmChkFlipV');
+                const chkI = document.getElementById('vmChkInvert');
+                if (chkH) chkH.textContent = st.flipH    ? '✓' : '';
+                if (chkV) chkV.textContent = st.flipV    ? '✓' : '';
+                if (chkI) chkI.textContent = st.inverted ? '✓' : '';
+            }
+
+            window.vmFlipH = function () { flipHorizontal(); _syncOrientasiChecks(); };
+            window.vmFlipV = function () { flipVertical();   _syncOrientasiChecks(); };
+            window.vmInvert = function () { toggleInvert();  _syncOrientasiChecks(); };
+
+            // Patch selectViewport & resetViewer to keep Orientasi checks in sync
+            const _origSelect = window.selectViewport;
+            if (typeof _origSelect === 'function') {
+                window.selectViewport = function (id) { _origSelect(id); _syncOrientasiChecks(); };
+            }
+            const _origReset = window.resetViewer;
+            if (typeof _origReset === 'function') {
+                window.resetViewer = function () { _origReset(); _syncOrientasiChecks(); _syncWindowCheck('default'); };
+            }
+
+            // ── Keyboard ──────────────────────────────────────────────
+            document.addEventListener('keydown', function (e) {
+                if (!_isPanelOpen) return;
+                if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    if (_openGroupEl) {
+                        _closeAllSubs();
+                    } else {
+                        _closePanel();
+                        toggle.focus();
+                    }
+                }
+            }, true);
+
+            // Arrow nav inside panel
+            panel.addEventListener('keydown', function (e) {
+                const groups = Array.from(panel.querySelectorAll('.vm-group'));
+                const cur = document.activeElement && document.activeElement.closest('.vm-group');
+                const idx = groups.indexOf(cur);
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = groups[(idx + 1) % groups.length];
+                    if (next) next.focus();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prev = groups[(idx - 1 + groups.length) % groups.length];
+                    if (prev) prev.focus();
+                } else if (e.key === 'ArrowRight' && cur) {
+                    e.preventDefault();
+                    vmSubOpen(cur);
+                    const firstItem = cur.querySelector('.vm-item');
+                    if (firstItem) firstItem.focus();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    _closeAllSubs();
+                    if (cur) cur.focus();
+                }
+            });
+
+            // ── Initial sync ──────────────────────────────────────────
+            requestAnimationFrame(function () {
+                _syncWindowCheck('default');
+                _syncOrientasiChecks();
+            });
+
+        })();
+        // ── END VIEW MENU ─────────────────────────────────────────────
+
     </script>
 
     <!-- ─────────────────────────────────────────────────────────────
