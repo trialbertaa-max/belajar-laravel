@@ -282,10 +282,159 @@
             border-right: none;
         }
 
-        .drawer-header {
-            padding: 0.65rem 0.85rem;
+        /* Left Drawer - Patient Demographics Card */
+        .drawer-patient-card {
+            padding: 0.75rem 0.85rem;
+            background: #090f1a;
             border-bottom: 1px solid var(--ws-border);
-            font-size: 0.72rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .drawer-patient-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drawer-patient-badge-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #38bdf8;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .drawer-close-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .drawer-close-btn:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .drawer-patient-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: 0.02em;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .drawer-patient-info-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .drawer-patient-info-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .drawer-info-key {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .drawer-info-val {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .drawer-patient-info-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            width: 100%;
+        }
+
+        .drawer-patient-info-tags {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .drawer-tag-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .drawer-demog-tag {
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            background: rgba(148, 163, 184, 0.12);
+            color: #f1f5f9;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+        }
+
+        .drawer-expand-tab {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 65px;
+            z-index: 15;
+            background: #0b1120;
+            border: 1px solid var(--ws-border);
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            color: #94a3b8;
+            padding: 0.55rem 0.35rem;
+            cursor: pointer;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+        }
+
+        .drawer-expand-tab:hover {
+            background: #1e293b;
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        .series-drawer.collapsed + .drawer-expand-tab {
+            display: flex;
+        }
+
+        .drawer-header {
+            padding: 0.55rem 0.85rem;
+            border-bottom: 1px solid var(--ws-border);
+            font-size: 0.68rem;
             font-weight: 700;
             color: var(--ws-text-secondary);
             text-transform: uppercase;
@@ -293,7 +442,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: #0b1120;
+            background: #080d16;
         }
 
         .series-list {
@@ -2227,6 +2376,14 @@
                         <button id="viewMenuClose" aria-label="Tutup menu" onclick="vmCloseAll()">×</button>
                     </div>
 
+                    <!-- ── Seri Pasien ── -->
+                    <button class="vm-item" role="menuitem"
+                        onclick="toggleSeriesDrawer(); vmCloseAll();">
+                        <span class="vm-check-col" id="vmChkSeries"></span>
+                        <span class="vm-label">Detail Pasien</span>
+                    </button>
+                    <div class="vm-divider"></div>
+
                     <!-- ── Kelompok 1: Window ── -->
                     <div class="vm-group" role="menuitem" aria-haspopup="true"
                          id="vmGroupWindow"
@@ -2389,28 +2546,83 @@
 
                 </div><!-- /viewMenuPanel -->
             </div><!-- /viewMenu -->
-            @endif
 
-            <div class="patient-demographics-strip">
-                <strong>{{ strtoupper($scan->patient_name) }}</strong>
-                <span style="color: #64748b;">|</span>
-                <span>MRN: {{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}</span>
-                <span style="color: #64748b;">|</span>
-                <span class="badge-modality-tag">{{ $scan->modality }}</span>
-                <span style="color: #64748b;">|</span>
-                <span>{{ $scan->gender == 'P' ? 'F' : 'M' }}/{{ $scan->age ?? '18' }}Y</span>
-            </div>
 
-            @if($hasExamined)
+            <!-- PAN & ZOOM (disebelah View) -->
+            <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser & Perbesar (Pan & Zoom) Gambar">PAN & ZOOM</button>
+
+            <!-- Undo & Redo (disebelah PAN & ZOOM) -->
+            <button class="tool-btn" id="btnToolbarUndo" onclick="undoLastMeasurement()" title="Undo Anotasi / Titik Terakhir (Ctrl+Z)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                Undo
+            </button>
+            <button class="tool-btn" id="btnToolbarRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                    <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                </svg>
+                Redo
+            </button>
+
             <!-- Multimodal Layout Grid Selector (1x1 vs 1x2) -->
             <div style="display: flex; align-items: center; gap: 0.2rem; background: #080d16; border: 1px solid var(--ws-border); padding: 0.2rem; border-radius: 6px;">
                 <button class="tool-btn active" id="btnLayoutSingle" onclick="setLayoutMode('1x1')" title="Tata Letak 1x1" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center;">1x1</button>
                 <button class="tool-btn" id="btnLayoutDual" onclick="setLayoutMode('1x2')" title="Tata Letak 1x2" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center; color: #38bdf8;">1x2</button>
             </div>
+
+            <!-- Reset View (disebelah 1x1 1x2) -->
+            <button class="tool-btn" id="btnResetView" onclick="resetViewer()" title="Reset tampilan citra">Reset View</button>
+
+            <!-- Helper elements (hidden) agar JS tetap bekerja -->
+            <span id="lblMeasureIcon" style="display:none;">📐</span>
+            <span id="lblMeasureTitle" style="display:none;">Alat Ukur</span>
+            <button id="btnInvert" style="display:none;" onclick="toggleInvert()"></button>
+            <span id="lblActivePreset" style="display:none;">Window: Default</span>
             @endif
         </div>
 
         <div class="nav-section-right">
+            @if($hasExamined)
+            <!-- DICOM & Export (Pindah dari toolbar bawah ke navbar) -->
+            <div class="tool-dropdown" id="ddDicom">
+                <button class="tool-btn" onclick="toggleDropdown(event, 'ddDicom')" style="background: #111a2c; border-color: #23334d; color: #38bdf8;">
+                    <span>DICOM & Ekspor</span>
+                    <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
+                </button>
+                <div class="dropdown-menu menu-right">
+                    <button class="dropdown-item" onclick="openDicomTagsModal(); closeAllDropdowns();">
+                        <span style="color: #38bdf8; font-weight: 600;">DICOM Tags Inspector</span>
+                        <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">PS 3.6</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportAnnotatedReport(); closeAllDropdowns();">
+                        <span style="color: #10b981; font-weight: 600;">Ekspor Laporan Anotasi (PNG)</span>
+                        <span style="font-size: 0.65rem; color: #10b981; font-family: monospace;">SC IOD</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" onclick="exportBenchmarkPdf(); closeAllDropdowns();">
+                        <span style="color: #f87171; font-weight: 600;">Ekspor Matriks Evaluasi (PDF)</span>
+                        <span style="font-size: 0.65rem; color: #f87171; font-family: monospace;">.pdf</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportBenchmarkExcel(); closeAllDropdowns();">
+                        <span style="color: #34d399; font-weight: 600;">Ekspor Matriks Evaluasi (Excel)</span>
+                        <span style="font-size: 0.65rem; color: #34d399; font-family: monospace;">.xls</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportBenchmarkCsv(); closeAllDropdowns();">
+                        <span style="color: #38bdf8; font-weight: 600;">Ekspor Matriks Evaluasi (CSV)</span>
+                        <span style="font-size: 0.65rem; color: #38bdf8; font-family: monospace;">.csv</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <a href="{{ route('scans.download-dcm', $scan->id) }}" class="dropdown-item" onclick="closeAllDropdowns()" style="color: #c084fc; font-weight: 600;">
+                        <span>Unduh File Mentah (.dcm)</span>
+                        <span style="font-size: 0.65rem; color: #c084fc; font-family: monospace;">Part 10</span>
+                    </a>
+                </div>
+            </div>
+            @endif
+
             <!-- Glosarium Link -->
             <a href="{{ route('glossary.index') }}" class="btn-nav-back" style="color: #38bdf8; border-color: rgba(56,189,248,0.3);" title="Buka halaman glosarium istilah teknis">
                 📖 Glosarium
@@ -2425,87 +2637,49 @@
     </header>
 
     @if($hasExamined)
-    <!-- 2. CLINICAL WORKSTATION TOOLBAR (hanya tampil jika pemeriksaan sudah dilakukan) -->
-    <div class="pacs-toolbar">
-        <!-- Navigation & History -->
-        <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser & Perbesar (Pan & Zoom) Gambar">PAN & ZOOM</button>
-        <button class="tool-btn" id="btnToolbarUndo" onclick="undoLastMeasurement()" title="Undo Anotasi / Titik Terakhir (Ctrl+Z)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-                <path d="M3 3v5h5"/>
-            </svg>
-            Undo
-        </button>
-        <button class="tool-btn" id="btnToolbarRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
-                <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
-                <path d="M21 3v5h-5"/>
-            </svg>
-            Redo
-        </button>
-
-        <div class="toolbar-divider"></div>
-
-        <!-- lblMeasureIcon & lblMeasureTitle dipertahankan (hidden) agar JS setTool() yg memperbarui label tetap bekerja -->
-        <span id="lblMeasureIcon" style="display:none;">📐</span>
-        <span id="lblMeasureTitle" style="display:none;">Alat Ukur</span>
-
-        <!-- [Window, Orientasi, Restorasi & Denoising, Image Processing dipindah ke menu View ▾ di navbar] -->
-        <!-- Element id="btnInvert" dipertahankan di sini (hidden) agar JS yang mereferensikannya tetap bekerja -->
-        <button id="btnInvert" style="display:none;" onclick="toggleInvert()"></button>
-        <!-- lblActivePreset dipertahankan (hidden) agar JS applyPreset() tetap bekerja -->
-        <span id="lblActivePreset" style="display:none;">Window: Default</span>
-
-        <button class="tool-btn" onclick="resetViewer()" title="Reset tampilan citra">Reset View</button>
-
-        <!-- DICOM & Export (Far Right) -->
-        <div class="tool-dropdown" id="ddDicom" style="margin-left: auto;">
-            <button class="tool-btn" onclick="toggleDropdown(event, 'ddDicom')" style="background: #111a2c; border-color: #23334d; color: #38bdf8;">
-                <span>DICOM & Ekspor</span>
-                <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
-            </button>
-            <div class="dropdown-menu menu-right">
-                <button class="dropdown-item" onclick="openDicomTagsModal(); closeAllDropdowns();">
-                    <span style="color: #38bdf8; font-weight: 600;">DICOM Tags Inspector</span>
-                    <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">PS 3.6</span>
-                </button>
-                <button class="dropdown-item" onclick="exportAnnotatedReport(); closeAllDropdowns();">
-                    <span style="color: #10b981; font-weight: 600;">Ekspor Laporan Anotasi (PNG)</span>
-                    <span style="font-size: 0.65rem; color: #10b981; font-family: monospace;">SC IOD</span>
-                </button>
-                <div class="dropdown-divider"></div>
-                <button class="dropdown-item" onclick="exportBenchmarkPdf(); closeAllDropdowns();">
-                    <span style="color: #f87171; font-weight: 600;">Ekspor Matriks Evaluasi (PDF)</span>
-                    <span style="font-size: 0.65rem; color: #f87171; font-family: monospace;">.pdf</span>
-                </button>
-                <button class="dropdown-item" onclick="exportBenchmarkExcel(); closeAllDropdowns();">
-                    <span style="color: #34d399; font-weight: 600;">Ekspor Matriks Evaluasi (Excel)</span>
-                    <span style="font-size: 0.65rem; color: #34d399; font-family: monospace;">.xls</span>
-                </button>
-                <button class="dropdown-item" onclick="exportBenchmarkCsv(); closeAllDropdowns();">
-                    <span style="color: #38bdf8; font-weight: 600;">Ekspor Matriks Evaluasi (CSV)</span>
-                    <span style="font-size: 0.65rem; color: #38bdf8; font-family: monospace;">.csv</span>
-                </button>
-                <div class="dropdown-divider"></div>
-                <a href="{{ route('scans.download-dcm', $scan->id) }}" class="dropdown-item" onclick="closeAllDropdowns()" style="color: #c084fc; font-weight: 600;">
-                    <span>Unduh File Mentah (.dcm)</span>
-                    <span style="font-size: 0.65rem; color: #c084fc; font-family: monospace;">Part 10</span>
-                </a>
-            </div>
-        </div>
-    </div>
-
     <!-- 3. MAIN WORKSPACE -->
     <div class="pacs-workspace">
 
         <!-- 3A. LEFT SERIES & MULTIMODAL DRAWER -->
         <aside class="series-drawer" id="seriesDrawer">
+            <!-- Patient Demographics Header Card (Dipindahkan dari Navbar) -->
+            <div class="drawer-patient-card">
+                <div class="drawer-patient-top">
+                    <div class="drawer-patient-badge-title">
+                        <span class="drawer-patient-icon">👤</span>
+                        <span>Detail Pasien</span>
+                    </div>
+                    <button type="button" class="drawer-close-btn" onclick="toggleSeriesDrawer()" title="Tutup Panel Pasien & Seri (✕)">✕</button>
+                </div>
+
+                <div class="drawer-patient-name" title="{{ $scan->patient_name }}">
+                    {{ strtoupper($scan->patient_name) }}
+                </div>
+
+                <div class="drawer-patient-info-box">
+                    <div class="drawer-patient-info-line">
+                        <span class="drawer-info-key">MRN</span>
+                        <span class="drawer-info-val font-mono">{{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}</span>
+                    </div>
+                    <div class="drawer-patient-info-divider"></div>
+                    <div class="drawer-patient-info-tags">
+                        <div class="drawer-tag-group">
+                            <span class="drawer-info-key">MODALITAS</span>
+                            <span class="badge-modality-tag">{{ $scan->modality }}</span>
+                        </div>
+                        <div class="drawer-tag-group">
+                            <span class="drawer-info-key">JK / USIA</span>
+                            <span class="drawer-demog-tag">{{ $scan->gender == 'P' ? '♀ F' : '♂ M' }} / {{ $scan->age ?? '18' }}Y</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="drawer-header">
                 <div>
                     <span>Seri Multimodal ({{ count($patientSeries) }})</span>
-                    <span style="font-size: 0.65rem; color: #38bdf8; display: block;">CARDIO-PULMO</span>
+                    <span style="font-size: 0.62rem; color: #38bdf8; display: block; font-weight: 600;">CARDIO-PULMO</span>
                 </div>
-                <button onclick="toggleSeriesDrawer()" style="background: none; border: none; color: #94a3b8; font-size: 1.1rem; cursor: pointer; padding: 0.2rem 0.5rem;" title="Tutup Drawer">✕</button>
             </div>
 
             <div class="series-list">
@@ -2544,6 +2718,12 @@
 
             </div>
         </aside>
+
+        <!-- Floating Expand Button saat Series Drawer Collapsed -->
+        <button id="btnDrawerExpand" class="drawer-expand-tab" onclick="toggleSeriesDrawer()" title="Buka Detail Pasien & Seri Multimodal">
+            <span style="font-size: 0.75rem;">▶</span>
+            <span style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Detail Pasien</span>
+        </button>
 
         <!-- 3B. CENTER VIEWPORTS STAGE (DUAL MULTIMODAL) -->
         <div class="viewports-stage" id="viewportsStage">
@@ -3428,6 +3608,8 @@
             seriesDrawer.classList.toggle('collapsed', !isDrawerOpen);
             const icon = document.getElementById('btnDrawerIcon');
             if (icon) icon.innerText = isDrawerOpen ? '◀' : '▶';
+            const chk = document.getElementById('vmChkSeries');
+            if (chk) chk.textContent = isDrawerOpen ? '✓' : '';
         }
 
         // Drawer Toggle
@@ -3436,6 +3618,9 @@
             seriesDrawer.classList.toggle('collapsed', !isDrawerOpen);
             const icon = document.getElementById('btnDrawerIcon');
             if (icon) icon.innerText = isDrawerOpen ? '◀' : '▶';
+            // Sync checkmark di View menu
+            const chk = document.getElementById('vmChkSeries');
+            if (chk) chk.textContent = isDrawerOpen ? '✓' : '';
         }
 
         // Layout Switcher: 1x1 vs 1x2
@@ -3777,7 +3962,11 @@
             isMeasuring = false;
 
             activeTool = tool;
-            document.querySelectorAll('.pacs-toolbar .tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.pacs-navbar .tool-btn, .pacs-toolbar .tool-btn').forEach(btn => {
+                if (btn.id !== 'btnLayoutSingle' && btn.id !== 'btnLayoutDual') {
+                    btn.classList.remove('active');
+                }
+            });
             document.querySelectorAll('.measure-sub-pill').forEach(btn => btn.classList.remove('active-pill'));
             vp1.classList.remove('cursor-caliper', 'cursor-polygon', 'cursor-zoom');
             vp2.classList.remove('cursor-caliper', 'cursor-polygon', 'cursor-zoom');
