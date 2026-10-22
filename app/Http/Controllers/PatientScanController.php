@@ -354,23 +354,32 @@ class PatientScanController extends Controller
         $pythonBinary = $this->getPythonBinary();
         $scriptPath   = base_path('test_dicom.py');
 
-        // Tentukan path citra yang persis aktif di viewport (prioritaskan 100% citra aktif)
+        // Prioritaskan file DICOM asli jika tersedia untuk mendapatkan akurasi bit-depth 12/16-bit
         $dicomPath = null;
-        if ($cleanRelPath && file_exists(public_path($cleanRelPath))) {
-            $dicomPath = public_path($cleanRelPath);
-        } elseif ($cleanRelPath && str_starts_with($cleanRelPath, 'storage/') && file_exists(storage_path('app/public/' . substr($cleanRelPath, 8)))) {
-            $dicomPath = storage_path('app/public/' . substr($cleanRelPath, 8));
-        } elseif ($cleanRelPath && file_exists(base_path($cleanRelPath))) {
-            $dicomPath = base_path($cleanRelPath);
-        } elseif ($viewport === 2 && file_exists(public_path('scan-assets/usg_sample.jpg'))) {
-            $dicomPath = public_path('scan-assets/usg_sample.jpg');
-        } elseif ($scan->dicom_raw_path) {
-            $possiblePath1 = storage_path('app/public/' . $scan->dicom_raw_path);
-            $possiblePath2 = base_path($scan->dicom_raw_path);
-            if (file_exists($possiblePath1)) {
-                $dicomPath = $possiblePath1;
-            } elseif (file_exists($possiblePath2)) {
-                $dicomPath = $possiblePath2;
+        if ($viewport === 1 && $scan->dicom_raw_path) {
+            $p1 = storage_path('app/public/' . $scan->dicom_raw_path);
+            $p2 = base_path($scan->dicom_raw_path);
+            if (file_exists($p1)) {
+                $dicomPath = $p1;
+            } elseif (file_exists($p2)) {
+                $dicomPath = $p2;
+            }
+        }
+
+        if (!$dicomPath) {
+            if ($cleanRelPath && file_exists(public_path($cleanRelPath))) {
+                $dicomPath = public_path($cleanRelPath);
+            } elseif ($cleanRelPath && str_starts_with($cleanRelPath, 'storage/') && file_exists(storage_path('app/public/' . substr($cleanRelPath, 8)))) {
+                $dicomPath = storage_path('app/public/' . substr($cleanRelPath, 8));
+            } elseif ($cleanRelPath && file_exists(base_path($cleanRelPath))) {
+                $dicomPath = base_path($cleanRelPath);
+            } elseif ($viewport === 2 && file_exists(public_path('scan-assets/usg_sample.jpg'))) {
+                $dicomPath = public_path('scan-assets/usg_sample.jpg');
+            } elseif ($scan->dicom_raw_path) {
+                $p1 = storage_path('app/public/' . $scan->dicom_raw_path);
+                $p2 = base_path($scan->dicom_raw_path);
+                if (file_exists($p1)) $dicomPath = $p1;
+                elseif (file_exists($p2)) $dicomPath = $p2;
             }
         }
 
@@ -414,14 +423,25 @@ class PatientScanController extends Controller
             }
 
             return response()->json([
-                'status'       => 'success',
-                'viewport'     => $viewport,
-                'image_url'    => asset($relDenoisedPath) . '?t=' . time(),
-                'residual_url' => asset($relResidualPath) . '?t=' . time(),
-                'engine'       => $jsonRes['engine'] ?? 'Bilateral Filter',
-                'parameters'   => $jsonRes['parameters'] ?? [],
-                'metrics'      => $jsonRes['metrics'] ?? [],
-                'message'      => 'Filter restorasi citra berhasil diaplikasikan.'
+                'status'         => 'success',
+                'viewport'       => $viewport,
+                'image_url'      => asset($relDenoisedPath) . '?t=' . time(),
+                'residual_url'   => file_exists($residualPath) ? (asset($relResidualPath) . '?t=' . time()) : null,
+                'engine'         => $jsonRes['method_name'] ?? $jsonRes['engine'] ?? 'Medical Processing',
+                'category'       => $jsonRes['category'] ?? 'restoration_denoising',
+                'method_name'    => $jsonRes['method_name'] ?? $jsonRes['engine'] ?? 'Medical Processing',
+                'parameters'     => $jsonRes['parameters'] ?? $jsonRes['details'] ?? [],
+                'metrics'        => $jsonRes['metrics'] ?? [],
+                'dicom_metadata' => $jsonRes['dicom_metadata'] ?? null,
+                'message'        => 'Pemrosesan citra radiologi berhasil diaplikasikan.'
+            ]);
+        } elseif ($result->successful() && is_array($jsonRes) && ($jsonRes['status'] ?? '') === 'info') {
+            return response()->json([
+                'status'      => 'info',
+                'category'    => $jsonRes['category'] ?? 'bone_suppression',
+                'method_name' => $jsonRes['method_name'] ?? 'AI Bone Suppression',
+                'message'     => $jsonRes['message'] ?? 'Informasi audit model AI.',
+                'audit'       => $jsonRes['audit'] ?? null
             ]);
         } else {
             $errorMsg = $result->errorOutput() ?: $stdout;

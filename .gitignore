@@ -17,3 +17,9 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+# Python
+__pycache__/
+*.pyc
+
+# Medical Engine AI Weights (exceeds GitHub 100MB limit)
+/medical_engine/weights/bone_suppression.ts

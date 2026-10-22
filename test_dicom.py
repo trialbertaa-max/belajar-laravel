@@ -79,10 +79,14 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
     # 1. Baca data pixel (bisa dari file .dcm atau file gambar .jpg/.png)
     if dicom_path.lower().endswith('.dcm'):
         try:
-            ds = pydicom.dcmread(dicom_path)
-            pixel_array = ds.pixel_array.astype(float)
-            norm_img = (np.maximum(pixel_array, 0) / pixel_array.max()) * 255.0
-            img_uint8 = np.uint8(norm_img)
+            from medical_engine.dicom_io import load_dicom_raw, apply_voi_lut
+            rescaled_px, meta = load_dicom_raw(dicom_path)
+            img_uint8, _ = apply_voi_lut(
+                rescaled_px,
+                meta.get('window_center_dicom'),
+                meta.get('window_width_dicom'),
+                meta.get('photometric_interpretation', 'MONOCHROME2')
+            )
         except Exception as e:
             print(json.dumps({"status": "error", "message": f"Gagal membaca DICOM: {str(e)}"}))
             sys.exit(1)
@@ -92,8 +96,33 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
             print(json.dumps({"status": "error", "message": f"Format gambar tidak didukung: {dicom_path}"}))
             sys.exit(1)
 
-    # 2. Pemilihan Algoritma Restorasi & Denoising
+    # 2. Pemilihan Algoritma Restorasi, Enhancement, atau Segmentasi
     engine = engine.lower()
+
+    # Delegasi Kategori Modular: Image Enhancement, Segmentation, Bone Suppression
+    if engine.startswith('enhancement_') or engine.startswith('segmentation_') or engine.startswith('bone_suppression') or engine in ['bone_suppression', 'clahe', 'trabecular']:
+        from medical_engine.pipeline import run_pipeline
+        task = engine
+        preset = 'default'
+        if ':' in engine:
+            parts = engine.split(':', 1)
+            task = parts[0]
+            preset = parts[1]
+        elif engine == 'clahe':
+            task = 'enhancement_clahe'
+        elif engine == 'trabecular':
+            task = 'enhancement_trabecular'
+
+        pipeline_res = run_pipeline(
+            dicom_path, output_path, task,
+            preset=preset,
+            sigma_color=sigma_color,
+            sigma_space=sigma_space,
+            clip_limit=float(sigma_color) if sigma_color > 0 and sigma_color < 10 else 2.5
+        )
+        print(json.dumps(pipeline_res))
+        return
+
     
     # Mode Benchmark Multi-Algoritma (Clinical Denoising Evaluation)
     if engine == "benchmark":

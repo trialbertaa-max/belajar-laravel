@@ -2905,7 +2905,7 @@
                 <!-- A/B Comparison Split Curtain Container -->
                 <div class="curtain-slider-container" id="curtainContainer1">
                     <div class="curtain-label-left">RAW ACQUISITION</div>
-                    <div class="curtain-label-right">DENOISED / RESTORED</div>
+                    <div class="curtain-label-right" id="curtainLabelRight1">DENOISED / RESTORED</div>
                     <div class="curtain-divider" id="curtainDivider1" style="left: 50%;">
                         <div class="curtain-handle">⮂</div>
                     </div>
@@ -2953,7 +2953,7 @@
                 <!-- A/B Comparison Split Curtain Container VP2 -->
                 <div class="curtain-slider-container" id="curtainContainer2">
                     <div class="curtain-label-left">RAW ACQUISITION</div>
-                    <div class="curtain-label-right">DENOISED / RESTORED</div>
+                    <div class="curtain-label-right" id="curtainLabelRight2">DENOISED / RESTORED</div>
                     <div class="curtain-divider" id="curtainDivider2" style="left: 50%;">
                         <div class="curtain-handle">⮂</div>
                     </div>
@@ -3006,66 +3006,140 @@
                 <div class="tab-pane active-pane" id="paneDenoise">
                     <div class="dock-card">
                         <div class="dock-card-header">
-                            <span class="dock-card-title">Engine Filter Restorasi</span>
-                            <span id="lblTargetVpBadge" style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; background: rgba(2, 132, 199, 0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.3);">Target: VP-A (Thorax)</span>
+                            <span class="dock-card-title" id="lblDockCategoryTitle">Restorasi & Filter AI</span>
+                            <span id="lblTargetVpBadge" style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; background: rgba(2, 132, 199, 0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.3);">Target: VP-A ({{ $patientSeries[0]['name'] ?? 'Primary Scan' }})</span>
                         </div>
 
-                        <select id="selFilterEngine" class="form-select-pacs" onchange="onEngineChange()">
-                            <option value="bilateral" selected>Bilateral Filter (Tomasi & Manduchi 1998)</option>
-                            <option value="nlm">Non-Local Means (NLM - Buades 2005)</option>
-                            <option value="dl_dncnn">Deep Residual CNN (DnCNN - Zhang 2017)</option>
-                            <option value="gaussian">Adaptive Gaussian Smoothing</option>
+                        <select id="selFilterEngine" class="form-select-pacs" onchange="onEngineChange()" style="font-size: 0.75rem; padding: 0.4rem 0.5rem; text-overflow: ellipsis; white-space: nowrap;">
+                            <optgroup label="── 1. Restorasi Citra (Denoising) ──">
+                                <option value="bilateral" selected>Bilateral Filter (Tomasi 1998)</option>
+                                <option value="nlm">Non-Local Means (NLM - Buades 2005)</option>
+                                <option value="dl_dncnn">Deep Residual CNN (DnCNN - Zhang 2017)</option>
+                                <option value="gaussian">Adaptive Gaussian Smoothing</option>
+                            </optgroup>
+                            <optgroup label="── 2. Image Enhancement (Konvensional) ──">
+                                <option value="enhancement_clahe">CLAHE (Adaptive Histogram Eq.)</option>
+                                <option value="enhancement_trabecular">Penonjolan Trabekula & Tulang</option>
+                                <option value="enhancement_window:bone">DICOM VOI LUT: Bone Window (Tulang)</option>
+                                <option value="enhancement_window:lung">DICOM VOI LUT: Lung Window (Paru)</option>
+                                <option value="enhancement_window:soft">DICOM VOI LUT: Soft Tissue Window</option>
+                                <option value="enhancement_invert">Invert Grayscale (Pembalikan Polaritas)</option>
+                            </optgroup>
+                            <optgroup label="── 3. Anatomical Segmentation ──">
+                                <option value="segmentation_bone">Segmentasi Struktur Tulang (Bone Masking)</option>
+                                <option value="segmentation_lung">Segmentasi Lapangan Paru (Lung Contours)</option>
+                            </optgroup>
+                            <optgroup label="── 4. AI Bone Suppression (Dual-Engine) ──">
+                                <option value="bone_suppression_commercial">[AI-01] In-House Commercial Engine</option>
+                                <option value="bone_suppression_qure">[AI-02] Qure.ai Research Baseline</option>
+                            </optgroup>
                         </select>
 
-                        <!-- Parameter Sliders -->
-                        <div class="slider-group">
-                            <div class="slider-label-row">
-                                <span>Radius Spasial (Kernel &sigma;<sub>s</sub>):</span>
-                                <span class="slider-val-badge" id="lblSigmaSpace">20</span>
+                        <!-- KONTROL KHUSUS 1: RESTORASI DENOISING -->
+                        <div id="boxDenoiseControls">
+                            <!-- Parameter Sliders -->
+                            <div class="slider-group">
+                                <div class="slider-label-row">
+                                    <span>Radius Spasial (Kernel &sigma;<sub>s</sub>):</span>
+                                    <span class="slider-val-badge" id="lblSigmaSpace">20</span>
+                                </div>
+                                <input type="range" min="5" max="80" value="20" class="pacs-range-slider" id="rngSigmaSpace" oninput="document.getElementById('lblSigmaSpace').innerText = this.value">
                             </div>
-                            <input type="range" min="5" max="80" value="20" class="pacs-range-slider" id="rngSigmaSpace" oninput="document.getElementById('lblSigmaSpace').innerText = this.value">
+
+                            <div class="slider-group">
+                                <div class="slider-label-row">
+                                    <span>Sensitivitas Tepi (Fotometrik &sigma;<sub>r</sub>):</span>
+                                    <span class="slider-val-badge" id="lblSigmaColor">25</span>
+                                </div>
+                                <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
+                            </div>
+
+                            <div style="font-size: 0.65rem; color: #94a3b8; background: rgba(15, 23, 42, 0.6); border-left: 2px solid #38bdf8; padding: 4px 8px; border-radius: 2px; margin-bottom: 0.5rem; line-height: 1.3;">
+                                💡 <strong>Sweet Spot Thorax:</strong> &sigma;<sub>s</sub> = 20, &sigma;<sub>r</sub> = 25. Nilai terlalu tinggi (>50) menyebabkan <em>over-smoothing</em> (blur) pada detail paru.
+                            </div>
+
+                            <!-- Telemetry Grid -->
+                            <div class="telemetry-grid">
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">PSNR Metric:</span>
+                                    <span class="telemetry-val" id="telPsnr">40.22 dB</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">SNR Gain:</span>
+                                    <span class="telemetry-val" id="telSnrGain" style="color: #10b981;">+9.75 dB</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">Noise Reduction:</span>
+                                    <span class="telemetry-val" id="telNoiseRed">67.4%</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">Inference Time:</span>
+                                    <span class="telemetry-val" id="telLatency">32.0 ms</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="slider-group">
-                            <div class="slider-label-row">
-                                <span>Sensitivitas Tepi (Fotometrik &sigma;<sub>r</sub>):</span>
-                                <span class="slider-val-badge" id="lblSigmaColor">25</span>
+                        <!-- KONTROL KHUSUS 2: AI BONE SUPPRESSION (DUAL-ENGINE DASHBOARD) -->
+                        <div id="boxAiBoneSuppressionCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.6rem;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+                                <span style="font-size: 0.7rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
+                                    <span>🧠</span> <span id="lblAiCardEngineName">In-House Commercial Engine</span>
+                                </span>
+                                <span id="lblAiCardBadge" style="font-size: 0.6rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);">
+                                    100% Commercial Cleared
+                                </span>
                             </div>
-                            <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
+                            <div style="font-size: 0.66rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 0.5rem;" id="lblAiCardDesc">
+                                Model mandiri hasil training internal Klinik CDC. 100% bebas royalti, aman lisensi, dan legal untuk operasional komersial.
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.64rem; margin-bottom: 0.5rem; background: rgba(2, 6, 23, 0.5); padding: 6px; border-radius: 4px;">
+                                <div>
+                                    <span style="color: #64748b; display: block;">Arsitektur / Bobot:</span>
+                                    <span style="color: #f1f5f9; font-weight: 600;" id="lblAiCardArch">ResNet34-UNet In-House (93.9 MB)</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Akselerasi Komputasi:</span>
+                                    <span style="color: #38bdf8; font-weight: 600;" id="lblAiCardDevice">PyTorch CUDA / CPU (~0.45s)</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Target Dekomposisi:</span>
+                                    <span style="color: #f1f5f9; font-weight: 600;">Costae & Clavicula</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Presisi Citra:</span>
+                                    <span style="color: #10b981; font-weight: 600;">Sub-Piksel 2999&times;2999</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <div style="font-size: 0.65rem; color: #94a3b8; background: rgba(15, 23, 42, 0.6); border-left: 2px solid #38bdf8; padding: 4px 8px; border-radius: 2px; margin-bottom: 0.5rem; line-height: 1.3;">
-                            💡 <strong>Sweet Spot Thorax:</strong> &sigma;<sub>s</sub> = 20, &sigma;<sub>r</sub> = 25. Nilai terlalu tinggi (>50) menyebabkan <em>over-smoothing</em> (blur) pada detail paru.
-                        </div>
-
-                        <!-- Telemetry Grid -->
-                        <div class="telemetry-grid">
-                            <div class="telemetry-item">
-                                <span class="telemetry-label">PSNR Metric:</span>
-                                <span class="telemetry-val" id="telPsnr">40.22 dB</span>
+                        <!-- KONTROL KHUSUS 3: CONVENTIONAL ENHANCEMENT INFO -->
+                        <div id="boxEnhancementCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.6rem;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem;" id="lblEnhancementTitle">
+                                ✨ DICOM VOI LUT Windowing
                             </div>
-                            <div class="telemetry-item">
-                                <span class="telemetry-label">SNR Gain:</span>
-                                <span class="telemetry-val" id="telSnrGain" style="color: #10b981;">+9.75 dB</span>
-                            </div>
-                            <div class="telemetry-item">
-                                <span class="telemetry-label">Noise Reduction:</span>
-                                <span class="telemetry-val" id="telNoiseRed">67.4%</span>
-                            </div>
-                            <div class="telemetry-item">
-                                <span class="telemetry-label">Inference Time:</span>
-                                <span class="telemetry-val" id="telLatency">32.0 ms</span>
+                            <div style="font-size: 0.66rem; color: #94a3b8; line-height: 1.4;" id="lblEnhancementDesc">
+                                Pemetaan linier rentang kontras piksel 12-bit sesuai standar DICOM PS 3.3/3.4 tanpa merusak data asli.
                             </div>
                         </div>
 
-                        <button class="btn-action-primary" id="btnExecuteDenoise" onclick="executeAdvancedDenoise()">
+                        <!-- KONTROL KHUSUS 4: SEGMENTATION INFO -->
+                        <div id="boxSegmentationCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.6rem;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem;" id="lblSegTitle">
+                                🦴 Segmentasi Struktur Anatomi
+                            </div>
+                            <div style="font-size: 0.66rem; color: #94a3b8; line-height: 1.4;" id="lblSegDesc">
+                                Penandaan kontur batas organ dan korteks tulang untuk evaluasi morfologis radiolog.
+                            </div>
+                        </div>
+
+                        <button class="btn-action-primary" id="btnExecuteDenoise" onclick="executeAdvancedDenoise()" style="margin-top: 0.6rem;">
                             <span>▶ Jalankan Filter Denoising</span>
                         </button>
 
                         <!-- Inspection Modes -->
                         <div class="comparison-modes-bar">
-                            <button class="btn-toggle-mode" id="btnCurtainMode" onclick="toggleCurtainWipe()">
-                                Tirai A/B Wipe
+                            <button class="btn-toggle-mode" id="btnCurtainMode" onclick="toggleCurtainWipe()" style="flex: 1;">
+                                ↔ Tirai A/B Split-Wipe
                             </button>
                             <button class="btn-toggle-mode" id="btnResidualMode" onclick="toggleResidualMap()">
                                 Peta Residu Noise
@@ -3074,7 +3148,8 @@
                     </div>
 
                     <!-- TABEL KOMPARASI 4 ALGORITMA (EVALUASI RESTORASI) -->
-                    <div class="dock-card" style="border-color: rgba(56, 189, 248, 0.35);">
+                    <div class="dock-card" id="cardBenchmarkDenoise" style="border-color: rgba(56, 189, 248, 0.35);">
+
                         <div class="dock-card-header">
                             <span class="dock-card-title" style="color: #38bdf8; display: flex; align-items: center; gap: 0.35rem;">
                                 <span>📊</span> Matriks Komparasi 4 Algoritma
@@ -4239,13 +4314,15 @@
             // Update target badge on Denoise Dock
             const badge = document.getElementById('lblTargetVpBadge');
             if (badge) {
+                const sName1 = @json($patientSeries[0]['name'] ?? 'Primary Scan');
+                const sName2 = @json($patientSeries[1]['name'] ?? 'Secondary Scan');
                 if (id === 1) {
-                    badge.innerText = 'Target: VP-A (Thorax)';
+                    badge.innerText = `Target: VP-A (${sName1})`;
                     badge.style.color = '#38bdf8';
                     badge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
                     badge.style.background = 'rgba(2, 132, 199, 0.2)';
                 } else {
-                    badge.innerText = 'Target: VP-B (USG)';
+                    badge.innerText = `Target: VP-B (${sName2})`;
                     badge.style.color = '#10b981';
                     badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
                     badge.style.background = 'rgba(16, 185, 129, 0.2)';
@@ -4411,20 +4488,133 @@
         // ==========================================
         function onEngineChange() {
             const engine = document.getElementById('selFilterEngine').value;
-            if (engine === 'dl_dncnn') {
-                document.getElementById('telLatency').innerText = '18.5 ms';
-            } else if (engine === 'nlm') {
-                document.getElementById('telLatency').innerText = '64.0 ms';
+            const btn = document.getElementById('btnExecuteDenoise');
+            const lblCategoryTitle = document.getElementById('lblDockCategoryTitle');
+
+            const boxDenoise = document.getElementById('boxDenoiseControls');
+            const boxAi = document.getElementById('boxAiBoneSuppressionCard');
+            const boxEnhance = document.getElementById('boxEnhancementCard');
+            const boxSeg = document.getElementById('boxSegmentationCard');
+            const cardBench = document.getElementById('cardBenchmarkDenoise');
+            const btnResidual = document.getElementById('btnResidualMode');
+            const btnCurtain = document.getElementById('btnCurtainMode');
+
+            // Reset semua card tersembunyi
+            if (boxDenoise) boxDenoise.style.display = 'none';
+            if (boxAi) boxAi.style.display = 'none';
+            if (boxEnhance) boxEnhance.style.display = 'none';
+            if (boxSeg) boxSeg.style.display = 'none';
+            if (cardBench) cardBench.style.display = 'none';
+            if (btnResidual) btnResidual.style.display = 'none';
+
+            if (engine.startsWith('bone_suppression')) {
+                // KATEGORI 4: AI BONE SUPPRESSION
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'AI Bone Suppression (Dual-Engine)';
+                if (boxAi) boxAi.style.display = 'block';
+                if (btnCurtain) btnCurtain.style.flex = '1';
+
+                const lblName = document.getElementById('lblAiCardEngineName');
+                const lblBadge = document.getElementById('lblAiCardBadge');
+                const lblDesc = document.getElementById('lblAiCardDesc');
+                const lblArch = document.getElementById('lblAiCardArch');
+                const lblDev = document.getElementById('lblAiCardDevice');
+
+                if (engine === 'bone_suppression_commercial') {
+                    if (lblName) lblName.innerText = '[AI-01] In-House Commercial Engine';
+                    if (lblBadge) {
+                        lblBadge.innerText = '100% Commercial Cleared';
+                        lblBadge.style.color = '#10b981';
+                        lblBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                        lblBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+                    }
+                    if (lblDesc) lblDesc.innerText = 'Model mandiri hasil training internal Klinik CDC. 100% bebas royalti, aman lisensi, dan legal untuk operasional komersial.';
+                    if (lblArch) lblArch.innerText = 'ResNet34-UNet In-House (93.9 MB)';
+                    if (lblDev) lblDev.innerText = 'PyTorch CUDA / CPU (~0.45s)';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan In-House AI Bone Suppression</span>';
+                } else {
+                    if (lblName) lblName.innerText = '[AI-02] Qure.ai Research Baseline';
+                    if (lblBadge) {
+                        lblBadge.innerText = 'Research Only (CC BY-NC-SA 4.0)';
+                        lblBadge.style.color = '#f59e0b';
+                        lblBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+                        lblBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+                    }
+                    if (lblDesc) lblDesc.innerText = 'Model tervalidasi Qure.ai (arXiv:2609.24937). Digunakan sebagai pembanding standar emas riset radiologi toraks.';
+                    if (lblArch) lblArch.innerText = 'Qure.ai Decomposed (398.14 MB)';
+                    if (lblDev) lblDev.innerText = 'PyTorch CUDA (~4.5s)';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Qure.ai Research Bone Suppression</span>';
+                }
+            } else if (engine.startsWith('enhancement_')) {
+                // KATEGORI 2: IMAGE ENHANCEMENT
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Image Enhancement (Konvensional)';
+                if (boxEnhance) boxEnhance.style.display = 'block';
+                const eTitle = document.getElementById('lblEnhancementTitle');
+                const eDesc = document.getElementById('lblEnhancementDesc');
+
+                if (engine === 'enhancement_clahe') {
+                    if (eTitle) eTitle.innerText = '🔍 CLAHE (Adaptive Histogram Eq.)';
+                    if (eDesc) eDesc.innerText = 'Meningkatkan kontras lokal parenkim paru dan bayangan infiltrat secara adaptif.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan CLAHE Enhancement</span>';
+                } else if (engine === 'enhancement_trabecular') {
+                    if (eTitle) eTitle.innerText = '🦴 Penonjolan Trabekula & Tulang';
+                    if (eDesc) eDesc.innerText = 'Filter unsharp mask spasial frekuensi tinggi untuk mempertegas garis trabekula & fraktur.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan Penonjolan Tulang</span>';
+                } else if (engine === 'enhancement_invert') {
+                    if (eTitle) eTitle.innerText = '🔄 Invert Grayscale (Pembalikan Polaritas)';
+                    if (eDesc) eDesc.innerText = 'Membalik intensitas hitam-putih untuk memperjelas efusi pleura & kalsifikasi halus.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan Invert Grayscale</span>';
+                } else {
+                    if (eTitle) eTitle.innerText = '📐 DICOM VOI LUT Windowing';
+                    if (eDesc) eDesc.innerText = 'Penyesuaian Window Center (Level) dan Window Width standar DICOM PS 3.3/3.4.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan DICOM VOI LUT</span>';
+                }
+            } else if (engine.startsWith('segmentation_')) {
+                // KATEGORI 3: ANATOMICAL SEGMENTATION
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Segmentasi Struktur Anatomi';
+                if (boxSeg) boxSeg.style.display = 'block';
+                const sTitle = document.getElementById('lblSegTitle');
+                const sDesc = document.getElementById('lblSegDesc');
+
+                if (engine === 'segmentation_bone') {
+                    if (sTitle) sTitle.innerText = '🦴 Masking Korteks Tulang (Otsu Morphological)';
+                    if (sDesc) sDesc.innerText = 'Isolasi piksel berdensitas tinggi untuk analisis cakupan area tulang toraks.';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Segmentasi Tulang</span>';
+                } else {
+                    if (sTitle) sTitle.innerText = '🫁 Segmentasi Lapangan Paru Bilateral';
+                    if (sDesc) sDesc.innerText = 'Deteksi otomatis batas hemi-diafragma dan parenkim paru kiri-kanan.';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Segmentasi Paru</span>';
+                }
             } else {
-                document.getElementById('telLatency').innerText = '32.0 ms';
+                // KATEGORI 1: RESTORASI DENOISING
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Restorasi Citra (Denoising)';
+                if (boxDenoise) boxDenoise.style.display = 'block';
+                if (cardBench) cardBench.style.display = 'block';
+                if (btnResidual) btnResidual.style.display = 'inline-block';
+
+                const lblLat = document.getElementById('telLatency');
+                if (engine === 'dl_dncnn') {
+                    if (lblLat) lblLat.innerText = '18.5 ms';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan DnCNN Denoising</span>';
+                } else if (engine === 'nlm') {
+                    if (lblLat) lblLat.innerText = '64.0 ms';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan NLM Denoising</span>';
+                } else if (engine === 'gaussian') {
+                    if (lblLat) lblLat.innerText = '8.0 ms';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Gaussian Smoothing</span>';
+                } else {
+                    if (lblLat) lblLat.innerText = '32.0 ms';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Bilateral Denoising</span>';
+                }
             }
         }
+
 
         function executeAdvancedDenoise() {
             const targetVp = activeViewport;
             const btn = document.getElementById('btnExecuteDenoise');
             const origHtml = btn.innerHTML;
-            btn.innerHTML = `⏳ Menjalankan Denoising VP-${targetVp === 1 ? 'A (Thorax)' : 'B (USG)'}...`;
+            const sNameActive = (targetVp === 1) ? @json($patientSeries[0]['name'] ?? 'Primary') : @json($patientSeries[1]['name'] ?? 'Secondary');
+            btn.innerHTML = `⏳ Memproses VP-${targetVp === 1 ? 'A' : 'B'} (${sNameActive})...`;
             btn.disabled = true;
 
             const engine = document.getElementById('selFilterEngine').value;
@@ -4452,10 +4642,23 @@
                 return data;
             })
             .then(data => {
+                // Tangani respons audit jika bobot model AI belum terpasang
+                if (data.status === 'info') {
+                    const auditMsg = `${data.method_name}\n\n${data.message}\n\nStatus: Bobot pretrained (.pth/.onnx) belum dimuat.\nSistem menolak mengganti dengan filter palsu demi integritas medis.`;
+                    alert(auditMsg);
+                    return;
+                }
+
                 vpState[targetVp].denoisedSrc = data.image_url;
                 vpState[targetVp].residualSrc = data.residual_url;
                 vpState[targetVp].metrics = data.metrics;
                 vpState[targetVp].engine = data.engine;
+
+                // Update label dinamis pada Tirai A/B sisi kanan
+                const lblCurtainRight = document.getElementById('curtainLabelRight' + targetVp);
+                if (lblCurtainRight && data.engine) {
+                    lblCurtainRight.innerText = data.engine.toUpperCase();
+                }
 
                 const targetImg = (targetVp === 1) ? img1 : img2;
                 const targetDenoisedImg = (targetVp === 1) ? img1Denoised : img2Denoised;
@@ -4464,29 +4667,41 @@
                     targetDenoisedImg.src = data.image_url;
                 }
 
-                if (vpState[targetVp].isCurtain) {
+                if (engine.startsWith('bone_suppression')) {
+                    if (!vpState[targetVp].isCurtain) {
+                        toggleCurtainWipe();
+                    } else {
+                        targetImg.src = vpState[targetVp].rawSrc;
+                        if (targetDenoisedImg) {
+                            targetDenoisedImg.style.display = 'block';
+                            applyCurtainSplit(targetVp);
+                        }
+                    }
+                } else if (vpState[targetVp].isCurtain) {
                     targetImg.src = vpState[targetVp].rawSrc;
                     if (targetDenoisedImg) {
                         targetDenoisedImg.style.display = 'block';
                         applyCurtainSplit(targetVp);
                     }
-                } else if (vpState[targetVp].isResidual) {
+                } else if (vpState[targetVp].isResidual && data.residual_url) {
                     targetImg.src = data.residual_url;
                 } else {
                     targetImg.src = data.image_url;
                 }
+
 
                 updateTransform(targetVp);
                 updateFilter(targetVp);
                 updateTelemetryForViewport(targetVp);
                 updateInspectionButtons();
 
-                showToolHint('✅', `Restorasi citra berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A (Thorax)' : 'B (USG)'}!`);
+                const displayTitle = data.method_name || data.engine || 'Pemrosesan';
+                showToolHint('✅', `${displayTitle} berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A' : 'B'} (${sNameActive})!`);
                 setTimeout(hideToolHint, 3000);
             })
             .catch(err => {
                 console.error(err);
-                alert('Eror Denoising:\n' + err.message);
+                alert('Eror Pemrosesan Citra:\n' + err.message);
             })
             .finally(() => {
                 btn.innerHTML = origHtml;
@@ -7632,6 +7847,8 @@
         // ── END VIEW MENU ─────────────────────────────────────────────
 
     </script>
+
+
 
     <!-- ─────────────────────────────────────────────────────────────
          GLOSSARY MODAL — GlossaryModal component
