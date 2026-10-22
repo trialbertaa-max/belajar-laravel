@@ -118,13 +118,17 @@ def handle_store(event):
     
     extract_preview_jpg(ds, jpg_full_path)
     
-    # Update juga file raw default untuk viewer cepat
-    extract_preview_jpg(ds, os.path.join(PUBLIC_ASSETS_DIR, "raw_toraks.jpg"))
-    # Copy juga ke sample_toraks.dcm root agar pipeline lama tetap sinkron
-    try:
-        ds.save_as(os.path.join(BASE_DIR, "sample_toraks.dcm"), write_like_original=False)
-    except Exception:
-        pass
+    # Update file raw_toraks & sample_toraks default HANYA jika citra yang masuk adalah pemeriksaan Toraks / Dada (bukan Skull/Kepala)
+    body_part = str(ds.get("BodyPartExamined", "")).upper()
+    study_desc_upper = study_desc.upper()
+    is_chest_scan = "THORAX" in body_part or "CHEST" in study_desc_upper or "TORAKS" in study_desc_upper or "PARU" in study_desc_upper
+
+    if is_chest_scan:
+        extract_preview_jpg(ds, os.path.join(PUBLIC_ASSETS_DIR, "raw_toraks.jpg"))
+        try:
+            ds.save_as(os.path.join(BASE_DIR, "sample_toraks.dcm"), write_like_original=False)
+        except Exception:
+            pass
 
     # 3. Update atau Insert data ke Database MySQL/SQLite Laravel
     try:
