@@ -17,8 +17,10 @@ import numpy as np
 
 from .dicom_io import load_radiology_image, apply_voi_lut
 from .enhancement import run_window_level, run_clahe, run_trabecular_sharpness
-from .segmentation import segment_bone_cortex, segment_lung_fields
-from .bone_suppression import BoneSuppressionEngine
+try:
+    from .bone_suppression import BoneSuppressionEngine
+except Exception:
+    BoneSuppressionEngine = None
 
 
 def run_pipeline(input_path, output_path, task="enhancement_clahe", **kwargs):
@@ -124,6 +126,15 @@ def run_pipeline(input_path, output_path, task="enhancement_clahe", **kwargs):
             selected_engine = "qure"
         else:
             selected_engine = "commercial"
+
+        if BoneSuppressionEngine is None:
+            return {
+                "status": "error",
+                "category": category,
+                "method_name": "AI Bone Suppression",
+                "message": "Pustaka PyTorch (torch) belum terpasang di sistem server. Silakan jalankan: pip install torch",
+                "processing_time_ms": round((time.time() - start_time) * 1000, 1)
+            }
 
         bs_engine = BoneSuppressionEngine(engine_type=selected_engine)
         pred_img, bs_info = bs_engine.run_inference(base_uint8)

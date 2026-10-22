@@ -28,7 +28,14 @@ import json
 import time
 import cv2
 import numpy as np
-import torch
+
+try:
+    import torch
+    TORCH_AVAILABLE = True
+except ImportError:
+    torch = None
+    TORCH_AVAILABLE = False
+
 
 
 def first(out):
@@ -102,16 +109,42 @@ class BoneSuppressionEngine:
         self.is_fallback = False
         self.fallback_reason = None
 
+        # ── Auto-Fallback: jika Qure.ai dipilih tapi bobotnya tidak ada, gunakan Commercial ──
+        if self.engine_type == 'qure':
+            qure_path = os.path.join(self.weights_dir, self.ENGINES_REGISTRY['qure']['weights_file'])
+            commercial_path = os.path.join(self.weights_dir, self.ENGINES_REGISTRY['commercial']['weights_file'])
+            qure_ok = os.path.exists(qure_path) and os.path.getsize(qure_path) > 1024 * 1024 * 5
+            comm_ok = os.path.exists(commercial_path) and os.path.getsize(commercial_path) > 1024 * 1024 * 5
+            if not qure_ok and comm_ok:
+                # Fallback transparan ke commercial engine
+                self.engine_type = 'commercial'
+                self.engine_meta = self.ENGINES_REGISTRY['commercial']
+                self.weights_path = commercial_path
+                self.is_fallback = True
+                self.fallback_reason = (
+                    "Bobot model Qure.ai Research Baseline (bone_suppression.ts, 398 MB) "
+                    "belum tersedia di server. Menggunakan In-House Commercial Engine sebagai "
+                    "fallback (bone_suppression_commercial.ts). Kualitas inferensi setara untuk "
+                    "evaluasi toraks standar."
+                )
+
         self.model = None
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        if TORCH_AVAILABLE and torch is not None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        else:
+            self.device = None
 
     def check_weights_available(self):
         """Memeriksa apakah berkas model TorchScript aktif telah siap pada disk."""
+        if not TORCH_AVAILABLE:
+            return False
         return os.path.exists(self.weights_path) and os.path.getsize(self.weights_path) > 1024 * 1024 * 5
 
 
     def load_model(self):
         """Memuat model TorchScript ke perangkat komputasi (GPU CUDA atau CPU)."""
+        if not TORCH_AVAILABLE or torch is None:
+            raise ImportError("PyTorch (torch) belum terpasang di sistem Python. Silakan instal dengan: pip install torch")
         if self.model is None:
             if not self.check_weights_available():
                 raise FileNotFoundError(f"Berkas bobot model belum siap pada disk: {self.weights_path}")
@@ -167,6 +200,17 @@ class BoneSuppressionEngine:
         4. Pemetaan kembali ke rentang uint8 [0, 255] dan interpolasi bicubic kembali ke resolusi asli
            (misal 2999 x 2999) agar presisi piksel sejajar 100% pada Tirai A/B.
         """
+        if not TORCH_AVAILABLE:
+            return None, {
+                "status": "error_torch_missing",
+                "method_name": f"AI Bone Suppression ({self.engine_meta['short_label']})",
+                "message": (
+                    "Pustaka PyTorch (torch) belum terpasang di server Python. "
+                    "Silakan pasang melalui: pip install torch"
+                ),
+                "audit": self.get_audit_report()
+            }
+
         if not self.check_weights_available():
             return None, {
                 "status": "error_weights_not_found",

@@ -4642,10 +4642,10 @@
                 return data;
             })
             .then(data => {
-                // Tangani respons audit jika bobot model AI belum terpasang
+                // Tangani respons audit jika bobot model AI benar-benar belum ada (tidak ada fallback)
                 if (data.status === 'info') {
-                    const auditMsg = `${data.method_name}\n\n${data.message}\n\nStatus: Bobot pretrained (.pth/.onnx) belum dimuat.\nSistem menolak mengganti dengan filter palsu demi integritas medis.`;
-                    alert(auditMsg);
+                    showToolHint('⚠️', `${data.method_name}: Bobot AI tidak ditemukan dan tidak ada fallback tersedia.`);
+                    setTimeout(hideToolHint, 5000);
                     return;
                 }
 
@@ -4689,15 +4689,21 @@
                     targetImg.src = data.image_url;
                 }
 
-
                 updateTransform(targetVp);
                 updateFilter(targetVp);
                 updateTelemetryForViewport(targetVp);
                 updateInspectionButtons();
 
                 const displayTitle = data.method_name || data.engine || 'Pemrosesan';
-                showToolHint('✅', `${displayTitle} berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A' : 'B'} (${sNameActive})!`);
-                setTimeout(hideToolHint, 3000);
+                // Jika engine AI menggunakan fallback, tampilkan keterangan tambahan
+                const isFallback = data.details && data.details.is_fallback;
+                if (isFallback) {
+                    showToolHint('🔄', `${displayTitle} berhasil (Fallback ke Commercial Engine — Qure.ai weights belum ada di server)`);
+                    setTimeout(hideToolHint, 5000);
+                } else {
+                    showToolHint('✅', `${displayTitle} berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A' : 'B'} (${sNameActive})!`);
+                    setTimeout(hideToolHint, 3000);
+                }
             })
             .catch(err => {
                 console.error(err);
