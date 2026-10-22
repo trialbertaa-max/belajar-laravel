@@ -261,13 +261,23 @@ class PatientScanController extends Controller
                 ->with('info', 'Pasien ini sudah pernah menjalani pemeriksaan.');
         }
 
-        $isUsg = str_contains(strtoupper($scan->modality), 'USG');
+        $modalityUpper = strtoupper($scan->modality . ' ' . $scan->study_description);
+        $isUsg = str_contains($modalityUpper, 'USG');
+        $isHead = str_contains($modalityUpper, 'WATERS') 
+            || str_contains($modalityUpper, 'SINUS') 
+            || str_contains($modalityUpper, 'KEPALA') 
+            || str_contains($modalityUpper, 'SKULL') 
+            || str_contains($modalityUpper, 'CRANIUM');
 
         // Gunakan citra sampel sesuai modalitas (representasi citra DICOM dari alat)
         if ($isUsg) {
             $previewPath = 'scan-assets/usg_sample.jpg';
             $scanPath    = null;
             $dicomRaw    = 'sample_usg.dcm';
+        } elseif ($isHead) {
+            $previewPath = 'scan-assets/raw_kepala.jpg';
+            $scanPath    = 'scan-assets/raw_kepala.jpg';
+            $dicomRaw    = 'sample_kepala.dcm';
         } else {
             $previewPath = 'scan-assets/raw_toraks.jpg';
             $scanPath    = 'scan-assets/raw_toraks.jpg';
