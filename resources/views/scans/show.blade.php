@@ -857,6 +857,7 @@
             flex-direction: column;
             z-index: 10;
             transition: width 0.2s ease, min-width 0.2s ease;
+            position: relative;
         }
 
         .dock-panel.collapsed {
@@ -867,7 +868,131 @@
             display: none !important;
         }
 
-        /* Clean Dock Header — now just a thin close row above tabs */
+        /* Dock Panel Drag Resizer Handle on Left Edge */
+        .dock-resizer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -5px;
+            width: 10px;
+            cursor: col-resize;
+            z-index: 50;
+            touch-action: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dock-resizer-line {
+            width: 2px;
+            height: 100%;
+            background-color: transparent;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dock-resizer:hover .dock-resizer-line,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-line {
+            background-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+        }
+
+        .dock-resizer-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 8px 3px;
+            border-radius: 4px;
+            background: #090f1a;
+            border: 1px solid var(--ws-border);
+            opacity: 0;
+            transition: opacity 0.15s ease, border-color 0.15s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .dock-resizer-handle span {
+            width: 3px;
+            height: 3px;
+            background-color: #64748b;
+            border-radius: 50%;
+        }
+
+        .dock-resizer:hover .dock-resizer-handle,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-handle {
+            opacity: 1;
+            border-color: #38bdf8;
+        }
+
+        .dock-resizer:hover .dock-resizer-handle span,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-handle span {
+            background-color: #38bdf8;
+        }
+
+        /* Resizing state */
+        body.is-resizing-dock {
+            cursor: col-resize !important;
+            user-select: none !important;
+        }
+
+        body.is-resizing-dock * {
+            user-select: none !important;
+            cursor: col-resize !important;
+        }
+
+        .dock-panel.is-resizing {
+            transition: none !important;
+        }
+
+        /* Visual indicator when dragged into snap-collapse zone */
+        .dock-panel.dock-will-minimize {
+            opacity: 0.55;
+            border-left: 2px dashed #f59e0b !important;
+        }
+
+        .dock-panel.dock-will-minimize .dock-resizer-line {
+            background-color: #f59e0b !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.8) !important;
+        }
+
+        /* Floating Restore Tab on Right Edge when Dock Panel is Collapsed */
+        .dock-expand-tab {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 65px;
+            z-index: 15;
+            background: #0b1120;
+            border: 1px solid var(--ws-border);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            color: #94a3b8;
+            padding: 0.55rem 0.35rem;
+            cursor: pointer;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .dock-expand-tab:hover {
+            background: #1e293b;
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        .dock-panel.collapsed ~ .dock-expand-tab {
+            display: flex;
+        }
+
+        /* Clean Dock Header — now with minimize and close action buttons */
         .dock-header {
             display: flex;
             justify-content: space-between;
@@ -900,25 +1025,41 @@
             text-transform: uppercase;
         }
 
-        .dock-close-btn {
+        .dock-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .dock-action-btn {
             background: none;
             border: none;
             color: #64748b;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             cursor: pointer;
-            padding: 0.15rem 0.35rem;
+            padding: 0.2rem 0.35rem;
             border-radius: 4px;
             line-height: 1;
             transition: all 0.15s ease;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
         }
 
-        .dock-close-btn:hover {
+        .dock-action-btn:hover {
             color: #f8fafc;
             background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dock-minimize-btn:hover {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .dock-close-btn:hover {
+            color: #f43f5e;
+            background: rgba(244, 63, 94, 0.12);
         }
 
         /* ── VS Code-style Tab Bar ── */
@@ -2834,13 +2975,26 @@
 
         <!-- 3C. RIGHT DOCK PANEL (WORKSTATION) -->
         <aside class="dock-panel collapsed" id="dockPanel">
-            <!-- Thin top bar with panel label + close all -->
+            <!-- Left Edge Resizer Handle (Tarik / geser untuk atur ukuran, geser ke kanan untuk minimize) -->
+            <div class="dock-resizer" id="dockResizer" title="Geser ke kiri untuk memperbesar, geser ke kanan untuk minimize. Klik 2x untuk minimize.">
+                <div class="dock-resizer-line"></div>
+                <div class="dock-resizer-handle">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <!-- Thin top bar with tools label + minimize & close -->
             <div class="dock-header" id="dockHeader">
                 <div class="dock-header-title-wrap">
                     <span id="dockHeaderIcon" class="dock-header-icon"></span>
-                    <span id="dockHeaderTitle" class="dock-header-title">PANEL</span>
+                    <span id="dockHeaderTitle" class="dock-header-title">TOOLS</span>
                 </div>
-                <button type="button" class="dock-close-btn" onclick="closeDockPanel()" title="Tutup Semua Panel (Esc)" aria-label="Tutup Panel">✕</button>
+                <div class="dock-header-actions">
+                    <button type="button" class="dock-action-btn dock-minimize-btn" onclick="minimizeDockPanel()" title="Minimize / Ciutkan Tools (Bisa juga digeser ke kanan)" aria-label="Minimize Tools">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+                    </button>
+                    <button type="button" class="dock-action-btn dock-close-btn" onclick="closeDockPanel()" title="Tutup Semua Tab Tools (Esc)" aria-label="Tutup Tools">✕</button>
+                </div>
             </div>
 
             <!-- VS Code-style tab bar (populated by JS) -->
@@ -3376,9 +3530,14 @@
                     </div>
                 </div>
 
-
             </div>
         </aside>
+
+        <!-- Floating Restore / Expand Button saat Dock Panel Collapsed -->
+        <button id="btnDockExpand" class="dock-expand-tab" onclick="restoreDockPanel()" title="Buka / Pulihkan Tools (Klik atau Tarik ke Kiri)">
+            <span style="font-size: 0.75rem;">◀</span>
+            <span style="writing-mode: vertical-rl; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Tools</span>
+        </button>
 
     </div>
 
@@ -3761,9 +3920,57 @@
             }
         }
 
+        // ── Dock Panel Drag Resizer & Minimize Controller ──
+        let _dockSavedWidth = parseInt(localStorage.getItem('pacs_dock_width'), 10) || 380;
+        if (isNaN(_dockSavedWidth) || _dockSavedWidth < 280 || _dockSavedWidth > 850) _dockSavedWidth = 380;
+
+        function setDockWidth(w, saveToStorage = true) {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            const maxW = Math.max(380, Math.min(window.innerWidth - 300, 850));
+            const boundedWidth = Math.max(280, Math.min(Math.round(w), maxW));
+            dock.style.width = boundedWidth + 'px';
+            dock.style.minWidth = boundedWidth + 'px';
+            if (saveToStorage) {
+                _dockSavedWidth = boundedWidth;
+                try { localStorage.setItem('pacs_dock_width', boundedWidth); } catch (e) {}
+            }
+        }
+
+        function minimizeDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            const currentW = dock.getBoundingClientRect().width;
+            if (currentW >= 260) {
+                _dockSavedWidth = Math.round(currentW);
+                try { localStorage.setItem('pacs_dock_width', _dockSavedWidth); } catch (e) {}
+            }
+            dock.classList.add('collapsed');
+            dock.classList.remove('dock-will-minimize', 'is-resizing');
+            // Catatan: saat diminimize, daftar tab dan tab aktif tetap tersimpan di memori
+            // sehingga saat dipulihkan/dibuka kembali, pekerjaan user tidak hilang!
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        function restoreDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+            setDockWidth(_dockSavedWidth, false);
+            if (_openDockTabs.length > 0 && currentDockTab) {
+                switchDockTab(currentDockTab);
+            } else {
+                openDockPanel('denoise');
+            }
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
         function closeDockPanel() {
             const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
-            if (dock) dock.classList.add('collapsed');
+            if (dock) {
+                dock.classList.add('collapsed');
+                dock.classList.remove('dock-will-minimize', 'is-resizing');
+            }
             if (window.ContrastPanel) window.ContrastPanel.deactivate();
             // Clear all checkmarks
             Object.values(DOCK_TAB_META).forEach(function(meta) {
@@ -3780,7 +3987,10 @@
 
         function openDockPanel(tabId) {
             const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
-            if (dock) dock.classList.remove('collapsed');
+            if (dock) {
+                dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+                setDockWidth(_dockSavedWidth, false);
+            }
             if (tabId) switchDockTab(tabId);
         }
 
@@ -3788,9 +3998,12 @@
             const meta = DOCK_TAB_META[tabId];
             if (!meta) return;
 
-            // Ensure dock panel is open
+            // Ensure dock panel is open and sized properly
             const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
-            if (dock) dock.classList.remove('collapsed');
+            if (dock) {
+                dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+                setDockWidth(_dockSavedWidth, false);
+            }
 
             // Add to open tabs if not already there
             if (!_openDockTabs.includes(tabId)) {
@@ -3834,6 +4047,148 @@
 
             setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
         }
+
+        // Initialize drag-to-resize and drag-to-minimize on dock resizer
+        function initDockResizer() {
+            const resizer = document.getElementById('dockResizer');
+            const dock = document.getElementById('dockPanel');
+            const expandTab = document.getElementById('btnDockExpand');
+            if (!dock) return;
+
+            setDockWidth(_dockSavedWidth, false);
+
+            if (resizer) {
+                let isDragging = false;
+                let startX = 0;
+                let startWidth = 0;
+                const MIN_COLLAPSE_THRESHOLD = 220; // below this width, dragging right will minimize
+
+                function onPointerDown(e) {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    isDragging = true;
+                    startX = e.clientX;
+                    startWidth = dock.getBoundingClientRect().width;
+
+                    dock.classList.add('is-resizing');
+                    document.body.classList.add('is-resizing-dock');
+
+                    window.addEventListener('pointermove', onPointerMove);
+                    window.addEventListener('pointerup', onPointerUp);
+                    window.addEventListener('pointercancel', onPointerUp);
+                    e.preventDefault();
+                }
+
+                function onPointerMove(e) {
+                    if (!isDragging) return;
+                    const currentX = e.clientX;
+                    // Right dock: dragging left (smaller X) increases width; dragging right (larger X) decreases width
+                    const deltaX = startX - currentX;
+                    const newWidth = startWidth + deltaX;
+
+                    if (newWidth < MIN_COLLAPSE_THRESHOLD) {
+                        // User is dragging toward the right edge to minimize!
+                        dock.classList.add('dock-will-minimize');
+                        dock.style.width = Math.max(120, newWidth) + 'px';
+                        dock.style.minWidth = Math.max(120, newWidth) + 'px';
+                    } else {
+                        dock.classList.remove('dock-will-minimize');
+                        setDockWidth(newWidth, false);
+                    }
+                }
+
+                function onPointerUp(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    dock.classList.remove('is-resizing');
+                    document.body.classList.remove('is-resizing-dock');
+
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+
+                    const currentX = e.clientX;
+                    const deltaX = startX - currentX;
+                    const finalWidth = startWidth + deltaX;
+
+                    if (finalWidth < MIN_COLLAPSE_THRESHOLD || dock.classList.contains('dock-will-minimize')) {
+                        // Minimize manual dengan cara digeser ke kanan!
+                        minimizeDockPanel();
+                    } else {
+                        setDockWidth(finalWidth, true);
+                        dock.classList.remove('dock-will-minimize');
+                    }
+                    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+                }
+
+                resizer.addEventListener('pointerdown', onPointerDown);
+
+                // Double click resizer to toggle minimize
+                resizer.addEventListener('dblclick', function(e) {
+                    e.preventDefault();
+                    minimizeDockPanel();
+                });
+            }
+
+            // Allow dragging or clicking the floating restore tab on right edge
+            if (expandTab) {
+                let isPulling = false;
+                let pullStartX = 0;
+
+                expandTab.addEventListener('pointerdown', function(e) {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    isPulling = true;
+                    pullStartX = e.clientX;
+                    dock.classList.remove('collapsed');
+                    dock.classList.add('is-resizing');
+                    document.body.classList.add('is-resizing-dock');
+
+                    function onPullMove(pe) {
+                        if (!isPulling) return;
+                        const pullWidth = window.innerWidth - pe.clientX;
+                        if (pullWidth > 150) {
+                            setDockWidth(pullWidth, false);
+                        }
+                    }
+
+                    function onPullUp(pe) {
+                        if (!isPulling) return;
+                        isPulling = false;
+                        dock.classList.remove('is-resizing');
+                        document.body.classList.remove('is-resizing-dock');
+                        window.removeEventListener('pointermove', onPullMove);
+                        window.removeEventListener('pointerup', onPullUp);
+
+                        const totalMove = Math.abs(pe.clientX - pullStartX);
+                        const finalW = window.innerWidth - pe.clientX;
+
+                        if (totalMove < 8) {
+                            // Simple click → restore to saved width
+                            restoreDockPanel();
+                        } else if (finalW < 220) {
+                            // Dragged back to right edge → keep minimized
+                            minimizeDockPanel();
+                        } else {
+                            // Dragged out to a custom width
+                            setDockWidth(finalW, true);
+                            if (_openDockTabs.length > 0 && currentDockTab) {
+                                switchDockTab(currentDockTab);
+                            } else {
+                                openDockPanel('denoise');
+                            }
+                        }
+                        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+                    }
+
+                    window.addEventListener('pointermove', onPullMove);
+                    window.addEventListener('pointerup', onPullUp);
+                    e.preventDefault();
+                });
+            }
+        }
+
+        // Initialize dock resizer immediately
+        initDockResizer();
 
         // Close dock panel on Escape key (if no dialog / input is active)
         window.addEventListener('keydown', (e) => {
