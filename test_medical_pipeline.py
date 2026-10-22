@@ -56,8 +56,9 @@ def run_full_audit_test():
     print(f"    - Photometric Interpretation: {meta['photometric_interpretation']}")
     print(f"    - Rentang Piksel Asli: Min={meta['raw_min']}, Max={meta['raw_max']}")
     assert meta['bits_stored'] == 12, "Gagal: Bits stored harus 12-bit!"
-    assert meta['rows'] == 2999 and meta['columns'] == 2999, "Gagal: Resolusi toraks harus 2999x2999!"
-    print("    -> STATUS: SUKSES (Data piksel 12-bit terbaca akurat)")
+    orig_h, orig_w = meta['rows'], meta['columns']
+    assert orig_h > 0 and orig_w > 0, "Gagal: Resolusi DICOM tidak valid!"
+    print(f"    -> STATUS: SUKSES (Data piksel 12-bit terbaca akurat: {orig_h}x{orig_w})")
 
     # 3. Pengujian VOI LUT (Window/Level) & MONOCHROME1/2
     print(f"\n[3] PENGUJIAN VOI LUT & PHOTOMETRIC INTERPRETATION:")
@@ -87,7 +88,7 @@ def run_full_audit_test():
     lung_win, l_info = run_window_level(px_raw, meta, preset='lung')
     print(f"    - Bone Window: C={b_info['effective_window_center']}, W={b_info['effective_window_width']}")
     print(f"    - Lung Window: C={l_info['effective_window_center']}, W={l_info['effective_window_width']}")
-    assert bone_win.shape == (2999, 2999), "Dimensi Bone Window tidak cocok!"
+    assert bone_win.shape == (orig_h, orig_w), "Dimensi Bone Window tidak cocok!"
 
     # B. CLAHE
     clahe_out, c_info = run_clahe(win_default, clip_limit=2.5, tile_grid_size=(8, 8))
@@ -106,7 +107,7 @@ def run_full_audit_test():
     bone_overlay, bone_mask, seg_bone_info = segment_bone_cortex(win_default)
     print(f"    - Segmentasi Struktur Tulang: Coverage={seg_bone_info['bone_pixel_coverage_pct']}, Ambang={seg_bone_info['otsu_threshold_value']}")
     print(f"      Dimensi Masker: {bone_mask.shape}, Dimensi Overlay: {bone_overlay.shape}")
-    assert bone_mask.shape == (2999, 2999), "Dimensi masker tulang tidak presisi!"
+    assert bone_mask.shape == (orig_h, orig_w), "Dimensi masker tulang tidak presisi!"
 
     lung_overlay, lung_mask, seg_lung_info = segment_lung_fields(win_default)
     print(f"    - Segmentasi Lapangan Paru: Coverage={seg_lung_info['lung_pixel_coverage_pct']}")
@@ -136,7 +137,7 @@ def run_full_audit_test():
     # 6.C Uji Inferensi Nyata Model AI
     pred_soft, bs_info = bs_comm.run_inference(win_default)
     assert pred_soft is not None, "Inferensi AI harus menghasilkan citra soft-tissue!"
-    assert pred_soft.shape == (2999, 2999), "Dimensi soft-tissue harus 2999x2999!"
+    assert pred_soft.shape == (orig_h, orig_w), f"Dimensi soft-tissue harus {orig_h}x{orig_w}!"
     print(f"    - Inferensi Nyata PyTorch ({bs_info['inference_device']}):")
     print(f"      Latency: {bs_info['inference_latency_ms']} ms | Resolusi: {bs_info['original_resolution']}")
     print(f"      Lisensi Tercatat: {bs_info['license']}")
@@ -155,8 +156,8 @@ def run_full_audit_test():
         cv2.imwrite(out_path, out_img)
         # Baca ulang dan periksa dimensi
         reloaded = cv2.imread(out_path)
-        assert reloaded.shape[0] == 2999 and reloaded.shape[1] == 2999, f"Kesejajaran gagal di {out_path}!"
-        print(f"    - {os.path.basename(out_path)}: 2999 x 2999 (100% Kesejajaran Sub-piksel Terjamin)")
+        assert reloaded.shape[0] == orig_h and reloaded.shape[1] == orig_w, f"Kesejajaran gagal di {out_path}!"
+        print(f"    - {os.path.basename(out_path)}: {orig_h} x {orig_w} (100% Kesejajaran Sub-piksel Terjamin)")
     print("    -> STATUS: SUKSES (Orientasi, rasio aspek, dan resolusi identik)")
 
     # 8. Verifikasi Akhir Integritas Berkas DICOM Asli
