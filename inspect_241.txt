@@ -1,0 +1,35 @@
+=== Paragraph 172 (style: Heading 3) ===
+Full text: 2.4.1	Gaussian Filter
+Runs: [('2.4.1\tGaussian Filter', False, True)]
+oMath count: 0
+
+=== Paragraph 173 (style: Normal) ===
+Full text: Gaussian Filter merupakan filter linear spasial domain yang bekerja melalui operasi konvolusi diskret dua dimensi menggunakan fungsi pembobotan terdistribusi normal (Gaussian) (Gonzalez & Woods, 2018). Fungsi pembobot kernel Gaussian kontinu dua dimensi didefinisikan melalui persamaan matematis:
+Runs: [('Gaussian Filter merupakan filter linear spasial domain yang bekerja melalui operasi konvolusi diskret dua dimensi menggunakan fungsi pembobotan terdistribusi normal (Gaussian) (Gonzalez & Woods, 2018). Fungsi pembobot kernel Gaussian kontinu dua dimensi didefinisikan melalui persamaan matematis:', False, False)]
+oMath count: 0
+
+=== Paragraph 174 (style: Normal) ===
+Full text: 
+Runs: []
+oMath count: 1
+
+=== Paragraph 175 (style: Normal) ===
+Full text: Operasi penyaringan pada piksel target berkoordinat p = (x, y) dihitung dengan menjumlahkan perkalian intensitas piksel tetangga q ∈ Ω terhadap bobot jarak spasialnya:
+Runs: [('Operasi penyaringan pada piksel target berkoordinat ', False, False), ('p = (x, y)', True, False), (' dihitung dengan menjumlahkan perkalian intensitas piksel tetangga ', False, False), ('q ∈ Ω', True, False), (' terhadap bobot jarak spasialnya:', False, False)]
+oMath count: 0
+
+=== Paragraph 176 (style: Normal) ===
+Full text: 
+Runs: []
+oMath count: 1
+
+=== Paragraph 177 (style: Normal) ===
+Full text: di mana Ω merepresentasikan jendela lingkungan spasial lokal di sekitar piksel p, ||p − q|| adalah jarak Euclidean antar-piksel, dan parameter σ merupakan simpangan baku spasial yang mengatur lebar sebaran fungsi pembobot. Secara fisis, Gaussian filter bekerja sangat efektif meredam fluktuasi derau acak frekuensi tinggi pada area homogen melalui perataan rata-rata lokal (local averaging). Namun, kelemahan mendasar Gaussian filter terletak pada sifatnya yang isotropic dan tidak memperhitungkan informasi variasi nilai fotometrik antar-piksel.
+Runs: [('di mana ', False, False), ('Ω', True, False), (' merepresentasikan jendela lingkungan spasial lokal di sekitar piksel ', False, False), ('p', True, False), (', ', False, False), ('||p − q||', True, False), (' adalah jarak Euclidean antar-piksel, dan parameter ', False, False), ('σ', True, False), (' merupakan simpangan baku spasial yang mengatur lebar sebaran fungsi pembobot. Secara fisis, Gaussian filter bekerja sangat efektif meredam fluktuasi derau acak frekuensi tinggi pada area homogen melalui perataan rata-rata lokal (', False, False), ('local averaging', True, False), ('). Namun, kelemahan mendasar Gaussian filter terletak pada sifatnya yang ', False, False), ('isotropic', True, False), (' dan tidak memperhitungkan informasi variasi nilai fotometrik antar-piksel.', False, False)]
+oMath count: 0
+
+=== Paragraph 178 (style: Normal) ===
+Full text: Ketika kernel konvolusi Gaussian melintasi perbatasan antara bayangan jantung yang radioopak dan parenkim paru yang radiolusen, nilai intensitas dari kedua kompartemen jaringan tersebut akan diratakan secara merata. Hal ini memicu efek pengaburan tepi (edge blurring) yang parah, melandaikan gradien transisi tepi kardioperikardial, serta mengikis ketajaman garis batas sinus kostofrenikus dan dinding kosta. Akibatnya, ketidakpastian spasial dalam penentuan titik terluar batas kardiak meningkat secara signifikan. Dalam penelitian ini, Gaussian filter diikutsertakan sebagai metode baseline pembanding klasik untuk membuktikan secara empiris bahwa pereduksian derau tanpa kemampuan pelestarian tepi justru memperburuk galat pengukuran CTR.
+Runs: [('Ketika kernel konvolusi Gaussian melintasi perbatasan antara bayangan jantung yang radioopak dan parenkim paru yang radiolusen, nilai intensitas dari kedua kompartemen jaringan tersebut akan diratakan secara merata. Hal ini memicu efek pengaburan tepi (', False, False), ('edge blurring', True, False), (') yang parah, melandaikan gradien transisi tepi kardioperikardial, serta mengikis ketajaman garis batas sinus kostofrenikus dan dinding kosta. Akibatnya, ketidakpastian spasial dalam penentuan titik terluar batas kardiak meningkat secara signifikan. Dalam penelitian ini, Gaussian filter diikutsertakan sebagai metode ', False, False), ('baseline', True, False), (' pembanding klasik untuk membuktikan secara empiris bahwa pereduksian derau tanpa kemampuan pelestarian tepi justru memperburuk galat pengukuran CTR.', False, False)]
+oMath count: 0
+

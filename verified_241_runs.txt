@@ -1,0 +1,150 @@
+
+========================================
+Paragraph 172 (style=Heading 3, align=LEFT (0)):
+Full text: 2.4.1	Gaussian Filter
+oMath count: 0
+Runs (2):
+  [0] text='2.4.1	' | italic=False | bold=True | sub=None
+  [1] text='Gaussian Filter' | italic=True | bold=True | sub=None
+
+========================================
+Paragraph 173 (style=Normal, align=JUSTIFY (3)):
+Full text: Gaussian filter merupakan metode penapisan linear dalam ranah spasial (spatial domain) yang beroperasi melalui operasi konvolusi diskret dua dimensi menggunakan fungsi pembobotan terdistribusi normal (Gaussian distribution) (Gonzalez & Woods, 2018). Fungsi pembobot kernel Gaussian kontinu dua dimensi didefinisikan melalui persamaan matematis:
+oMath count: 0
+Runs (8):
+  [0] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [1] text=' merupakan metode penapisan linear dalam ranah spasial (' | italic=False | bold=False | sub=None
+  [2] text='spatial domain' | italic=True | bold=False | sub=None
+  [3] text=') yang beroperasi melalui operasi konvolusi diskret dua dimensi menggunakan fungsi pembobotan terdistribusi normal (' | italic=False | bold=False | sub=None
+  [4] text='Gaussian distribution' | italic=True | bold=False | sub=None
+  [5] text=') (Gonzalez & Woods, 2018). Fungsi pembobot ' | italic=False | bold=False | sub=None
+  [6] text='kernel' | italic=True | bold=False | sub=None
+  [7] text=' Gaussian kontinu dua dimensi didefinisikan melalui persamaan matematis:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 174 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: G σ (x,y)= 1 2π σ 2 exp - x 2 + y 2 2 σ 2
+Runs (0):
+
+========================================
+Paragraph 175 (style=Normal, align=JUSTIFY (3)):
+Full text: Pada implementasi citra digital, operasi penyaringan pada piksel target berkoordinat p = (x, y) dihitung melalui diskritisasi fungsi pembobot pada jendela lingkungan spasial lokal Ω. Nilai intensitas piksel terestorasi IGaussian (p) diperoleh melalui penjumlahan terbobot dari intensitas piksel tetangga q ∈ Ω yang dinormalisasi dengan faktor pembobot Wp:
+oMath count: 0
+Runs (21):
+  [0] text='Pada implementasi citra digital, operasi penyaringan pada piksel target berkoordinat ' | italic=False | bold=False | sub=None
+  [1] text='p' | italic=True | bold=False | sub=None
+  [2] text=' = (' | italic=False | bold=False | sub=None
+  [3] text='x' | italic=True | bold=False | sub=None
+  [4] text=', ' | italic=False | bold=False | sub=None
+  [5] text='y' | italic=True | bold=False | sub=None
+  [6] text=') dihitung melalui diskritisasi fungsi pembobot pada jendela lingkungan spasial lokal ' | italic=False | bold=False | sub=None
+  [7] text='Ω' | italic=True | bold=False | sub=None
+  [8] text='. Nilai intensitas piksel terestorasi ' | italic=False | bold=False | sub=None
+  [9] text='I' | italic=True | bold=False | sub=None
+  [10] text='Gaussian' | italic=False | bold=False | sub=True
+  [11] text=' (' | italic=False | bold=False | sub=None
+  [12] text='p' | italic=True | bold=False | sub=None
+  [13] text=') diperoleh melalui penjumlahan terbobot dari intensitas piksel tetangga ' | italic=False | bold=False | sub=None
+  [14] text='q' | italic=True | bold=False | sub=None
+  [15] text=' ∈ ' | italic=False | bold=False | sub=None
+  [16] text='Ω' | italic=True | bold=False | sub=None
+  [17] text=' yang dinormalisasi dengan faktor pembobot ' | italic=False | bold=False | sub=None
+  [18] text='W' | italic=True | bold=False | sub=None
+  [19] text='p' | italic=True | bold=False | sub=True
+  [20] text=':' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 176 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: I Gaussian (p)= 1 W p q∈Ω G σ (‖p-q‖)·I(q)
+Runs (0):
+
+========================================
+Paragraph 177 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: W p = q∈Ω G σ (‖p-q‖)
+Runs (0):
+
+========================================
+Paragraph 178 (style=Normal, align=JUSTIFY (3)):
+Full text: Keterangan parameter matematis: Ω merepresentasikan jendela lingkungan spasial lokal (spatial neighborhood window) yang berpusat pada piksel target p, ||p − q|| menyatakan jarak Euclidean antar-piksel dalam bidang citra, parameter σ merupakan simpangan baku spasial (spatial standard deviation) yang mengatur lebar sebaran fungsi pembobot serta skala penghalusan (smoothing scale), dan Wp adalah faktor penormalan untuk menjamin kelestarian rerata intensitas energi foton (energy conservation atau unit gain). Secara fisis, Gaussian filter bekerja sangat efektif meredam fluktuasi derau acak frekuensi tinggi (high-frequency random noise) pada area homogen melalui perataan rata-rata lokal (local averaging).
+oMath count: 0
+Runs (30):
+  [0] text='Keterangan parameter matematis: ' | italic=False | bold=False | sub=None
+  [1] text='Ω' | italic=True | bold=False | sub=None
+  [2] text=' merepresentasikan jendela lingkungan spasial lokal (' | italic=False | bold=False | sub=None
+  [3] text='spatial neighborhood window' | italic=True | bold=False | sub=None
+  [4] text=') yang berpusat pada piksel target ' | italic=False | bold=False | sub=None
+  [5] text='p' | italic=True | bold=False | sub=None
+  [6] text=', ||' | italic=False | bold=False | sub=None
+  [7] text='p' | italic=True | bold=False | sub=None
+  [8] text=' − ' | italic=False | bold=False | sub=None
+  [9] text='q' | italic=True | bold=False | sub=None
+  [10] text='|| menyatakan jarak Euclidean antar-piksel dalam bidang citra, parameter ' | italic=False | bold=False | sub=None
+  [11] text='σ' | italic=True | bold=False | sub=None
+  [12] text=' merupakan simpangan baku spasial (' | italic=False | bold=False | sub=None
+  [13] text='spatial standard deviation' | italic=True | bold=False | sub=None
+  [14] text=') yang mengatur lebar sebaran fungsi pembobot serta skala penghalusan (' | italic=False | bold=False | sub=None
+  [15] text='smoothing scale' | italic=True | bold=False | sub=None
+  [16] text='), dan ' | italic=False | bold=False | sub=None
+  [17] text='W' | italic=True | bold=False | sub=None
+  [18] text='p' | italic=True | bold=False | sub=True
+  [19] text=' adalah faktor penormalan untuk menjamin kelestarian rerata intensitas energi foton (' | italic=False | bold=False | sub=None
+  [20] text='energy conservation' | italic=True | bold=False | sub=None
+  [21] text=' atau ' | italic=False | bold=False | sub=None
+  [22] text='unit gain' | italic=True | bold=False | sub=None
+  [23] text='). Secara fisis, ' | italic=False | bold=False | sub=None
+  [24] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [25] text=' bekerja sangat efektif meredam fluktuasi derau acak frekuensi tinggi (' | italic=False | bold=False | sub=None
+  [26] text='high-frequency random noise' | italic=True | bold=False | sub=None
+  [27] text=') pada area homogen melalui perataan rata-rata lokal (' | italic=False | bold=False | sub=None
+  [28] text='local averaging' | italic=True | bold=False | sub=None
+  [29] text=').' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 179 (style=Normal, align=JUSTIFY (3)):
+Full text: Namun demikian, kelemahan mendasar Gaussian filter terletak pada sifatnya yang isotropic (serba sama ke segala arah spasial) tanpa memperhitungkan variasi intensitas fotometrik antar-piksel. Ketika kernel konvolusi Gaussian melintasi perbatasan antara bayangan siluet kardiak yang radioopak dan parenkim paru yang radiolusen, nilai intensitas dari kedua kompartemen jaringan tersebut akan diratakan secara merata. Fenomena ini memicu efek pengaburan tepi (edge blurring) yang parah, melandaikan gradien transisi tepi kardioperikardial (cardiopericardial border), serta mengikis ketajaman garis batas sinus kostofrenikus (costophrenic angle) dan dinding lateral toraks. Akibatnya, ketidakpastian spasial dalam penentuan titik kontur terluar jantung (maximum right diameter dan maximum left diameter) meningkat secara signifikan.
+oMath count: 0
+Runs (17):
+  [0] text='Namun demikian, kelemahan mendasar ' | italic=False | bold=False | sub=None
+  [1] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [2] text=' terletak pada sifatnya yang ' | italic=False | bold=False | sub=None
+  [3] text='isotropic' | italic=True | bold=False | sub=None
+  [4] text=' (serba sama ke segala arah spasial) tanpa memperhitungkan variasi intensitas fotometrik antar-piksel. Ketika ' | italic=False | bold=False | sub=None
+  [5] text='kernel' | italic=True | bold=False | sub=None
+  [6] text=' konvolusi Gaussian melintasi perbatasan antara bayangan siluet kardiak yang radioopak dan parenkim paru yang radiolusen, nilai intensitas dari kedua kompartemen jaringan tersebut akan diratakan secara merata. Fenomena ini memicu efek pengaburan tepi (' | italic=False | bold=False | sub=None
+  [7] text='edge blurring' | italic=True | bold=False | sub=None
+  [8] text=') yang parah, melandaikan gradien transisi tepi kardioperikardial (' | italic=False | bold=False | sub=None
+  [9] text='cardiopericardial border' | italic=True | bold=False | sub=None
+  [10] text='), serta mengikis ketajaman garis batas sinus kostofrenikus (' | italic=False | bold=False | sub=None
+  [11] text='costophrenic angle' | italic=True | bold=False | sub=None
+  [12] text=') dan dinding lateral toraks. Akibatnya, ketidakpastian spasial dalam penentuan titik kontur terluar jantung (' | italic=False | bold=False | sub=None
+  [13] text='maximum right diameter' | italic=True | bold=False | sub=None
+  [14] text=' dan ' | italic=False | bold=False | sub=None
+  [15] text='maximum left diameter' | italic=True | bold=False | sub=None
+  [16] text=') meningkat secara signifikan.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 180 (style=Normal, align=JUSTIFY (3)):
+Full text: Dalam penelitian ini, Gaussian filter diikutsertakan sebagai metode pembanding dasar (classical baseline) tanpa kemampuan preservasi tepi (non-edge-preserving). Kehadiran Gaussian filter berfungsi untuk membuktikan secara empiris hipotesis penelitian bahwa reduksi derau konvensional yang semata-mata mengandalkan kehalusan spasial justru merusak integritas batas anatomis kritis dan memperbesar galat pengukuran Cardiothoracic Ratio (CTR), berbeda dengan metode penapisan adaptif berbasis pelestarian tepi (Bilateral Filter) maupun restorasi berbasis pembelajaran mendalam (deep learning DnCNN).
+oMath count: 0
+Runs (15):
+  [0] text='Dalam penelitian ini, ' | italic=False | bold=False | sub=None
+  [1] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [2] text=' diikutsertakan sebagai metode pembanding dasar (' | italic=False | bold=False | sub=None
+  [3] text='classical baseline' | italic=True | bold=False | sub=None
+  [4] text=') tanpa kemampuan preservasi tepi (' | italic=False | bold=False | sub=None
+  [5] text='non-edge-preserving' | italic=True | bold=False | sub=None
+  [6] text='). Kehadiran ' | italic=False | bold=False | sub=None
+  [7] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [8] text=' berfungsi untuk membuktikan secara empiris hipotesis penelitian bahwa reduksi derau konvensional yang semata-mata mengandalkan kehalusan spasial justru merusak integritas batas anatomis kritis dan memperbesar galat pengukuran ' | italic=False | bold=False | sub=None
+  [9] text='Cardiothoracic Ratio' | italic=True | bold=False | sub=None
+  [10] text=' (CTR), berbeda dengan metode penapisan adaptif berbasis pelestarian tepi (' | italic=False | bold=False | sub=None
+  [11] text='Bilateral Filter' | italic=True | bold=False | sub=None
+  [12] text=') maupun restorasi berbasis pembelajaran mendalam (' | italic=False | bold=False | sub=None
+  [13] text='deep learning' | italic=True | bold=False | sub=None
+  [14] text=' DnCNN).' | italic=False | bold=False | sub=None

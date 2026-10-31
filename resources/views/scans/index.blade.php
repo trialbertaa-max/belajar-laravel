@@ -868,6 +868,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
     </style>
+
 </head>
 <body>
 
@@ -2651,6 +2652,7 @@
     }
 
     window.onclick = function(event) {
+        const modalProtocol = document.getElementById('modalProtocolPicker');
         const modalOrder = document.getElementById('modalOrder');
         const modalDicom = document.getElementById('modalDicomConfig');
         const modalCstore = document.getElementById('modalCstoreResult');
@@ -2827,6 +2829,347 @@
             btn.disabled = false;
         });
     }
+
+    // ==========================================================================
+    // WORKSTATION PROTOCOL PICKER DATASET & CONTROLLER (180 PROTOKOL LENGKAP)
+    // ==========================================================================
+    const WORKSTATION_PROTOCOLS = {
+        often_used: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Skull PA Axial',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Right Hip LAT', 'Right Hip Axial',
+            'Right Clavicle AP', 'Right Ankle OBL', 'Right Ankle LAT', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Clavicle AP', 'Left Ankle OBL', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,left', 'Chest AP', 'Abdomen LAT,left', 'Abdomen AP,erect'
+        ],
+        head: [
+            'Zygomatic Arche', 'Stenvers view', 'Skull Townes', 'Skull PA Axial', 'Skull PA', 'Skull LAT,right',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Sella Turcica', 'Petrous Bone',
+            'Orbit PA', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Nasal Bone Axial', 'Mastoid',
+            'Mandible,jaw open', 'Mandible,jaw close'
+        ],
+        thorax: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Sternum LAT,left',
+            'Right Clavicle AP Axial', 'Right Clavicle AP', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Rib PA', 'Left Clavicle AP Axial', 'Left Clavicle AP', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,right', 'Chest LAT,left', 'Chest AP'
+        ],
+        spine: [
+            'T-spine LAT,right', 'T-spine LAT,left', 'T-spine AP', 'Sacrum LAT,right', 'Sacrum LAT,left',
+            'Sacrum AP', 'L-spine OBL,right', 'L-spine OBL,left', 'L-spine LAT,right', 'L-spine LAT,left',
+            'L-spine AP', 'Coccyx LAT,right', 'Coccyx LAT,left', 'Coccyx AP', 'C-spine OBL,right',
+            'C-spine OBL,left', 'C-spine LAT,right', 'C-spine LAT,left', 'C-spine AP'
+        ],
+        right_arm: [
+            'Right Wrist PA', 'Right Wrist LAT', 'Right Shoulder Transaxillary', 'Right Shoulder AP',
+            'Right Scapula LAT', 'Right Scapula AP', 'Right Humerus LAT', 'Right Humerus AP', 'Right Hand PA',
+            'Right Hand OBL', 'Right Hand LAT', 'Right Forearm LAT', 'Right Forearm AP', 'Right Finger PA',
+            'Right Finger LAT', 'Right Elbow LAT', 'Right Elbow AP'
+        ],
+        left_arm: [
+            'Left Wrist PA', 'Left Wrist LAT', 'Left Shoulder Transaxillary', 'Left Shoulder AP',
+            'Left Scapula LAT', 'Left Scapula AP', 'Left Humerus LAT', 'Left Humerus AP', 'Left Hand PA',
+            'Left Hand OBL', 'Left Hand LAT', 'Left Forearm LAT', 'Left Forearm AP', 'Left Finger PA',
+            'Left Finger LAT', 'Left Elbow LAT', 'Left Elbow AP'
+        ],
+        pelvis: [
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Pelvis AP', 'IVP9', 'IVP8', 'IVP7', 'IVP6', 'IVP5',
+            'IVP4', 'IVP3', 'IVP2', 'IVP10', 'IVP1', 'Abdomen LAT,right', 'Abdomen LAT,left',
+            'Abdomen AP,supine', 'Abdomen AP,erect'
+        ],
+        right_leg: [
+            'Right Toe OBL', 'Right Toe LAT', 'Right Toe AP', 'Right Tibia LAT', 'Right Tibia AP',
+            'Right Patella Tangential', 'Right Patella AP', 'Right Knee LAT', 'Right Knee AP', 'Right Hip LAT',
+            'Right Hip Axial', 'Right Foot OBL', 'Right Foot LAT,standing', 'Right Foot LAT', 'Right Foot AP',
+            'Right Femur LAT', 'Right Femur AP', 'Right Calcaneus LAT', 'Right Calcaneus Axial', 'Right Ankle OBL',
+            'Right Ankle LAT', 'Hip AP'
+        ],
+        left_leg: [
+            'Left Toe OBL', 'Left Toe LAT', 'Left Toe AP', 'Left Tibia LAT', 'Left Tibia AP',
+            'Left Patella Tangential', 'Left Patella AP', 'Left Knee LAT', 'Left Knee AP', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Foot OBL', 'Left Foot LAT,standing', 'Left Foot LAT', 'Left Foot AP',
+            'Left Femur LAT', 'Left Femur AP', 'Left Calcaneus LAT', 'Left Calcaneus Axial', 'Left Ankle OBL',
+            'Left Ankle LAT', 'Hip AP'
+        ],
+        advanced: [
+            'IVP Series (1-10)', 'Whole Spine AP Standing', 'Whole Spine LAT Standing', 'Scoliosis Series AP/LAT',
+            'Scanogram (Leg Length Discrepancy)', 'Barium Swallow / Meal', 'Barium Enema Double Contrast',
+            'HSG (Hysterosalpingography)', 'Urethrocystography', 'Fistulography', 'T-Tube Cholangiography',
+            'Arthrography', 'Stress View Knee Valgus/Varus', 'Stress View Ankle Inversion', 'Mandible Panorex View'
+        ]
+    };
+
+    const PROTOCOL_CATEGORY_INFO = {
+        often_used: { en: 'Often Used', id: 'Often Used', icon: '⚡' },
+        head: { en: 'Head / Skull', id: 'Head / Skull', icon: '🧠' },
+        spine: { en: 'Spine', id: 'Spine', icon: '🦴' },
+        thorax: { en: 'Thorax', id: 'Thorax', icon: '🫁' },
+        right_arm: { en: 'Right Upper Limb', id: 'Right Upper Limb', icon: '💪' },
+        left_arm: { en: 'Left Upper Limb', id: 'Left Upper Limb', icon: '💪' },
+        pelvis: { en: 'Pelvis & Abdomen', id: 'Pelvis & Abdomen', icon: '🩻' },
+        right_leg: { en: 'Right Lower Limb', id: 'Right Lower Limb', icon: '🦵' },
+        left_leg: { en: 'Left Lower Limb', id: 'Left Lower Limb', icon: '🦵' },
+        advanced: { en: 'Advanced', id: 'Advanced', icon: '🔬' }
+    };
+
+    let currentPickerCategory = 'often_used';
+    let currentPickerSort = 'default';
+    let currentPickerSearch = '';
+    let tempSelectedProtocol = 'Chest PA';
+
+    function openProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        // Set initial temp selection from hidden input
+        const currentVal = document.getElementById('selectedModalityInput')?.value || 'Chest PA';
+        tempSelectedProtocol = currentVal;
+        updatePickerTraySelection(tempSelectedProtocol);
+
+        // Find initial category for currentVal
+        const foundCat = findCategoryForProtocol(tempSelectedProtocol);
+        selectProtocolCategory(foundCat || 'often_used', false);
+    }
+
+    function closeProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (modal) modal.style.display = 'none';
+        clearProtocolSearch();
+    }
+
+    function selectProtocolCategory(categoryKey, clearSearch = true) {
+        if (clearSearch && currentPickerSearch) {
+            clearProtocolSearch(false);
+        }
+
+        currentPickerCategory = categoryKey;
+
+        // Reset skeleton and glowing layers
+        document.querySelectorAll('.skel-region').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-glow-layer').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-tab-btn').forEach(el => el.classList.remove('active'));
+
+        const hudEl = document.getElementById('skelRegionHud');
+        const info = PROTOCOL_CATEGORY_INFO[categoryKey] || { en: 'Select Anatomical Region' };
+
+        if (categoryKey === 'often_used') {
+            document.getElementById('tabOftenUsed')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Often Used (Frequently Performed)';
+        } else if (categoryKey === 'advanced') {
+            document.getElementById('tabAdvanced')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Advanced (Specialized Protocols)';
+        } else {
+            const skelEl = document.getElementById('skel-' + categoryKey.replace('_', '-'));
+            if (skelEl) skelEl.classList.add('active');
+            const glowEl = document.getElementById('glow-' + categoryKey);
+            if (glowEl) glowEl.classList.add('active');
+            if (hudEl) hudEl.textContent = info.en;
+        }
+
+        renderProtocolGrid();
+    }
+
+    function renderProtocolGrid() {
+        const container = document.getElementById('protocolGridContainer');
+        const titleEl = document.getElementById('protocolGridTitle');
+        const countEl = document.getElementById('protocolGridCount');
+        if (!container) return;
+
+        let list = [];
+        let isSearching = Boolean(currentPickerSearch.trim());
+
+        if (isSearching) {
+            const q = currentPickerSearch.toLowerCase().trim();
+            const seen = new Set();
+            for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+                for (const item of items) {
+                    if (item.toLowerCase().includes(q) && !seen.has(item)) {
+                        seen.add(item);
+                        list.push({ name: item, category: catKey });
+                    }
+                }
+            }
+            if (titleEl) titleEl.textContent = 'Hasil Pencarian: "' + currentPickerSearch + '"';
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        } else {
+            const items = WORKSTATION_PROTOCOLS[currentPickerCategory] || [];
+            list = items.map(name => ({ name: name, category: currentPickerCategory }));
+            const info = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+            if (titleEl) titleEl.textContent = info ? info.en : currentPickerCategory;
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        }
+
+        // Apply sort
+        if (currentPickerSort === 'az') {
+            list.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: #64748b;">
+                    <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
+                    <div style="font-weight: 600; color: #94a3b8; font-size: 0.92rem;">Tidak ada pemeriksaan yang cocok</div>
+                    <div style="font-size: 0.78rem; margin-top: 0.25rem;">Coba gunakan kata kunci organ atau proyeksi lain.</div>
+                </div>
+            `;
+            return;
+        }
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'protocol-card' + (item.name === tempSelectedProtocol ? ' selected' : '');
+            
+            const catInfo = PROTOCOL_CATEGORY_INFO[item.category] || { en: item.category };
+            
+            card.innerHTML = `
+                ${isSearching ? `<span class="protocol-card-tag">${escapeHtml(catInfo.en)}</span>` : ''}
+                <span>${escapeHtml(item.name)}</span>
+            `;
+
+            // Single click selects
+            card.onclick = function() {
+                tempSelectedProtocol = item.name;
+                updatePickerTraySelection(item.name, item.category);
+                container.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            };
+
+            // Double click selects and confirms immediately
+            card.ondblclick = function() {
+                tempSelectedProtocol = item.name;
+                confirmProtocolSelection();
+            };
+
+            container.appendChild(card);
+        });
+    }
+
+    function setProtocolSort(mode) {
+        currentPickerSort = mode;
+        const btnFreq = document.getElementById('btnSortFreq');
+        const btnAz = document.getElementById('btnSortAz');
+        if (mode === 'az') {
+            btnFreq?.classList.remove('active');
+            btnAz?.classList.add('active');
+        } else {
+            btnFreq?.classList.add('active');
+            btnAz?.classList.remove('active');
+        }
+        renderProtocolGrid();
+    }
+
+    function handleProtocolSearch(query) {
+        currentPickerSearch = query || '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = currentPickerSearch ? 'block' : 'none';
+        renderProtocolGrid();
+    }
+
+    function clearProtocolSearch(reRender = true) {
+        currentPickerSearch = '';
+        const input = document.getElementById('protocolSearchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (reRender) renderProtocolGrid();
+    }
+
+    function updatePickerTraySelection(protocolName, categoryKey = null) {
+        const nameEl = document.getElementById('pickerSelectedName');
+        const catBadge = document.getElementById('pickerSelectedCategoryBadge');
+        if (nameEl) nameEl.textContent = protocolName;
+
+        const cat = categoryKey || findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat];
+        if (catBadge) {
+            catBadge.textContent = info ? info.en : 'General';
+        }
+    }
+
+    function confirmProtocolSelection() {
+        if (!tempSelectedProtocol) return;
+        const input = document.getElementById('selectedModalityInput');
+        if (input) {
+            input.value = tempSelectedProtocol;
+            updateSelectedModalityBadge(tempSelectedProtocol);
+        }
+        closeProtocolPickerModal();
+    }
+
+    function updateSelectedModalityBadge(protocolName) {
+        const textEl = document.getElementById('selectedModalityText');
+        const badgeEl = document.getElementById('selectedModalityCategoryBadge');
+        const iconEl = document.getElementById('selectedModalityIcon');
+        const inputEl = document.getElementById('selectedModalityInput');
+
+        if (inputEl) inputEl.value = protocolName;
+        if (textEl) textEl.textContent = protocolName;
+
+        const cat = findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat] || { en: 'Rontgen / CR', icon: '🩻' };
+
+        if (badgeEl) badgeEl.textContent = info.en;
+        if (iconEl) iconEl.textContent = info.icon || '🩻';
+    }
+
+    function findCategoryForProtocol(protocolName) {
+        if (!protocolName) return 'often_used';
+        for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+            if (catKey === 'often_used') continue; // Prioritaskan anatomi spesifik
+            if (items.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+                return catKey;
+            }
+        }
+        // Cek often_used jika tidak ditemukan di anatomi spesifik
+        if (WORKSTATION_PROTOCOLS.often_used.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+            return 'often_used';
+        }
+        // Fallback berdasarkan kata kunci
+        const lower = protocolName.toLowerCase();
+        if (lower.includes('chest') || lower.includes('sternum') || lower.includes('rib')) return 'thorax';
+        if (lower.includes('skull') || lower.includes('nasal') || lower.includes('mandible') || lower.includes('sinus')) return 'head';
+        if (lower.includes('spine') || lower.includes('sacrum') || lower.includes('coccyx')) return 'spine';
+        if (lower.includes('arm') || lower.includes('wrist') || lower.includes('hand') || lower.includes('elbow') || lower.includes('finger') || lower.includes('shoulder')) return 'right_arm';
+        if (lower.includes('leg') || lower.includes('ankle') || lower.includes('knee') || lower.includes('femur') || lower.includes('foot') || lower.includes('toe')) return 'right_leg';
+        if (lower.includes('pelvis') || lower.includes('abdomen') || lower.includes('ivp')) return 'pelvis';
+        return 'often_used';
+    }
+
+    // Attach Skeleton Region Hover and Click Events
+    document.addEventListener('DOMContentLoaded', function() {
+        const regions = document.querySelectorAll('.skel-region');
+        const hudEl = document.getElementById('skelRegionHud');
+
+        regions.forEach(region => {
+            const cat = region.getAttribute('data-category');
+            const label = region.getAttribute('data-label');
+
+            region.addEventListener('mouseenter', function() {
+                if (hudEl) hudEl.textContent = label;
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl && cat !== currentPickerCategory) {
+                    glowEl.classList.add('hovered');
+                }
+            });
+
+            region.addEventListener('mouseleave', function() {
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl) glowEl.classList.remove('hovered');
+                if (hudEl) {
+                    const activeInfo = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+                    hudEl.textContent = activeInfo ? activeInfo.en : 'Select Anatomical Region';
+                }
+            });
+
+            region.addEventListener('click', function() {
+                selectProtocolCategory(cat);
+            });
+        });
+    });
+
 </script>
 
 </body>

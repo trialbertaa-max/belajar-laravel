@@ -1,0 +1,315 @@
+
+--- PAGE 1 ---
+Catatan: Revisi Mayor BERTA 
+Judul baru: Analisis Pengaruh Restorasi Citra Radiografi Toraks PA Menggunakan Bilateral Filter dan DnCNN 
+terhadap Akurasi Pengukuran Cardiothoracic Ratio.  
+BAB I — PENDAHULUAN 
+1.1 Latar Belakang (LB) 
+Susun ulang dengan 7 paragraf: 
+a) Paragraf 1 — klinis: Radiografi toraks PA dan CTR. 
+b) Paragraf 2 — problem pengukuran: Variabilitas pembaca, workload, kesalahan penentuan batas. Sedangkan 
+Studi Saiviroonporn menggunakan 7.517 PA -upright CXR, bukan ratusan citra. Datasetnya terdiri atas 5.000 
+normal dan 2.517 cardiomegaly (PubMed). 
+c) Paragraf 3 — noise: Noise dan degradasi edge, tetapi hindari klaim dosis nyata. 
+d) Paragraf 4 — classical denoising: Gaussian/median versus Bilateral. 
+e) Paragraf 5 — deep denoising: DnCNN dan residual learning. 
+f) Paragraf 6 — gap: PSNR/SSIM versus task-specific CTR. 
+g) Paragraf 7 — solusi penelitian: Controlled degradation → restoration → CTR error → statistical analysis → 
+demonstrator DICOM. 
+1.2 Rumusan Masalah (RM) 
+RM diubah menjadi menjadi tiga: 
+1. Bagaimana pengaruh tingkat degradasi noise terkontrol terhadap kualitas citra radiografi toraks PA dan tingkat 
+kesalahan pengukuran Cardiothoracic Ratio (CTR)? 
+2. Bagaimana perbandingan performa metode Bilateral Filter dan DnCNN dalam merestorasi citra—ditinjau dari 
+aspek PSNR, SSIM, pelestarian batas anatomi, serta pengaruhnya terhadap galat pengukuran CTR dan 
+korelasinya dengan indikator kualitas citra? 
+3. Bagaimana kelayakan dan performa metode restorasi terpilih ketika diintegrasikan ke dalam Web-Based DICOM 
+Workstation berdasarkan fungsi interoperabilitas dan latency? 
+1.3 Batasan Masalah (BM) 
+Bagian ini perlu revisi cukup besar , disarankan Median Filter dan NLM dihapus  kecuali memang 
+diperlukan sebagai baseline . Untuk skripsi enam bulan, terlalu banyak  dengan adanya:  CDC, JSRT, NIH ChestX -
+ray14, Gaussian/Median, Bilateral, dan DnCNN sekaligus.  
+Saran (BM): 
+1. Citra dibatasi pada radiografi toraks PA dewasa. 
+2. Dataset utama berupa data sekunder open-source; data klinik lokal, bila tersedia secara etik, digunakan 
+sebagai external validation. 
+3. Degradasi sintetis dibatasi pada tiga level noise Poisson -Gaussian terkontrol dan tidak digunakan untuk 
+mengestimasi dosis radiasi aktual. 
+4. Metode restorasi utama adalah Bilateral Filter dan DnCNN. Gaussian Filter digunakan hanya sebagai 
+baseline tambahan. 
+5. CTR dinilai menggunakan metode Danzer berdasarkan landmark atau kontur anatomi.  
+6. Sistem DICOM hanya diuji sebagai demonstrator penelitian, bukan PACS klinis tervalidasi. 
+7. Penelitian tidak bertujuan melakukan diagnosis otomatis penyakit jantung. 
+1.4 Tujuan Penelitian (TP) 
+Tujuan sekarang sudah konsisten dengan rumusan masalah , namun  tujuan keempat  sebaiknya diubah 
+dari:“merancang bangun Web -Based DICOM Workstation…”  menjadi: “mengintegrasikan metode restorasi dan 
+pengukuran CTR pada demonstrator Web-Based DICOM Workstation sebagai proof-of-concept interoperabilitas dan 
+implementasi klinis.” Sehaingga menjawab RM menjadi 3 TP, yaitu: 
+1. Mengkuantifikasi tingkat degradasi kualitas citra dan besarnya kesalahan pengukuran Cardiothoracic Ratio 
+(CTR) pada radiografi toraks PA akibat pengaruh derau terkontrol (Poisson-Gaussian noise).  
+2. Menganalisis performa metode Bilateral Filter  dan DnCNN dalam mereduksi derau berdasarkan metrik 
+objektif (PSNR, SSIM, latency), serta mengevaluasi akurasi pengukuran biometrik CTR pasca -restorasi 
+
+--- PAGE 2 ---
+menggunakan MAE, Bias, korelasi Pearson, dan Bland-Altman plot terhadap ground truth dokter spesialis 
+radiologi. 
+3. Mengintegrasikan metode restorasi terpilih dan modul pengukuran CTR ke dalam demonstrator Web-Based 
+DICOM Workstation sebagai proof-of-concept untuk menguji fungsi interoperabilitas dan performa sistem 
+dalam implementasi klinis. 
+1.5 Manfaat Penelitian (MP) 
+Manfaat teoretis sudah baik, namun manfaat praktis terlalu menjanjikan:  “membantu dokter meningkatkan 
+konsistensi…” → lebih tepat:  “memberikan prototype dan bukti awal mengenai potensi metode restorasi untuk 
+mendukung konsistensi pengukuran CTR.” 
+BAB II — TINJAUAN PUSTAKA 
+Secara struktur, Bab II yang disaraankan: 
+2.1 Radiografi Toraks PA 
+Kalimat: “PA merupakan gold standard…” → Lebih aman: “PA upright merupakan proyeksi yang direkomendasikan 
+untuk evaluasi CTR karena magnifikasi jantung lebih kecil dibandingkan AP.” 
+2.2 Cardiothoracic Ratio (CTR) 
+ Formula dan definisi MRD, MLD, MTD sudah baik, nampaknya perlu ditambahkan keterbatasan CTR, yaitu: 
+inspirasi tidak adekuat, rotasi pasien, proyeksi AP, variasi bentuk toraks, magnifikasi. 
+Juga perlu dibedakan: 
+ 
+Karena merupakan rasio, sebenarnya kalibrasi mm melalui Pixel Spacing tidak mutlak diperlukan untuk menghitung 
+CTR bila scaling X/Y seragam. 
+■ Faktor yang Memengaruhi Akurasi CTR (penjelasannya: bisa tergabung dalam subbab 2.2. atau buat subbab 
+baru, misal 2.3) 
+2.3 Noise pada Digital Radiography 
+Bagian ini menjelaskan model Poisson -Gaussian dengan cukup baik. Namun Diwakar & Kumar  membahas noise 
+dan denoising pada CT, sedangkan penelitian ini radiografi proyeksi.  Karena itu referensi tersebut boleh dipakai 
+untuk dasar noise, tetapi harus ditambah literatur khusus radiografi digital. 
+2.4 Image Restoration 
+2.4.1 Gaussian Filter 
+2.4.2 Bilateral Filter 
+Teorinya sudah baik, namun perlu ditambahkan adalah pembahasan parameter:        , mengendalikan kedekatan spasial, 
+sedangkan       mengendalikan sensitivitas terhadap perbedaan intensitas.  
+2.4.3 DnCNN 
+Deskripsi DnCNN 17 -layer sudah tepat secara konseptual. Namun Bab II belum membahas  domain shift. DnCNN 
+asli dikembangkan menggunakan natural images. Sedangkan penelitian ini menggunakan chest X-ray, sehingga perlu 
+ditambahkan subbab: Domain Adaptation dan Transfer Learning pada Medical Image Denoising , yang ber-isi: 
+pretrained model, fine-tuning, domain mismatch, data leakage, over-smoothing, hallucination risk. 
+2.4.4 Domain Shift dan Deep Denoising 
+ 
+2.5 Evaluasi Kualitas Citra 
+2.5.1 PSNR 
+2.5.2 SSIM 
+ Nilai PSNR dan SSIM tinggi belum menjamin preservation terhadap struktur yang relevan untuk tugas klinis 
+tertentu. Karena penelitian bertujuan mengukur CTR, evaluasi perlu mencakup metrik berbasis tugas yaitu CTR error 
+dan boundary preservation. 
+2.5.3 Task-Based Evaluation 
+
+
+--- PAGE 3 ---
+2.6 Evaluasi Berbasis Tugas Klinis 
+2.6.1 boundary preservation 
+2.6.1 CTR MAE 
+2.6.1 Bland–Altman 
+ 
+2.7 DICOM dan Web-Based Workstation 
+Bagian ini jangan terlalu software product-oriented (Detail software boleh dijelaskan di Bab III ) namun sebaiknya 
+hanya membahas: DICOM, C-STORE, DICOM metadata, DICOMweb bila digunakan, Secondary Capture, DICOM 
+SR/Encapsulated PDF sebagai alternatif.  
+DICOM Secondary Capture adalah objek citra turunan , bukan format structured radiology report (laporan 
+diagnostik resmi) secara otomatis. Sehingga akan l ebih aman tulis:  mengekspor citra hasil pengukuran beranotasi 
+dalam DICOM Secondary Capture untuk keperluan demonstrasi. 
+2.8 Penelitian Terdahulu (Pendahuluan) 
+Bagian ini sudah bagus, namun perlu diubah format tabelnya dengan menambah kolom berikut:  
+Studi Data Metode Hasil Limitasi Gap untuk penelitian ini 
+      
+#Tambahkan minimal 4–6 artikel 2023–2026 
+ 
+BAB III — METODE PENELITIAN 
+Struktur yang direkomendasikan: 
+3.1 Desain tahapan penelitian 
+Eksperimental komparatif→ dibuatkan alur/diagram alirnya !!! 
+ 
+ 
+3.2 Tempat dan waktu 
+Durasi penelitian diubah menjadi 6 bulan, misalkan Oktober 2026 – Maret 2027. 
+3.3 Bahan dan Alat 
+Bagian hardware & software dispisahkan, misalnya: 
+Hardware 
+• workstation pengembangan, 
+• GPU bila tersedia, 
+• monitor. 
+Software ilmiah 
+• Python, 
+• PyTorch, 
+• OpenCV , 
+
+
+--- PAGE 4 ---
+• pydicom, 
+• scikit-image, 
+• scipy/statsmodels. 
+Software demonstrator 
+• Laravel, 
+• pynetdicom, 
+• database, 
+• viewer. 
+3.3 Dataset dan kriteria inklusi 
+Dataset: 
+• Dataset A — JSRT+ SCR masks, digunakan untuk: jantung, toraks/lung anatomy, pembentukan CTR 
+reference. 
+• Dataset B — VinDr-CXR. digunakan untuk:chest X -ray DICOM, pengujian domain radiografi, 
+kemungkinan fine-tuning denoising. VinDr-CXR menyediakan 18.000 PA CXR dalam DICOM dan anotasi 
+dari radiolog. (PhysioNet) 
+• Dataset C — data CDC, digunakan sebagai external validation, bila izin etik tersedia. 
+Apakah NIH ChestX-ray14 diperlukan untuk dipertahankan/dihapus dari dataset utama? karena nilai tambahnya 
+untuk penelitian CTR tidak sebesar JSRT/SCR dan VinDr-CXR. 
+kriteria inklusi 
+3.4 Reference standard CTR 
+Terdapat masalah, khususnya di subbab 3.3.4, poin 5 tertulis: 
+“nilai pengukuran pada citra  clean baseline  yang divalidasi  dan diukur secara independen  oleh dokter spesialis 
+radiologi di CDC Surabaya ditetapkan sebagai nilai acuan mutlak (ground truth CTR).” 
+Istilah mutlak → dihapus !, ganti & gunakan: reference standar penelitian 
+3.5 Data preprocessing 
+Pada radiografi digital, DICOM presentation pipeline tidak selalu sama dengan CT . Metadata DICOM yang relevan 
+diekstraksi dan pixel data dikonversi ke representasi intensitas yang konsisten berdasarkan atribut yang tersedia pada 
+dataset. Kemudian tetapkan pipeline: 
+1. read pixel array, 
+2. photometric interpretation, 
+3. MONOCHROME1 inversion bila diperlukan, 
+4. percentile clipping, 
+5. normalization, 
+6. resize/crop, 
+7. noise injection. 
+3.6 Synthetic noise generation 
+3.7 Bilateral Filter 
+3.8 DnCNN training/fine-tuning 
+ Coba jelaskan DnCNN melakukan apasaja: train set, validation set, test set, jumlah patch, optimizer, epochs, 
+learning rate, loss, pretrained/fine-tuned, patient-wise split. Tambahkan subbab: Pelatihan dan Validasi DnCNN, dgn 
+komposisi 70 (Train):15 (Validation):15 (testing). 
+3.9 CTR measurement 
+Metode pengukuran sudah cukup baik. Namun siapa yang mengukur CTR pada semua versi citra tersebut? 
+Jika radiolog menandai titik yang sama dari clean image lalu titik itu diterapkan ke hasil denoising, maka error CTR 
+hampir otomatis sama. Untuk menguji pengaruh restorasi, titik harus diperoleh ulang dari setiap citra  maka gunakan 
+model segmentasi/landmark yang sama untuk seluruh citra. 
+3.10 Image-quality evaluation 
+3.11 Anatomical-boundary evaluation 
+
+--- PAGE 5 ---
+Judul dan teori menekankan edge preservation ,namun di Bab III belum memiliki informasi atas metrik edge 
+preservation yang jelas. Sehingga ditambahkan mengenai: Dice, Hausdorff Distance, Mean Surface Distance. 
+3.12 Statistical analysis 
+Bab III memakai Shapiro–Wilk, repeated measures ANOV A/Friedman, Tukey HSD. Ada satu koreksi penting, yaitu 
+bila repeated-measures ANOV A signifikan, maka post-hoc bukan otomatis Tukey HSD biasa  dan solusi tepat -nya 
+adalah  paired t-test with Holm correction, atau repeated-measures pairwise comparisons, atau Wilcoxon signed-rank 
++ Holm jika nonparametrik.  
+Rekomendasi untuk keluaran statistik: Primary outcome → MAE CTR dan Secondary outcomes → PSNR, SSIM, 
+boundary error, runtime.  Sedangkan Analisis: Shapiro-Wilk, Friedman atau repeated -measures ANOV A, pairwise 
+Wilcoxon/t-test with Holm,  effect size,  95% CI.  Validasi statistiknya menggunakan Agreement: Bland–Altman, 
+evaluasi akurasi utama-nya menggunakan: MAE, bias, Bland–Altman dan bersifat tambahan: Pearson/Spearman. 
+3.13 Demonstrator DICOM 
+Saat ini demonstrator terdiri atas lima modul yang sangat kompleks. Ada Laravel, EMR, DICOM SCP, multi -
+algorithm, SVG engine, split curtain, residual map, SC reporting. Untuk skripsi ini, terlalu besar, sehingga disarankan 
+dipangkas menjadi empat modul saja: 
+ 
+DICOM Input (C-STORE / upload DICOM) 
+↓ 
+Image Processing API (Bilateral / DnCNN) 
+↓ 
+CTR Measurement Viewer (display + annotation) 
+↓ 
+Result Storage / Export (CTR + processed image + audit metadata) 
+ 
+Sedangkan hal berikut dihapuskan saja: 
+• EMR lengkap, 
+• ekspertise otomatis, 
+• multi-tool circle/polygon, 
+• NLM/Median filter, 
+• full reporting. 
+ 
+3.14 Ethical and data governance (Opional bila diperlukan !!) 
+3.15 Jadwal penelitian 
+Jadwal yang ada dh cukup baik, sebaiknya 6 bulan dengan tahapan per-bulan: 
+1. finalisasi proposal, etik, literatur, kurasi dataset 
+2. reference CTR, preprocessing, noise model, baseline 
+3. Bilateral Filter + DnCNN training/fine-tuning 
+4. eksperimen lengkap, PSNR/SSIM, boundary, CTR 
+5. statistik + demonstrator DICOM 
+6. validasi akhir, penulisan skripsi, manuscript 
+DAFTAR PUSTAKA 
+Daftar pustaka sekarang hanya sekitar 10 referensi inti. Saya sarankan minimal 25–40 referensi, dengan proporsi: 
+• 30% publikasi 2022–2026, 
+• 25% image denoising, 
+• 20% CTR/cardiomegaly, 
+• 15% imaging physics, 
+• 10% DICOM/standards. 
+Referensi klasik seperti Danzer, Tomasi, Wang, dan Zhang tetap dipertahankan karena merupakan seminal papers. 
+ 
+
+--- PAGE 6 ---
+Referensi tambahan: 
+• Medical denoising → Nazir et al., 2024 menunjukkan perkembangan deep learning denoising dan tantangan 
+generalisasinya. PubMed 
+• Task-based evaluation → Yu et al., Medical Physics, 2023. Sangat relevan untuk membenarkan mengapa 
+PSNR/SSIM tidak cukup. PMC 
+• Systematic review CTR AI → Tambahkan systematic review/meta -analysis CTR berbasis AI untuk 
+memperkuat state-of-the-art. PMC 
+• VinDr-CXR → Nguyen et al., Scientific Data, dataset 18.000 PA chest X-ray DICOM. DOI 
+• SCR/JSRT → Van Ginneken et al. dan SCR dataset sebagai sumber segmentation masks/landmarks. Zenodo 
+ 
+Catatan Tambahan: 
+■ Restorasi 
+Ada e mpat kondisi restorasi dilakukan dalam d raf dan ini terlalu banyak sehingga disarankan hanya: Clean 
+reference, Noisy baseline, Gaussian Filter baseline, Bilateral Filter, DnCNN. Sedangkan Median/NLM, dihapus. 
+■ Formulasi novelty final 
+Kebaruan penelitian ini terletak pada evaluasi berbasis tugas biometrik terhadap proses restorasi citra radiografi 
+toraks, yaitu dengan menghubungkan performa denoising Bilateral Filter dan DnCNN tidak hanya dengan PSNR 
+dan SSIM, tetapi juga dengan pelestarian batas anatomi dan galat pengukuran Cardiothoracic Ratio. 
+■ Penulisan 
+Penulisan halaman belum dilakukan, baik angka atau romawi. Sitasi atas jurnal juga blm ada, sehingga segera 
+lengkapi daftar pusataka dengan metode APA (sesuai panduan penulisan skripsi unair). 
+Revisi Teknis  
+1. Spesifikasi Teknik Eksperiman Denoising & Training (Tambahan Bab III) 
+• Strategi Patching dan Loss Function DnCNN: 
+■ Formulasi Loss: Pada porsi training/fine -tuning DnCNN untuk dataset radiografi toraks PA, 
+sebutkan secara spesifik pegunaan Mean Squared Error (𝑀𝑆𝐸)/ 𝐿2 Loss. 
+■ Ukuran Patch & Batch: Jelaskan bahwa citra radiografi resolusi tinggi dipecah menjadi patch 
+berukuran 40x40 atau 64x64 piksel dengan stride tertentu untuk efisiensi memori GPU dan 
+pencegahan overfitting. 
+• Optimasi Parameter Bilateral Filter: 
+■ Agar perbandingan apple -to apple dengan DnCNN, buat skenario penentuan parameter (𝜎𝑠, 𝜎𝑟) 
+pada Bilateral Filter secara sistematik menggunakan Grid Search singkat pada validation set 
+(bukan sekedar memilih angka acak)untuk menemukan kombinasi yang memaksimalkan 
+SSIM/PSNR sebelum dievaluasi ke metrik CTR. 
+2. Standardisasi Normalisasi & Intensitas Citra DICOM (Tambahan Subbab Processing) 
+• Penanganan Photometris Interpretation: 
+■ Pada citra radiografi digital, nilai Photometric Interpretation dapat berstatus MONOCHROME1 
+(nilai piksel tinggi = hitam) atau MONOCHROME2 (nilai piksel tinggi = putih). Tambahkan 
+tahapan penyeimbangan ( inversion check ) pada pipeline preprocessing  agar seluruh citra 
+dikonversi secara konsisten ke MONOCHROME2 sebelum diinjeksi derau Poisson-Gaussian 
+maupun dimasukkan ke DnCNN. 
+• Standardisasi Prosedur Penentuan Landmark Anatomis: 
+■ Jelaskan konversi rentang nilai piksel dari raw DICOM  (12-bit / 16 -bit) menuju rentang ter -
+normalisasi [0, 1] untuk masukan jaringan saraf tiruan (DnCNN), serta proses re-scaling kembali 
+ke rentang semula saat penarikan garis ukur biometrik CTR pada Viewer. 
+3. PenangananAspek Klinis & Mitigasi Artefak (Tambahan Bab II & III) 
+• Resiko artefak halusinasi / Over-smoothing pada tepi jantung: 
+■ Tambahkan pembahasan teoretis ringkas mengenai risiko over-smoothing pada Bilateral Filter 
+(jika 𝜎𝑟 terlalu besar) dan risiko hallucination/structural distortion  pada DnCNN jika terdapat 
+
+--- PAGE 7 ---
+ketidakcocokan domain (domain mismatch). Hal ini memperkuat justifikasi mengapa pengukuran 
+biometrik CTR dan batas anatomi (boundary preservation) dijadikan kriteria evaluasi utama (task-
+based evaluation), bukan sekadar PSNR. 
+• Standardisasi prosedur penentuan landmark anatomis: 
+■ Dalam mengukur 𝐷𝐻 (𝑀𝑅𝐷 + 𝑀𝐿𝐷)dan 𝐷𝑇 (𝑀𝑇𝐷), tentukan kaidah penetuan landmark yang 
+kaku:  
+- Midline: Garis lurus yang melewati tengah-tengah proseus spinosus vertebralis torakalis. 
+- MTD: Diukur pada tigkat puncak hemidiafragma kanan, dari tepi dalam iga (kosta) ke kosta 
+sisi dalam berlawanan. 
+■ Konsistensi atura penarikan garis ini penting agar variabilitas penentuan titik saat eksperiman 
+boundary assessment dapat ditekan. 
+4. Metrik Kinerja Sistem Perangkat Lunak (Tambahan Subbab Demonstrator DICOM) 
+• Metrik Evaluasi Perangkat Lunak (Latency & Memory Footprint): 
+■ Tambahkan parameter pengujian kuantitatif untuk Demonstrator DICOM Workstation: 
+- Inference / Restoration Latency (ms):  Waktu yang dibutuhkan model (Bilateral vs 
+DnCNN) untuk memproses 1 citra DICOM. 
+- Viewer Rendering Time (ms): Kecepatan antarmuka SVG Stage Layer dalam menampilkan 
+citra beserta penyesuaian affine transform lockstep saat zooming/panning. 
+■ Metrik ini menjamin bahwa kriteria "kelayakan sistem" pada Rumusan Masalah & Tujuan ke -3 
+terukur secara kuantitatif dan objektif. 
+ 
+ 

@@ -1,0 +1,18 @@
+p[216] (Heading 2): Metrik Evaluasi Kualitas Citra
+p[217] (Heading 3): 2.5.1 Peak Signal-to-Noise Ratio (PSNR)
+p[218] (Normal): PSNR merupakan metrik logaritmik standar untuk mengukur rasio antara daya maksimum sinyal citra terhadap daya derau yang merusaknya, dinyatakan dalam desibel (dB):
+p[219] (Normal): 
+  omath: PSNR=10∙log10MAXI2MSE
+p[220] (Normal): 
+  omath: MSE=1M∙Ni=0M-1j=0N-1[Icleani,j-Irestoredi,j]2
+p[221] (Normal): Nilai PSNR yang semakin tinggi merepresentasikan kebersihan citra yang semakin baik dari derau.
+p[222] (Heading 3): 2.5.2 Structural Similarity Index Measure (SSIM)
+p[223] (Normal): SSIM mengukur indeks kemiripan struktur visual antara citra terestorasi dan citra acuan berdasarkan persepsi sistem visual manusia (Wang et al., 2004):
+p[224] (Normal): 
+  omath: SSIMx,y=2μxμy+C1+2σxy+C2μx2+μy2+C1σx2+σy2+C2
+p[225] (Normal): Di mana  adalah rata-rata intensitas,  adalah varians,  adalah kovarians, serta  dan  adalah konstanta penstabil. Nilai SSIM berada pada rentang 0 hingga 1, di mana nilai 1 menunjukkan kesamaan struktur geometris yang sempurna.
+  omath: μ
+  omath: σ2
+  omath: σxy
+  omath: C1
+  omath: C2

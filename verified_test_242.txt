@@ -1,0 +1,316 @@
+
+========================================
+Paragraph 181 (style=Heading 3, align=LEFT (0)):
+Full text: 2.4.2	Bilateral Filter
+oMath count: 0
+drawings count: 0
+Runs (2):
+  [0] text='2.4.2	' | italic=False | bold=True | sub=None
+  [1] text='Bilateral Filter' | italic=True | bold=True | sub=None
+
+========================================
+Paragraph 182 (style=Normal, align=JUSTIFY (3)):
+Full text: Bilateral filter merupakan metode penapisan ranah spasial non-linear (non-linear spatial domain filter) yang dirancang khusus untuk mereduksi derau sembari mempertahankan ketajaman garis batas tepi objek (edge-preserving smoothing) (Tomasi & Manduchi, 1998). Berbeda dengan Gaussian filter yang hanya memperhitungkan jarak kedekatan geometris antar-piksel, Bilateral filter menggabungkan dua fungsi pembobot Gaussian secara simultan: fungsi domain spasial (Gσs) yang mengukur kedekatan posisi geometris, dan fungsi rentang fotometrik radiometrik (Gσr) yang mengukur kemiripan nilai derajat keabuan (intensity similarity). Nilai intensitas piksel terestorasi Ibilateral(p) pada koordinat target p diformulasikan melalui persamaan matematis:
+oMath count: 0
+drawings count: 0
+Runs (25):
+  [0] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [1] text=' merupakan metode penapisan ranah spasial non-linear (' | italic=False | bold=False | sub=None
+  [2] text='non-linear spatial domain filter' | italic=True | bold=False | sub=None
+  [3] text=') yang dirancang khusus untuk mereduksi derau sembari mempertahankan ketajaman garis batas tepi objek (' | italic=False | bold=False | sub=None
+  [4] text='edge-preserving smoothing' | italic=True | bold=False | sub=None
+  [5] text=') (Tomasi & Manduchi, 1998). Berbeda dengan ' | italic=False | bold=False | sub=None
+  [6] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [7] text=' yang hanya memperhitungkan jarak kedekatan geometris antar-piksel, ' | italic=False | bold=False | sub=None
+  [8] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [9] text=' menggabungkan dua fungsi pembobot Gaussian secara simultan: fungsi domain spasial (' | italic=False | bold=False | sub=None
+  [10] text='G' | italic=True | bold=False | sub=None
+  [11] text='σs' | italic=True | bold=False | sub=True
+  [12] text=') yang mengukur kedekatan posisi geometris, dan fungsi rentang fotometrik radiometrik (' | italic=False | bold=False | sub=None
+  [13] text='G' | italic=True | bold=False | sub=None
+  [14] text='σr' | italic=True | bold=False | sub=True
+  [15] text=') yang mengukur kemiripan nilai derajat keabuan (' | italic=False | bold=False | sub=None
+  [16] text='intensity similarity' | italic=True | bold=False | sub=None
+  [17] text='). Nilai intensitas piksel terestorasi ' | italic=False | bold=False | sub=None
+  [18] text='I' | italic=True | bold=False | sub=None
+  [19] text='bilateral' | italic=False | bold=False | sub=True
+  [20] text='(' | italic=False | bold=False | sub=None
+  [21] text='p' | italic=True | bold=False | sub=None
+  [22] text=') pada koordinat target ' | italic=False | bold=False | sub=None
+  [23] text='p' | italic=True | bold=False | sub=None
+  [24] text=' diformulasikan melalui persamaan matematis:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 183 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: I bilateral (p)= 1 W p q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)·I(q)
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 184 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: W p = q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 185 (style=Normal, align=JUSTIFY (3)):
+Full text: Keterangan parameter matematis: Ω merepresentasikan jendela ketetanggaan spasial lokal (spatial neighborhood window) yang berpusat pada piksel target p, ||p − q|| menyatakan jarak Euclidean antar-piksel dalam bidang koordinat citra, dan |I(p) − I(q)| menyatakan selisih mutlak nilai intensitas fotometrik antara piksel p dan piksel tetangga q. Faktor pembagi Wp bertindak sebagai faktor normalisasi bobot untuk menjamin kelestarian energi rerata intensitas (unit gain). Kinerja penapisan Bilateral filter dikendalikan secara presisi oleh interaksi dua parameter independen melalui formulasi kernel penyusunnya:
+oMath count: 0
+drawings count: 0
+Runs (34):
+  [0] text='Keterangan parameter matematis: ' | italic=False | bold=False | sub=None
+  [1] text='Ω' | italic=True | bold=False | sub=None
+  [2] text=' merepresentasikan jendela ketetanggaan spasial lokal (' | italic=False | bold=False | sub=None
+  [3] text='spatial neighborhood window' | italic=True | bold=False | sub=None
+  [4] text=') yang berpusat pada piksel target ' | italic=False | bold=False | sub=None
+  [5] text='p' | italic=True | bold=False | sub=None
+  [6] text=', ||' | italic=False | bold=False | sub=None
+  [7] text='p' | italic=True | bold=False | sub=None
+  [8] text=' − ' | italic=False | bold=False | sub=None
+  [9] text='q' | italic=True | bold=False | sub=None
+  [10] text='|| menyatakan jarak ' | italic=False | bold=False | sub=None
+  [11] text='Euclidean' | italic=True | bold=False | sub=None
+  [12] text=' antar-piksel dalam bidang koordinat citra, dan |' | italic=False | bold=False | sub=None
+  [13] text='I' | italic=True | bold=False | sub=None
+  [14] text='(' | italic=False | bold=False | sub=None
+  [15] text='p' | italic=True | bold=False | sub=None
+  [16] text=') − ' | italic=False | bold=False | sub=None
+  [17] text='I' | italic=True | bold=False | sub=None
+  [18] text='(' | italic=False | bold=False | sub=None
+  [19] text='q' | italic=True | bold=False | sub=None
+  [20] text=')| menyatakan selisih mutlak nilai intensitas fotometrik antara piksel ' | italic=False | bold=False | sub=None
+  [21] text='p' | italic=True | bold=False | sub=None
+  [22] text=' dan piksel tetangga ' | italic=False | bold=False | sub=None
+  [23] text='q' | italic=True | bold=False | sub=None
+  [24] text='. Faktor pembagi ' | italic=False | bold=False | sub=None
+  [25] text='W' | italic=True | bold=False | sub=None
+  [26] text='p' | italic=True | bold=False | sub=True
+  [27] text=' bertindak sebagai faktor normalisasi bobot untuk menjamin kelestarian energi rerata intensitas (' | italic=False | bold=False | sub=None
+  [28] text='unit gain' | italic=True | bold=False | sub=None
+  [29] text='). Kinerja penapisan ' | italic=False | bold=False | sub=None
+  [30] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [31] text=' dikendalikan secara presisi oleh interaksi dua parameter independen melalui formulasi ' | italic=False | bold=False | sub=None
+  [32] text='kernel' | italic=True | bold=False | sub=None
+  [33] text=' penyusunnya:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 186 (style=Normal, align=JUSTIFY (3)):
+Full text: a.	Parameter Spasial (σs): Fungsi pembobot domain spasial Gσs mengukur kedekatan geometris antar-piksel melalui formulasi matematis:
+oMath count: 0
+drawings count: 0
+Runs (9):
+  [0] text='a.	' | italic=False | bold=True | sub=None
+  [1] text='Parameter Spasial (' | italic=False | bold=True | sub=None
+  [2] text='σ' | italic=True | bold=True | sub=None
+  [3] text='s' | italic=True | bold=True | sub=True
+  [4] text='): ' | italic=False | bold=True | sub=None
+  [5] text='Fungsi pembobot domain spasial ' | italic=False | bold=False | sub=None
+  [6] text='G' | italic=True | bold=False | sub=None
+  [7] text='σs' | italic=True | bold=False | sub=True
+  [8] text=' mengukur kedekatan geometris antar-piksel melalui formulasi matematis:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 187 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: G σ s (‖p-q‖)= exp - p q 2 2 σ s 2
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 188 (style=Normal, align=JUSTIFY (3)):
+Full text: Parameter σs mengendalikan skala kedekatan spasial (spatial proximity scale) yang menentukan radius ketetanggaan piksel di dalam jendela Ω yang dilibatkan dalam perhitungan rata-rata terbobot. Pemilihan nilai σs yang moderat diperlukan pada radiografi toraks untuk menangkap korelasi spasial fluktuasi derau bintik kuantum (quantum mottle) tanpa memperluas jendela komputasi secara berlebihan.
+oMath count: 0
+drawings count: 0
+Runs (13):
+  [0] text='Parameter ' | italic=False | bold=False | sub=None
+  [1] text='σ' | italic=True | bold=False | sub=None
+  [2] text='s' | italic=True | bold=False | sub=True
+  [3] text=' mengendalikan skala kedekatan spasial (' | italic=False | bold=False | sub=None
+  [4] text='spatial proximity scale' | italic=True | bold=False | sub=None
+  [5] text=') yang menentukan radius ketetanggaan piksel di dalam jendela ' | italic=False | bold=False | sub=None
+  [6] text='Ω' | italic=True | bold=False | sub=None
+  [7] text=' yang dilibatkan dalam perhitungan rata-rata terbobot. Pemilihan nilai ' | italic=False | bold=False | sub=None
+  [8] text='σ' | italic=True | bold=False | sub=None
+  [9] text='s' | italic=True | bold=False | sub=True
+  [10] text=' yang moderat diperlukan pada radiografi toraks untuk menangkap korelasi spasial fluktuasi derau bintik kuantum (' | italic=False | bold=False | sub=None
+  [11] text='quantum mottle' | italic=True | bold=False | sub=None
+  [12] text=') tanpa memperluas jendela komputasi secara berlebihan.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 189 (style=Normal, align=JUSTIFY (3)):
+Full text: b.	Parameter Rentang Intensitas (σr): Fungsi pembobot rentang radiometrik Gσr mengukur kemiripan nilai derajat keabuan fotometrik melalui formulasi matematis:
+oMath count: 0
+drawings count: 0
+Runs (9):
+  [0] text='b.	' | italic=False | bold=True | sub=None
+  [1] text='Parameter Rentang Intensitas (' | italic=False | bold=True | sub=None
+  [2] text='σ' | italic=True | bold=True | sub=None
+  [3] text='r' | italic=True | bold=True | sub=True
+  [4] text='): ' | italic=False | bold=True | sub=None
+  [5] text='Fungsi pembobot rentang radiometrik ' | italic=False | bold=False | sub=None
+  [6] text='G' | italic=True | bold=False | sub=None
+  [7] text='σr' | italic=True | bold=False | sub=True
+  [8] text=' mengukur kemiripan nilai derajat keabuan fotometrik melalui formulasi matematis:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 190 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: G σ r (|I(p)-I(q)|)= exp - I ( p ) - I ( q ) 2 2 σ r 2
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 191 (style=Normal, align=JUSTIFY (3)):
+Full text: Parameter σr bertindak sebagai ambang batas fotometrik (photometric tonal threshold) yang mengendalikan sensitivitas penapis terhadap perbedaan kontras radiometrik antar-piksel. Parameter ini menentukan batasan seberapa besar selisih intensitas yang masih dianggap sebagai fluktuasi derau acak atau telah tergolong sebagai batas tepi anatomis (anatomical boundary).
+oMath count: 0
+drawings count: 0
+Runs (8):
+  [0] text='Parameter ' | italic=False | bold=False | sub=None
+  [1] text='σ' | italic=True | bold=False | sub=None
+  [2] text='r' | italic=True | bold=False | sub=True
+  [3] text=' bertindak sebagai ambang batas fotometrik (' | italic=False | bold=False | sub=None
+  [4] text='photometric tonal threshold' | italic=True | bold=False | sub=None
+  [5] text=') yang mengendalikan sensitivitas penapis terhadap perbedaan kontras radiometrik antar-piksel. Parameter ini menentukan batasan seberapa besar selisih intensitas yang masih dianggap sebagai fluktuasi derau acak atau telah tergolong sebagai batas tepi anatomis (' | italic=False | bold=False | sub=None
+  [6] text='anatomical boundary' | italic=True | bold=False | sub=None
+  [7] text=').' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 192 (style=Normal, align=JUSTIFY (3)):
+Full text: Dinamika adaptif Bilateral filter pada citra radiografi toraks proyeksi Posteroanterior (PA) bertumpu pada interaksi kedua fungsi pembobot tersebut terhadap variasi koefisien atenuasi radiologis. Pada area lapangan paru (lung field) yang relatif homogen, selisih intensitas antar-piksel tetangga bernilai sangat rendah (|I(p) − I(q)| ≈ 0), sehingga bobot rentang bernilai mendekati satu (Gσr ≈ 1). Dalam kondisi tersebut, Bilateral filter beroperasi menyerupai Gaussian filter standar yang meratakan derau kuantum secara maksimal melalui perataan lokal (local averaging). Sebaliknya, ketika jendela penapisan melintasi batas transisi anatomis kardioperikardial antara bayangan siluet kardiak yang radioopak (densitas tinggi) dan parenkim paru yang radiolusen (densitas rendah), selisih intensitas melonjak tajam melampaui nilai ambang (|I(p) − I(q)| >> σr). Lonjakan selisih ini menyebabkan bobot rentang seketika anjlok mendekati nol (Gσr → 0), sehingga kontribusi intensitas piksel parenkim paru diabaikan dari perhitungan siluet kardiak. Mekanisme pelestarian tepi (edge preservation) ini menjaga kecuraman gradien garis batas lateral jantung (maximum right diameter dan maximum left diameter) serta ketajaman sudut sinus kostofrenikus (costophrenic angle) tetap terlindungi dari efek pengaburan tepi (edge blurring).
+oMath count: 0
+drawings count: 0
+Runs (48):
+  [0] text='Dinamika adaptif ' | italic=False | bold=False | sub=None
+  [1] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [2] text=' pada citra radiografi toraks proyeksi ' | italic=False | bold=False | sub=None
+  [3] text='Posteroanterior' | italic=True | bold=False | sub=None
+  [4] text=' (PA) bertumpu pada interaksi kedua fungsi pembobot tersebut terhadap variasi koefisien atenuasi radiologis. Pada area lapangan paru (' | italic=False | bold=False | sub=None
+  [5] text='lung field' | italic=True | bold=False | sub=None
+  [6] text=') yang relatif homogen, selisih intensitas antar-piksel tetangga bernilai sangat rendah (|' | italic=False | bold=False | sub=None
+  [7] text='I' | italic=True | bold=False | sub=None
+  [8] text='(' | italic=False | bold=False | sub=None
+  [9] text='p' | italic=True | bold=False | sub=None
+  [10] text=') − ' | italic=False | bold=False | sub=None
+  [11] text='I' | italic=True | bold=False | sub=None
+  [12] text='(' | italic=False | bold=False | sub=None
+  [13] text='q' | italic=True | bold=False | sub=None
+  [14] text=')| ≈ 0), sehingga bobot rentang bernilai mendekati satu (' | italic=False | bold=False | sub=None
+  [15] text='G' | italic=True | bold=False | sub=None
+  [16] text='σr' | italic=True | bold=False | sub=True
+  [17] text=' ≈ 1). Dalam kondisi tersebut, ' | italic=False | bold=False | sub=None
+  [18] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [19] text=' beroperasi menyerupai ' | italic=False | bold=False | sub=None
+  [20] text='Gaussian filter' | italic=True | bold=False | sub=None
+  [21] text=' standar yang meratakan derau kuantum secara maksimal melalui perataan lokal (' | italic=False | bold=False | sub=None
+  [22] text='local averaging' | italic=True | bold=False | sub=None
+  [23] text='). Sebaliknya, ketika jendela penapisan melintasi batas transisi anatomis kardioperikardial antara bayangan siluet kardiak yang radioopak (densitas tinggi) dan parenkim paru yang radiolusen (densitas rendah), selisih intensitas melonjak tajam melampaui nilai ambang (|' | italic=False | bold=False | sub=None
+  [24] text='I' | italic=True | bold=False | sub=None
+  [25] text='(' | italic=False | bold=False | sub=None
+  [26] text='p' | italic=True | bold=False | sub=None
+  [27] text=') − ' | italic=False | bold=False | sub=None
+  [28] text='I' | italic=True | bold=False | sub=None
+  [29] text='(' | italic=False | bold=False | sub=None
+  [30] text='q' | italic=True | bold=False | sub=None
+  [31] text=')| >> ' | italic=False | bold=False | sub=None
+  [32] text='σ' | italic=True | bold=False | sub=None
+  [33] text='r' | italic=True | bold=False | sub=True
+  [34] text='). Lonjakan selisih ini menyebabkan bobot rentang seketika anjlok mendekati nol (' | italic=False | bold=False | sub=None
+  [35] text='G' | italic=True | bold=False | sub=None
+  [36] text='σr' | italic=True | bold=False | sub=True
+  [37] text=' → 0), sehingga kontribusi intensitas piksel parenkim paru diabaikan dari perhitungan siluet kardiak. Mekanisme pelestarian tepi (' | italic=False | bold=False | sub=None
+  [38] text='edge preservation' | italic=True | bold=False | sub=None
+  [39] text=') ini menjaga kecuraman gradien garis batas lateral jantung (' | italic=False | bold=False | sub=None
+  [40] text='maximum right diameter' | italic=True | bold=False | sub=None
+  [41] text=' dan ' | italic=False | bold=False | sub=None
+  [42] text='maximum left diameter' | italic=True | bold=False | sub=None
+  [43] text=') serta ketajaman sudut sinus kostofrenikus (' | italic=False | bold=False | sub=None
+  [44] text='costophrenic angle' | italic=True | bold=False | sub=None
+  [45] text=') tetap terlindungi dari efek pengaburan tepi (' | italic=False | bold=False | sub=None
+  [46] text='edge blurring' | italic=True | bold=False | sub=None
+  [47] text=').' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 193 (style=Normal, align=JUSTIFY (3)):
+Full text: Meskipun memiliki keunggulan dalam melestarikan batas tepi objek, efektivitas restorasi Bilateral filter sangat bergantung pada ketepatan pemilihan pasangan parameter (σs, σr). Apabila parameter rentang σr ditetapkan terlalu besar (σr → ∞), gerbang ambang batas fotometrik kehilangan kemampuan selektivitasnya (Gσr → 1 untuk seluruh piksel), sehingga Bilateral filter berdegenerasi menjadi penapis isotropic Gaussian filter. Kondisi ini memicu fenomena pengaburan berlebih (over-smoothing) yang mengikis ketajaman batas anatomis lateral jantung dan memperbesar galat klinis pengukuran Cardiothoracic Ratio (CTR). Sebaliknya, apabila σr diatur terlalu kecil (σr → 0), penapis menjadi terlampau restriktif sehingga penekanan derau tidak optimal dan berisiko memunculkan artefak efek tangga (staircasing artifact atau pembentukan pulau intensitas palsu). Selain itu, nilai σs yang berlebihan akan memperluas jendela komputasi melampaui struktur toraks lokal dan meningkatkan beban komputasi secara kuadratik. Oleh karena itu, penentuan kombinasi parameter (σs, σr) secara sistematik melalui penelusuran kisi (grid search) pada set validasi menjadi tahapan optimasi yang krusial sebelum citra hasil restorasi dievaluasi menggunakan metrik berbasis tugas klinis (task-based evaluation).
+oMath count: 0
+drawings count: 0
+Runs (47):
+  [0] text='Meskipun memiliki keunggulan dalam melestarikan batas tepi objek, efektivitas restorasi ' | italic=False | bold=False | sub=None
+  [1] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [2] text=' sangat bergantung pada ketepatan pemilihan pasangan parameter (' | italic=False | bold=False | sub=None
+  [3] text='σ' | italic=True | bold=False | sub=None
+  [4] text='s' | italic=True | bold=False | sub=True
+  [5] text=', ' | italic=False | bold=False | sub=None
+  [6] text='σ' | italic=True | bold=False | sub=None
+  [7] text='r' | italic=True | bold=False | sub=True
+  [8] text='). Apabila parameter rentang ' | italic=False | bold=False | sub=None
+  [9] text='σ' | italic=True | bold=False | sub=None
+  [10] text='r' | italic=True | bold=False | sub=True
+  [11] text=' ditetapkan terlalu besar (' | italic=False | bold=False | sub=None
+  [12] text='σ' | italic=True | bold=False | sub=None
+  [13] text='r' | italic=True | bold=False | sub=True
+  [14] text=' → ∞), gerbang ambang batas fotometrik kehilangan kemampuan selektivitasnya (' | italic=False | bold=False | sub=None
+  [15] text='G' | italic=True | bold=False | sub=None
+  [16] text='σr' | italic=True | bold=False | sub=True
+  [17] text=' → 1 untuk seluruh piksel), sehingga ' | italic=False | bold=False | sub=None
+  [18] text='Bilateral filter' | italic=True | bold=False | sub=None
+  [19] text=' berdegenerasi menjadi penapis ' | italic=False | bold=False | sub=None
+  [20] text='isotropic Gaussian filter' | italic=True | bold=False | sub=None
+  [21] text='. Kondisi ini memicu fenomena pengaburan berlebih (' | italic=False | bold=False | sub=None
+  [22] text='over-smoothing' | italic=True | bold=False | sub=None
+  [23] text=') yang mengikis ketajaman batas anatomis lateral jantung dan memperbesar galat klinis pengukuran ' | italic=False | bold=False | sub=None
+  [24] text='Cardiothoracic Ratio' | italic=True | bold=False | sub=None
+  [25] text=' (CTR). Sebaliknya, apabila ' | italic=False | bold=False | sub=None
+  [26] text='σ' | italic=True | bold=False | sub=None
+  [27] text='r' | italic=True | bold=False | sub=True
+  [28] text=' diatur terlalu kecil (' | italic=False | bold=False | sub=None
+  [29] text='σ' | italic=True | bold=False | sub=None
+  [30] text='r' | italic=True | bold=False | sub=True
+  [31] text=' → 0), penapis menjadi terlampau restriktif sehingga penekanan derau tidak optimal dan berisiko memunculkan artefak efek tangga (' | italic=False | bold=False | sub=None
+  [32] text='staircasing artifact' | italic=True | bold=False | sub=None
+  [33] text=' atau pembentukan pulau intensitas palsu). Selain itu, nilai ' | italic=False | bold=False | sub=None
+  [34] text='σ' | italic=True | bold=False | sub=None
+  [35] text='s' | italic=True | bold=False | sub=True
+  [36] text=' yang berlebihan akan memperluas jendela komputasi melampaui struktur toraks lokal dan meningkatkan beban komputasi secara kuadratik. Oleh karena itu, penentuan kombinasi parameter (' | italic=False | bold=False | sub=None
+  [37] text='σ' | italic=True | bold=False | sub=None
+  [38] text='s' | italic=True | bold=False | sub=True
+  [39] text=', ' | italic=False | bold=False | sub=None
+  [40] text='σ' | italic=True | bold=False | sub=None
+  [41] text='r' | italic=True | bold=False | sub=True
+  [42] text=') secara sistematik melalui penelusuran kisi (' | italic=False | bold=False | sub=None
+  [43] text='grid search' | italic=True | bold=False | sub=None
+  [44] text=') pada set validasi menjadi tahapan optimasi yang krusial sebelum citra hasil restorasi dievaluasi menggunakan metrik berbasis tugas klinis (' | italic=False | bold=False | sub=None
+  [45] text='task-based evaluation' | italic=True | bold=False | sub=None
+  [46] text=').' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 194 (style=Normal, align=JUSTIFY (3)):
+Full text: Prinsip kerja penapisan bilateral yang memadukan bobot kedekatan geometris domain spasial dan bobot kemiripan radiometrik dalam mempertahankan ketajaman garis batas tepi kardiak diilustrasikan secara komprehensif pada Gambar 2.2.
+oMath count: 0
+drawings count: 0
+Runs (1):
+  [0] text='Prinsip kerja penapisan bilateral yang memadukan bobot kedekatan geometris domain spasial dan bobot kemiripan radiometrik dalam mempertahankan ketajaman garis batas tepi kardiak diilustrasikan secara komprehensif pada Gambar 2.2.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 195 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 0
+drawings count: 1
+Runs (1):
+  [0] text='' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 196 (style=Caption, align=CENTER (1)):
+Full text: Gambar 2. 2 Prinsip Kerja Bilateral Filtering dalam Mereduksi Derau sembari Mempertahankan Batas Tepi Organ (Tomasi & Manduchi, 1998)
+oMath count: 0
+drawings count: 0
+Runs (3):
+  [0] text='Gambar 2. 2 Prinsip Kerja ' | italic=False | bold=False | sub=None
+  [1] text='Bilateral Filtering' | italic=True | bold=False | sub=None
+  [2] text=' dalam Mereduksi Derau sembari Mempertahankan Batas Tepi Organ (Tomasi & Manduchi, 1998)' | italic=False | bold=False | sub=None

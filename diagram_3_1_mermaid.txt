@@ -1,0 +1,12 @@
+graph TD
+    Start([Mulai]) --> S1[Kurasi dan De-identifikasi Dataset PA<br>(JSRT, VinDr-CXR, dan CDC Surabaya)]
+    S1 --> S2[Prapemrosesan Citra DICOM Terstandarisasi<br>(Inversi Fotometrik dan Normalisasi Skala)]
+    S2 --> S3[Injeksi Derau Campuran Poisson-Gaussian<br>(Simulasi Dosis Rendah: sigma = 15, 25, 50)]
+    S3 --> S4[Restorasi Citra Komparatif<br>(Gaussian, Bilateral Filter, dan DnCNN)]
+    S4 --> S5[Segmentasi Kontur dan Pengukuran CTR<br>(Kaidah Baku Metode Danzer 1919)]
+    S5 --> S6[Evaluasi Metrik Berbasis Tugas Klinis<br>(PSNR, SSIM, DSC, HD95, MSD, dan MAE)]
+    S6 --> S7[Analisis Statistik Inferensial<br>(ANOVA / Friedman dan Koreksi Holm)]
+    S7 --> S8[Integrasi Demonstrator Web DICOM Workstation<br>(Pengujian Interoperabilitas dan Latensi)]
+    S8 --> End([Selesai])
+
+    classDef default fill:#ffffff,stroke:#000000,stroke-width:1.5px,color:#000000;

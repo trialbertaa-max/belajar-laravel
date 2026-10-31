@@ -1,0 +1,233 @@
+
+========================================
+Paragraph 197 (style: Heading 3, align: LEFT (0))
+oMath count: 0, drawings count: 0
+Text: 2.4.3	Denoising Convolutional Neural Network (DnCNN)
+  [0] i=False b=True sub=None sup=None : '2.4.3\t'
+  [1] i=True b=True sub=None sup=None : 'Denoising Convolutional Neural Network'
+  [2] i=False b=True sub=None sup=None : ' (DnCNN)'
+
+========================================
+Paragraph 198 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: Denoising Convolutional Neural Network (DnCNN) merupakan arsitektur jaringan saraf tiruan konvolusional dalam (deep convolutional neural network) yang dirancang secara khusus untuk memisahkan derau dari sinyal laten citra asli melalui integrasi strategi pembelajaran residual (residual learning) dan penormalan tumpak (Batch Normalization) (Zhang et al., 2017). Berbeda dengan paradigma model restorasi konvensional berbasis pembelajaran mendalam (deep learning) yang dilatih memetakan citra berderau y secara langsung menuju estimasi citra bersih x̂, strategi pembelajaran residual pada DnCNN dirancang untuk memprediksi matriks sisa derau (noise residual) yang mengontaminasi citra, dinotasikan sebagai R(y) ≈ v, dengan model pembentukan degradasi aditif y = x + v. Melalui formulasi ini, estimasi citra anatomis bersih x̂ diperoleh melalui operasi pengurangan elementer sederhana antara citra masukan berderau dan keluaran sisa derau yang diprediksi oleh jaringan:
+  [0] i=True b=False sub=None sup=None : 'Denoising Convolutional Neural Network'
+  [1] i=False b=False sub=None sup=None : ' (DnCNN) merupakan arsitektur jaringan saraf tiruan konvolusional dalam ('
+  [2] i=True b=False sub=None sup=None : 'deep convolutional neural network'
+  [3] i=False b=False sub=None sup=None : ') yang dirancang secara khusus untuk memisahkan derau dari sinyal laten citra asli melalui integrasi strategi pembelajaran '
+  [4] i=True b=False sub=None sup=None : 'residual'
+  [5] i=False b=False sub=None sup=None : ' ('
+  [6] i=True b=False sub=None sup=None : 'residual learning'
+  [7] i=False b=False sub=None sup=None : ') dan penormalan tumpak ('
+  [8] i=True b=False sub=None sup=None : 'Batch Normalization'
+  [9] i=False b=False sub=None sup=None : ') (Zhang et al., 2017). Berbeda dengan paradigma model restorasi konvensional berbasis pembelajaran mendalam ('
+  [10] i=True b=False sub=None sup=None : 'deep learning'
+  [11] i=False b=False sub=None sup=None : ') yang dilatih memetakan citra berderau '
+  [12] i=True b=False sub=None sup=None : 'y'
+  [13] i=False b=False sub=None sup=None : ' secara langsung menuju estimasi citra bersih '
+  [14] i=True b=False sub=None sup=None : 'x̂'
+  [15] i=False b=False sub=None sup=None : ', strategi pembelajaran '
+  [16] i=True b=False sub=None sup=None : 'residual'
+  [17] i=False b=False sub=None sup=None : ' pada DnCNN dirancang untuk memprediksi matriks sisa derau ('
+  [18] i=True b=False sub=None sup=None : 'noise residual'
+  [19] i=False b=False sub=None sup=None : ') yang mengontaminasi citra, dinotasikan sebagai '
+  [20] i=True b=False sub=None sup=None : 'R'
+  [21] i=False b=False sub=None sup=None : '('
+  [22] i=True b=False sub=None sup=None : 'y'
+  [23] i=False b=False sub=None sup=None : ') ≈ '
+  [24] i=True b=False sub=None sup=None : 'v'
+  [25] i=False b=False sub=None sup=None : ', dengan model pembentukan degradasi aditif '
+  [26] i=True b=False sub=None sup=None : 'y'
+  [27] i=False b=False sub=None sup=None : ' = '
+  [28] i=True b=False sub=None sup=None : 'x'
+  [29] i=False b=False sub=None sup=None : ' + '
+  [30] i=True b=False sub=None sup=None : 'v'
+  [31] i=False b=False sub=None sup=None : '. Melalui formulasi ini, estimasi citra anatomis bersih '
+  [32] i=True b=False sub=None sup=None : 'x̂'
+  [33] i=False b=False sub=None sup=None : ' diperoleh melalui operasi pengurangan elementer sederhana antara citra masukan berderau dan keluaran sisa derau yang diprediksi oleh jaringan:'
+
+========================================
+Paragraph 199 (style: Normal, align: CENTER (1))
+oMath count: 1, drawings count: 0
+Text: 
+
+========================================
+Paragraph 200 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: Pengalihan target estimasi menuju pemodelan sisa derau memberikan keunggulan komputasional yang mendasar dalam proses optimasi gradien. Distribusi statistik sisa derau v memiliki manifold geometris yang jauh lebih sederhana, terpusat, dan mendekati distribusi Gaussian acak dibandingkan manifold struktur fitur anatomis citra radiografi yang sangat kompleks dan berdimensi tinggi. Karakteristik ini secara efektif mencegah timbulnya degradasi performa akibat permasalahan hilangnya gradien (vanishing gradient problem) pada jaringan yang dalam serta mempercepat laju konvergensi proses pelatihan (He et al., 2016). Selama proses pelatihan, himpunan parameter bobot dan bias jaringan Θ dioptimalkan secara terawasi (supervised learning) menggunakan kumpulan pasangan data citra radiografi berderau dan bersih (yi, xi) dengan meminimalkan fungsi kerugian (loss function) berbasis galat kuadrat rata-rata (Mean Squared Error atau MSE) residual:
+  [0] i=False b=False sub=None sup=None : 'Pengalihan target estimasi menuju pemodelan sisa derau memberikan keunggulan komputasional yang mendasar dalam proses optimasi gradien. Distribusi statistik sisa derau '
+  [1] i=True b=False sub=None sup=None : 'v'
+  [2] i=False b=False sub=None sup=None : ' memiliki '
+  [3] i=True b=False sub=None sup=None : 'manifold'
+  [4] i=False b=False sub=None sup=None : ' geometris yang jauh lebih sederhana, terpusat, dan mendekati distribusi '
+  [5] i=True b=False sub=None sup=None : 'Gaussian'
+  [6] i=False b=False sub=None sup=None : ' acak dibandingkan '
+  [7] i=True b=False sub=None sup=None : 'manifold'
+  [8] i=False b=False sub=None sup=None : ' struktur fitur anatomis citra radiografi yang sangat kompleks dan berdimensi tinggi. Karakteristik ini secara efektif mencegah timbulnya degradasi performa akibat permasalahan hilangnya gradien ('
+  [9] i=True b=False sub=None sup=None : 'vanishing gradient problem'
+  [10] i=False b=False sub=None sup=None : ') pada jaringan yang dalam serta mempercepat laju konvergensi proses pelatihan (He et al., 2016). Selama proses pelatihan, himpunan parameter bobot dan bias jaringan '
+  [11] i=True b=False sub=None sup=None : 'Θ'
+  [12] i=False b=False sub=None sup=None : ' dioptimalkan secara terawasi ('
+  [13] i=True b=False sub=None sup=None : 'supervised learning'
+  [14] i=False b=False sub=None sup=None : ') menggunakan kumpulan pasangan data citra radiografi berderau dan bersih ('
+  [15] i=True b=False sub=None sup=None : 'y'
+  [16] i=True b=False sub=True sup=False : 'i'
+  [17] i=False b=False sub=None sup=None : ', '
+  [18] i=True b=False sub=None sup=None : 'x'
+  [19] i=True b=False sub=True sup=False : 'i'
+  [20] i=False b=False sub=None sup=None : ') dengan meminimalkan fungsi kerugian ('
+  [21] i=True b=False sub=None sup=None : 'loss function'
+  [22] i=False b=False sub=None sup=None : ') berbasis galat kuadrat rata-rata ('
+  [23] i=True b=False sub=None sup=None : 'Mean Squared Error'
+  [24] i=False b=False sub=None sup=None : ' atau MSE) '
+  [25] i=True b=False sub=None sup=None : 'residual'
+  [26] i=False b=False sub=None sup=None : ':'
+
+========================================
+Paragraph 201 (style: Normal, align: CENTER (1))
+oMath count: 1, drawings count: 0
+Text: 
+
+========================================
+Paragraph 202 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: di mana N merepresentasikan jumlah cuplikan bidang citra (image patches), R(yi; Θ) adalah estimasi sisa derau yang dihasilkan oleh model jaringan, (yi − xi) adalah sisa derau acuan (ground truth noise residual), dan ||·||F melambangkan norma Frobenius matriks.
+  [0] i=False b=False sub=None sup=None : 'di mana '
+  [1] i=True b=False sub=None sup=None : 'N'
+  [2] i=False b=False sub=None sup=None : ' merepresentasikan jumlah cuplikan bidang citra ('
+  [3] i=True b=False sub=None sup=None : 'image patches'
+  [4] i=False b=False sub=None sup=None : '), '
+  [5] i=True b=False sub=None sup=None : 'R'
+  [6] i=False b=False sub=None sup=None : '('
+  [7] i=True b=False sub=None sup=None : 'y'
+  [8] i=True b=False sub=True sup=False : 'i'
+  [9] i=False b=False sub=None sup=None : '; '
+  [10] i=True b=False sub=None sup=None : 'Θ'
+  [11] i=False b=False sub=None sup=None : ') adalah estimasi sisa derau yang dihasilkan oleh model jaringan, ('
+  [12] i=True b=False sub=None sup=None : 'y'
+  [13] i=True b=False sub=True sup=False : 'i'
+  [14] i=False b=False sub=None sup=None : ' − '
+  [15] i=True b=False sub=None sup=None : 'x'
+  [16] i=True b=False sub=True sup=False : 'i'
+  [17] i=False b=False sub=None sup=None : ') adalah sisa derau acuan ('
+  [18] i=True b=False sub=None sup=None : 'ground truth noise residual'
+  [19] i=False b=False sub=None sup=None : '), dan ||·||'
+  [20] i=True b=False sub=True sup=False : 'F'
+  [21] i=False b=False sub=None sup=None : ' melambangkan norma Frobenius matriks.'
+
+========================================
+Paragraph 203 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: Arsitektur standar DnCNN yang diterapkan dalam penelitian ini tersusun atas 17 lapisan konvolusional bertingkat tanpa menerapkan lapisan penggabungan (pooling layer) maupun lapisan terhubung penuh (fully-connected layer). Peniadaan operasi pooling merupakan aspek desain krusial untuk mencegah penurunan resolusi spasial citra (downsampling), sehingga integritas ukuran matriks dan ketajaman batas mikrostruktur anatomis toraks tetap terpelihara pada skala resolusi asli 1:1. Konfigurasi 17 lapisan tersebut terbagi ke dalam tiga tingkatan fungsional:
+  [0] i=False b=False sub=None sup=None : 'Arsitektur standar DnCNN yang diterapkan dalam penelitian ini tersusun atas 17 lapisan konvolusional bertingkat tanpa menerapkan lapisan penggabungan ('
+  [1] i=True b=False sub=None sup=None : 'pooling layer'
+  [2] i=False b=False sub=None sup=None : ') maupun lapisan terhubung penuh ('
+  [3] i=True b=False sub=None sup=None : 'fully-connected layer'
+  [4] i=False b=False sub=None sup=None : '). Peniadaan operasi '
+  [5] i=True b=False sub=None sup=None : 'pooling'
+  [6] i=False b=False sub=None sup=None : ' merupakan aspek desain krusial untuk mencegah penurunan resolusi spasial citra ('
+  [7] i=True b=False sub=None sup=None : 'downsampling'
+  [8] i=False b=False sub=None sup=None : '), sehingga integritas ukuran matriks dan ketajaman batas mikrostruktur anatomis toraks tetap terpelihara pada skala resolusi asli 1:1. Konfigurasi 17 lapisan tersebut terbagi ke dalam tiga tingkatan fungsional:'
+
+========================================
+Paragraph 204 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: 1.	Lapisan Masukan (Input Layer): Terdiri atas satu operasi konvolusi tunggal Conv + ReLU (Rectified Linear Unit) yang menggunakan 64 penapis (filters) berukuran 3 × 3 × c (dengan c = 1 untuk citra radiografi digital monokromatik abu-abu berskala 12-bit atau 16-bit). Lapisan awal ini mengekstraksi 64 peta fitur spasial (feature maps) dari citra masukan tanpa menerapkan Batch Normalization.
+  [0] i=False b=True sub=None sup=None : '1.\t'
+  [1] i=False b=True sub=None sup=None : 'Lapisan Masukan ('
+  [2] i=True b=True sub=None sup=None : 'Input Layer'
+  [3] i=False b=True sub=None sup=None : '): '
+  [4] i=False b=False sub=None sup=None : 'Terdiri atas satu operasi konvolusi tunggal Conv + ReLU ('
+  [5] i=True b=False sub=None sup=None : 'Rectified Linear Unit'
+  [6] i=False b=False sub=None sup=None : ') yang menggunakan 64 penapis ('
+  [7] i=True b=False sub=None sup=None : 'filters'
+  [8] i=False b=False sub=None sup=None : ') berukuran 3 × 3 × '
+  [9] i=True b=False sub=None sup=None : 'c'
+  [10] i=False b=False sub=None sup=None : ' (dengan '
+  [11] i=True b=False sub=None sup=None : 'c'
+  [12] i=False b=False sub=None sup=None : ' = 1 untuk citra radiografi digital monokromatik abu-abu berskala 12-bit atau 16-bit). Lapisan awal ini mengekstraksi 64 peta fitur spasial ('
+  [13] i=True b=False sub=None sup=None : 'feature maps'
+  [14] i=False b=False sub=None sup=None : ') dari citra masukan tanpa menerapkan '
+  [15] i=True b=False sub=None sup=None : 'Batch Normalization'
+  [16] i=False b=False sub=None sup=None : '.'
+
+========================================
+Paragraph 205 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: 2.	Lapisan Pengolah Antara (Intermediate Processing Layers): Terdiri atas 15 blok konvolusi berturut-turut (lapisan ke-2 hingga ke-16) dengan konfigurasi berulang Conv + BN + ReLU. Masing-masing lapisan menerapkan 64 penapis berukuran 3 × 3 × 64. Integrasi Batch Normalization (BN) di antara konvolusi dan aktivasi nonlinier berfungsi menstabilkan distribusi masukan internal (internal covariate shift), mereduksi ketergantungan model terhadap inisialisasi parameter awal, mempercepat perambatan gradien, serta bertindak sebagai regularisator implisit. Penumpukan 17 lapisan konvolusi dengan ukuran kernel 3 × 3 secara bertahap memperluas bidang pandang reseptif efektif (effective receptive field) jaringan hingga mencapai ukuran 35 × 35 piksel pada lapisan akhir, yang memungkinkan jaringan menangkap korelasi konteks spasial derau pada area sangkar toraks yang lebih luas.
+  [0] i=False b=True sub=None sup=None : '2.\t'
+  [1] i=False b=True sub=None sup=None : 'Lapisan Pengolah Antara ('
+  [2] i=True b=True sub=None sup=None : 'Intermediate Processing Layers'
+  [3] i=False b=True sub=None sup=None : '): '
+  [4] i=False b=False sub=None sup=None : 'Terdiri atas 15 blok konvolusi berturut-turut (lapisan ke-2 hingga ke-16) dengan konfigurasi berulang Conv + BN + ReLU. Masing-masing lapisan menerapkan 64 penapis berukuran 3 × 3 × 64. Integrasi '
+  [5] i=True b=False sub=None sup=None : 'Batch Normalization'
+  [6] i=False b=False sub=None sup=None : ' (BN) di antara konvolusi dan aktivasi nonlinier berfungsi menstabilkan distribusi masukan internal ('
+  [7] i=True b=False sub=None sup=None : 'internal covariate shift'
+  [8] i=False b=False sub=None sup=None : '), mereduksi ketergantungan model terhadap inisialisasi parameter awal, mempercepat perambatan gradien, serta bertindak sebagai regularisator implisit. Penumpukan 17 lapisan konvolusi dengan ukuran '
+  [9] i=True b=False sub=None sup=None : 'kernel'
+  [10] i=False b=False sub=None sup=None : ' 3 × 3 secara bertahap memperluas bidang pandang reseptif efektif ('
+  [11] i=True b=False sub=None sup=None : 'effective receptive field'
+  [12] i=False b=False sub=None sup=None : ') jaringan hingga mencapai ukuran 35 × 35 piksel pada lapisan akhir, yang memungkinkan jaringan menangkap korelasi konteks spasial derau pada area sangkar toraks yang lebih luas.'
+
+========================================
+Paragraph 206 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: 3.	Lapisan Rekonstruksi Akhir (Reconstruction Layer): Terdiri atas satu lapisan konvolusi tunggal Conv menggunakan 1 penapis berukuran 3 × 3 × 64 tanpa aktivasi nonlinier maupun BN. Lapisan terminal ini mengagregasi 64 peta fitur antara menjadi satu matriks keluaran tunggal yang merepresentasikan estimasi sisa derau R(y).
+  [0] i=False b=True sub=None sup=None : '3.\t'
+  [1] i=False b=True sub=None sup=None : 'Lapisan Rekonstruksi Akhir ('
+  [2] i=True b=True sub=None sup=None : 'Reconstruction Layer'
+  [3] i=False b=True sub=None sup=None : '): '
+  [4] i=False b=False sub=None sup=None : 'Terdiri atas satu lapisan konvolusi tunggal Conv menggunakan 1 penapis berukuran 3 × 3 × 64 tanpa aktivasi nonlinier maupun BN. Lapisan terminal ini mengagregasi 64 peta fitur antara menjadi satu matriks keluaran tunggal yang merepresentasikan estimasi sisa derau '
+  [5] i=True b=False sub=None sup=None : 'R'
+  [6] i=False b=False sub=None sup=None : '('
+  [7] i=True b=False sub=None sup=None : 'y'
+  [8] i=False b=False sub=None sup=None : ').'
+
+========================================
+Paragraph 207 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: Mekanisme pemisahan sisa derau dan konfigurasi hierarkis 17 lapisan konvolusional pada arsitektur DnCNN diilustrasikan secara sistematis pada Gambar 2.3.
+  [0] i=False b=False sub=None sup=None : 'Mekanisme pemisahan sisa derau dan konfigurasi hierarkis 17 lapisan konvolusional pada arsitektur DnCNN diilustrasikan secara sistematis pada Gambar 2.3.'
+
+========================================
+Paragraph 208 (style: Normal, align: CENTER (1))
+oMath count: 0, drawings count: 1
+Text: 
+  [0] i=None b=None sub=None sup=None : ''
+
+========================================
+Paragraph 209 (style: Caption, align: CENTER (1))
+oMath count: 0, drawings count: 0
+Text: Gambar 2. 3 Arsitektur Jaringan DnCNN Berbasis Residual Learning untuk Pemisahan Derau Citra (Zhang et al., 2017)
+  [0] i=False b=False sub=None sup=None : 'Gambar 2. 3 Arsitektur Jaringan DnCNN Berbasis '
+  [1] i=True b=False sub=None sup=None : 'Residual Learning'
+  [2] i=False b=False sub=None sup=None : ' untuk Pemisahan Derau Citra (Zhang et al., 2017)'
+
+========================================
+Paragraph 210 (style: Normal, align: JUSTIFY (3))
+oMath count: 0, drawings count: 0
+Text: Meskipun arsitektur DnCNN menunjukkan performa pereduksian derau yang sangat superior pada ranah citra alami (natural images), penerapannya secara langsung pada citra radiografi toraks proyeksi PA menghadapi tantangan mendasar berupa pergeseran ranah (domain shift). Arsitektur DnCNN asli dilatih menggunakan citra alami berdimensi 8-bit dengan distribusi derau aditif Gaussian (Additive White Gaussian Noise atau AWGN), sedangkan citra radiografi digital tersusun atas kedalaman bit tinggi (12-bit hingga 16-bit) dengan derau campuran kuantum Poisson-Gaussian serta memiliki batasan klinis yang ketat terhadap risiko perubahan struktur anatomi jantung dan paru. Fenomena ketidakcocokan ranah (domain mismatch) ini berisiko memunculkan artefak distorsi struktural atau halusinasi visual (hallucination risk) yang dapat menggeser penentuan garis batas kardioperikardial dan mengacaukan penghitungan rasio CTR. Oleh karena itu, diperlukan strategi adaptasi ranah dan pembelajaran alih (domain adaptation and transfer learning) yang komprehensif, sebagaimana dibahas secara mendalam pada Subbab 2.4.4.
+  [0] i=False b=False sub=None sup=None : 'Meskipun arsitektur DnCNN menunjukkan performa pereduksian derau yang sangat superior pada ranah citra alami ('
+  [1] i=True b=False sub=None sup=None : 'natural images'
+  [2] i=False b=False sub=None sup=None : '), penerapannya secara langsung pada citra radiografi toraks proyeksi PA menghadapi tantangan mendasar berupa pergeseran ranah ('
+  [3] i=True b=False sub=None sup=None : 'domain shift'
+  [4] i=False b=False sub=None sup=None : '). Arsitektur DnCNN asli dilatih menggunakan citra alami berdimensi 8-bit dengan distribusi derau aditif '
+  [5] i=True b=False sub=None sup=None : 'Gaussian'
+  [6] i=False b=False sub=None sup=None : ' ('
+  [7] i=True b=False sub=None sup=None : 'Additive White Gaussian Noise'
+  [8] i=False b=False sub=None sup=None : ' atau AWGN), sedangkan citra radiografi digital tersusun atas kedalaman bit tinggi (12-bit hingga 16-bit) dengan derau campuran kuantum Poisson-'
+  [9] i=True b=False sub=None sup=None : 'Gaussian'
+  [10] i=False b=False sub=None sup=None : ' serta memiliki batasan klinis yang ketat terhadap risiko perubahan struktur anatomi jantung dan paru. Fenomena ketidakcocokan ranah ('
+  [11] i=True b=False sub=None sup=None : 'domain mismatch'
+  [12] i=False b=False sub=None sup=None : ') ini berisiko memunculkan artefak distorsi struktural atau halusinasi visual ('
+  [13] i=True b=False sub=None sup=None : 'hallucination risk'
+  [14] i=False b=False sub=None sup=None : ') yang dapat menggeser penentuan garis batas kardioperikardial dan mengacaukan penghitungan rasio CTR. Oleh karena itu, diperlukan strategi adaptasi ranah dan pembelajaran alih ('
+  [15] i=True b=False sub=None sup=None : 'domain adaptation and transfer learning'
+  [16] i=False b=False sub=None sup=None : ') yang komprehensif, sebagaimana dibahas secara mendalam pada Subbab 2.4.4.'
+
+========================================
+Paragraph 211 (style: Heading 3, align: None)
+oMath count: 0, drawings count: 0
+Text: 2.4.4	Domain Shift dan Tantangan Deep Denoising pada Radiografi Medis
+  [0] i=None b=None sub=None sup=None : '2.4.4'
+  [1] i=None b=None sub=None sup=None : '\tDomain Shift dan Tantangan Deep Denoising pada Radiografi Medis'
