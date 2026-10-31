@@ -129,7 +129,7 @@ class PatientScanController extends Controller
             'gender'            => $validated['gender'] ?? 'L',
             'age'               => $validated['age'] ?? 30,
             'modality'          => $validated['modality'],
-            'study_description' => $validated['study_description'] ?: $validated['modality'],
+            'study_description' => !empty($validated['study_description']) ? $validated['study_description'] : $validated['modality'],
             'mcu_status'        => 'siap_rontgen', // Otomatis siap di-query Modality Worklist alat Fujifilm
             'order_notes'       => $validated['order_notes'] ?? 'Order Sesi MCU Baru di Hyu',
         ]);
