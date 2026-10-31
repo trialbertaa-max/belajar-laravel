@@ -1,0 +1,220 @@
+
+========================================
+Paragraph 197 (style=Heading 3, align=LEFT (0)):
+Full text: 2.4.3	Denoising Convolutional Neural Network (DnCNN)
+oMath count: 0
+drawings count: 0
+Runs (3):
+  [0] text='2.4.3	' | italic=False | bold=True | sub=None
+  [1] text='Denoising Convolutional Neural Network' | italic=True | bold=True | sub=None
+  [2] text=' (DnCNN)' | italic=False | bold=True | sub=None
+
+========================================
+Paragraph 198 (style=Normal, align=JUSTIFY (3)):
+Full text: Denoising Convolutional Neural Network (DnCNN) merupakan arsitektur jaringan saraf tiruan konvolusional dalam (deep convolutional neural network) yang dirancang secara khusus untuk memisahkan derau dari sinyal laten citra asli melalui integrasi strategi pembelajaran residual (residual learning) dan penormalan tumpak (Batch Normalization) (Zhang et al., 2017). Berbeda dengan paradigma model restorasi konvensional berbasis pembelajaran mendalam (deep learning) yang dilatih memetakan citra berderau y secara langsung menuju estimasi citra bersih x̂, strategi pembelajaran residual pada DnCNN dirancang untuk memprediksi matriks derau residual yang mengontaminasi citra, dinotasikan sebagai R (y) ≈ v, dengan model pembentukan degradasi aditif y = x + v. Melalui formulasi ini, estimasi citra anatomis bersih x̂ diperoleh melalui operasi pengurangan elementer sederhana antara citra masukan berderau dan keluaran derau residual yang diprediksi oleh jaringan:
+oMath count: 0
+drawings count: 0
+Runs (28):
+  [0] text='Denoising Convolutional Neural Network' | italic=True | bold=False | sub=None
+  [1] text=' (DnCNN) merupakan arsitektur jaringan saraf tiruan konvolusional dalam (' | italic=False | bold=False | sub=None
+  [2] text='deep convolutional neural network' | italic=True | bold=False | sub=None
+  [3] text=') yang dirancang secara khusus untuk memisahkan derau dari sinyal laten citra asli melalui integrasi strategi pembelajaran residual (' | italic=False | bold=False | sub=None
+  [4] text='residual learning' | italic=True | bold=False | sub=None
+  [5] text=') dan penormalan tumpak (' | italic=False | bold=False | sub=None
+  [6] text='Batch Normalization' | italic=True | bold=False | sub=None
+  [7] text=') (Zhang et al., 2017). Berbeda dengan paradigma model restorasi konvensional berbasis pembelajaran mendalam (' | italic=False | bold=False | sub=None
+  [8] text='deep learning' | italic=True | bold=False | sub=None
+  [9] text=') yang dilatih memetakan citra berderau ' | italic=False | bold=False | sub=None
+  [10] text='y' | italic=True | bold=False | sub=None
+  [11] text=' secara langsung menuju estimasi citra bersih ' | italic=False | bold=False | sub=None
+  [12] text='x̂' | italic=True | bold=False | sub=None
+  [13] text=', strategi pembelajaran residual pada DnCNN dirancang untuk memprediksi matriks derau residual yang mengontaminasi citra, dinotasikan sebagai ' | italic=False | bold=False | sub=None
+  [14] text='R' | italic=True | bold=False | sub=None
+  [15] text=' (' | italic=False | bold=False | sub=None
+  [16] text='y' | italic=True | bold=False | sub=None
+  [17] text=') ≈ ' | italic=False | bold=False | sub=None
+  [18] text='v' | italic=True | bold=False | sub=None
+  [19] text=', dengan model pembentukan degradasi aditif ' | italic=False | bold=False | sub=None
+  [20] text='y' | italic=True | bold=False | sub=None
+  [21] text=' = ' | italic=False | bold=False | sub=None
+  [22] text='x' | italic=True | bold=False | sub=None
+  [23] text=' + ' | italic=False | bold=False | sub=None
+  [24] text='v' | italic=True | bold=False | sub=None
+  [25] text='. Melalui formulasi ini, estimasi citra anatomis bersih ' | italic=False | bold=False | sub=None
+  [26] text='x̂' | italic=True | bold=False | sub=None
+  [27] text=' diperoleh melalui operasi pengurangan elementer sederhana antara citra masukan berderau dan keluaran derau residual yang diprediksi oleh jaringan:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 199 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: x ^ =y- R (y)
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 200 (style=Normal, align=JUSTIFY (3)):
+Full text: Pengalihan target estimasi menuju pemodelan derau residual memberikan keunggulan komputasional yang mendasar dalam proses optimasi gradien. Distribusi statistik derau residual v memiliki manifold geometris yang jauh lebih sederhana, terpusat, dan mendekati distribusi Gaussian acak dibandingkan manifold struktur fitur anatomis citra radiografi yang sangat kompleks dan berdimensi tinggi. Karakteristik ini secara efektif mencegah timbulnya degradasi performa akibat hilangnya gradien (vanishing gradient problem) pada jaringan yang dalam serta mempercepat laju konvergensi proses pelatihan (He et al., 2016). Selama proses pelatihan, parameter bobot dan bias jaringan Θ dioptimalkan secara terawasi (supervised learning) menggunakan kumpulan pasangan data citra radiografi berderau dan bersih (yi, xi) dengan meminimalkan fungsi kerugian (loss function) berbasis galat kuadrat rata-rata (Mean Squared Error atau MSE) residual:
+oMath count: 0
+drawings count: 0
+Runs (21):
+  [0] text='Pengalihan target estimasi menuju pemodelan derau residual memberikan keunggulan komputasional yang mendasar dalam proses optimasi gradien. Distribusi statistik derau residual ' | italic=False | bold=False | sub=None
+  [1] text='v' | italic=True | bold=False | sub=None
+  [2] text=' memiliki manifold geometris yang jauh lebih sederhana, terpusat, dan mendekati distribusi ' | italic=False | bold=False | sub=None
+  [3] text='Gaussian' | italic=True | bold=False | sub=None
+  [4] text=' acak dibandingkan manifold struktur fitur anatomis citra radiografi yang sangat kompleks dan berdimensi tinggi. Karakteristik ini secara efektif mencegah timbulnya degradasi performa akibat hilangnya gradien (' | italic=False | bold=False | sub=None
+  [5] text='vanishing gradient problem' | italic=True | bold=False | sub=None
+  [6] text=') pada jaringan yang dalam serta mempercepat laju konvergensi proses pelatihan (He et al., 2016). Selama proses pelatihan, parameter bobot dan bias jaringan ' | italic=False | bold=False | sub=None
+  [7] text='Θ' | italic=True | bold=False | sub=None
+  [8] text=' dioptimalkan secara terawasi (' | italic=False | bold=False | sub=None
+  [9] text='supervised learning' | italic=True | bold=False | sub=None
+  [10] text=') menggunakan kumpulan pasangan data citra radiografi berderau dan bersih (' | italic=False | bold=False | sub=None
+  [11] text='y' | italic=True | bold=False | sub=None
+  [12] text='i' | italic=True | bold=False | sub=True
+  [13] text=', ' | italic=False | bold=False | sub=None
+  [14] text='x' | italic=True | bold=False | sub=None
+  [15] text='i' | italic=True | bold=False | sub=True
+  [16] text=') dengan meminimalkan fungsi kerugian (' | italic=False | bold=False | sub=None
+  [17] text='loss function' | italic=True | bold=False | sub=None
+  [18] text=') berbasis galat kuadrat rata-rata (' | italic=False | bold=False | sub=None
+  [19] text='Mean Squared Error' | italic=True | bold=False | sub=None
+  [20] text=' atau MSE) residual:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 201 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 1
+  Math tokens: L (Θ)= 1 2N i=1 N R ( y i ; Θ ) - ( y i - x i ) F 2
+drawings count: 0
+Runs (0):
+
+========================================
+Paragraph 202 (style=Normal, align=JUSTIFY (3)):
+Full text: di mana N merepresentasikan jumlah cuplikan bidang citra (image patches), R (yi; Θ) adalah estimasi derau residual yang dihasilkan oleh model jaringan, (yi − xi) adalah residu derau acuan (ground truth noise residual), dan ||·||F melambangkan norma Frobenius matriks.
+oMath count: 0
+drawings count: 0
+Runs (22):
+  [0] text='di mana ' | italic=False | bold=False | sub=None
+  [1] text='N' | italic=True | bold=False | sub=None
+  [2] text=' merepresentasikan jumlah cuplikan bidang citra (' | italic=False | bold=False | sub=None
+  [3] text='image patches' | italic=True | bold=False | sub=None
+  [4] text='), ' | italic=False | bold=False | sub=None
+  [5] text='R' | italic=True | bold=False | sub=None
+  [6] text=' (' | italic=False | bold=False | sub=None
+  [7] text='y' | italic=True | bold=False | sub=None
+  [8] text='i' | italic=True | bold=False | sub=True
+  [9] text='; ' | italic=False | bold=False | sub=None
+  [10] text='Θ' | italic=True | bold=False | sub=None
+  [11] text=') adalah estimasi derau residual yang dihasilkan oleh model jaringan, (' | italic=False | bold=False | sub=None
+  [12] text='y' | italic=True | bold=False | sub=None
+  [13] text='i' | italic=True | bold=False | sub=True
+  [14] text=' − ' | italic=False | bold=False | sub=None
+  [15] text='x' | italic=True | bold=False | sub=None
+  [16] text='i' | italic=True | bold=False | sub=True
+  [17] text=') adalah residu derau acuan (' | italic=False | bold=False | sub=None
+  [18] text='ground truth noise residual' | italic=True | bold=False | sub=None
+  [19] text='), dan ||·||' | italic=False | bold=False | sub=None
+  [20] text='F' | italic=True | bold=False | sub=True
+  [21] text=' melambangkan norma Frobenius matriks.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 203 (style=Normal, align=JUSTIFY (3)):
+Full text: Arsitektur standar DnCNN yang diterapkan dalam penelitian ini tersusun atas 17 lapisan konvolusional bertingkat tanpa menerapkan lapisan penggabungan (pooling layer) maupun lapisan terhubung penuh (fully-connected layer). Peniadaan operasi pooling merupakan aspek desain krusial untuk mencegah penurunan resolusi spasial citra (downsampling), sehingga integritas ukuran matriks dan ketajaman batas mikrostruktur anatomis toraks tetap terpelihara pada skala resolusi asli 1:1. Konfigurasi 17 lapisan tersebut terbagi ke dalam tiga tingkatan fungsional:
+oMath count: 0
+drawings count: 0
+Runs (9):
+  [0] text='Arsitektur standar DnCNN yang diterapkan dalam penelitian ini tersusun atas 17 lapisan konvolusional bertingkat tanpa menerapkan lapisan penggabungan (' | italic=False | bold=False | sub=None
+  [1] text='pooling layer' | italic=True | bold=False | sub=None
+  [2] text=') maupun lapisan terhubung penuh (' | italic=False | bold=False | sub=None
+  [3] text='fully-connected layer' | italic=True | bold=False | sub=None
+  [4] text='). Peniadaan operasi ' | italic=False | bold=False | sub=None
+  [5] text='pooling' | italic=True | bold=False | sub=None
+  [6] text=' merupakan aspek desain krusial untuk mencegah penurunan resolusi spasial citra (' | italic=False | bold=False | sub=None
+  [7] text='downsampling' | italic=True | bold=False | sub=None
+  [8] text='), sehingga integritas ukuran matriks dan ketajaman batas mikrostruktur anatomis toraks tetap terpelihara pada skala resolusi asli 1:1. Konfigurasi 17 lapisan tersebut terbagi ke dalam tiga tingkatan fungsional:' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 204 (style=Normal, align=JUSTIFY (3)):
+Full text: 1.	Lapisan Masukan (Input Layer): Terdiri atas satu operasi konvolusi tunggal Conv + ReLU (Rectified Linear Unit) yang menggunakan 64 penapis (filters) berukuran 3 × 3 × c (dengan c = 1 untuk citra radiografi digital monokromatik abu-abu berskala 12-bit atau 16-bit). Lapisan awal ini mengekstraksi 64 peta fitur spasial (feature maps) dari citra masukan tanpa menerapkan Batch Normalization.
+oMath count: 0
+drawings count: 0
+Runs (17):
+  [0] text='1.	' | italic=False | bold=True | sub=None
+  [1] text='Lapisan Masukan (' | italic=False | bold=True | sub=None
+  [2] text='Input Layer' | italic=True | bold=True | sub=None
+  [3] text='): ' | italic=False | bold=True | sub=None
+  [4] text='Terdiri atas satu operasi konvolusi tunggal Conv + ReLU (' | italic=False | bold=False | sub=None
+  [5] text='Rectified Linear Unit' | italic=True | bold=False | sub=None
+  [6] text=') yang menggunakan 64 penapis (' | italic=False | bold=False | sub=None
+  [7] text='filters' | italic=True | bold=False | sub=None
+  [8] text=') berukuran 3 × 3 × ' | italic=False | bold=False | sub=None
+  [9] text='c' | italic=True | bold=False | sub=None
+  [10] text=' (dengan ' | italic=False | bold=False | sub=None
+  [11] text='c = 1' | italic=True | bold=False | sub=None
+  [12] text=' untuk citra radiografi digital monokromatik abu-abu berskala 12-bit atau 16-bit). Lapisan awal ini mengekstraksi 64 peta fitur spasial (' | italic=False | bold=False | sub=None
+  [13] text='feature maps' | italic=True | bold=False | sub=None
+  [14] text=') dari citra masukan tanpa menerapkan ' | italic=False | bold=False | sub=None
+  [15] text='Batch Normalization' | italic=True | bold=False | sub=None
+  [16] text='.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 205 (style=Normal, align=JUSTIFY (3)):
+Full text: 2.	Lapisan Pengolah Antara (Intermediate Processing Layers): Terdiri atas 15 blok konvolusi berturut-turut (lapisan ke-2 hingga ke-16) dengan konfigurasi berulang Conv + BN + ReLU. Masing-masing lapisan menerapkan 64 penapis berukuran 3 × 3 × 64. Integrasi Batch Normalization (BN) di antara konvolusi dan aktivasi non-linear berfungsi menstabilkan distribusi masukan internal (internal covariate shift), mereduksi ketergantungan model terhadap inisialisasi parameter awal, mempercepat perambatan gradien, serta bertindak sebagai regularisator implisit. Penumpukan 17 lapisan konvolusi dengan ukuran kernel 3 × 3 secara bertahap memperluas bidang pandang reseptif efektif (effective receptive field) jaringan hingga mencapai ukuran 35 × 35 piksel pada lapisan akhir, yang memungkinkan jaringan menangkap korelasi konteks spasial derau pada area sangkar toraks yang lebih luas.
+oMath count: 0
+drawings count: 0
+Runs (13):
+  [0] text='2.	' | italic=False | bold=True | sub=None
+  [1] text='Lapisan Pengolah Antara (' | italic=False | bold=True | sub=None
+  [2] text='Intermediate Processing Layers' | italic=True | bold=True | sub=None
+  [3] text='): ' | italic=False | bold=True | sub=None
+  [4] text='Terdiri atas 15 blok konvolusi berturut-turut (lapisan ke-2 hingga ke-16) dengan konfigurasi berulang Conv + BN + ReLU. Masing-masing lapisan menerapkan 64 penapis berukuran 3 × 3 × 64. Integrasi ' | italic=False | bold=False | sub=None
+  [5] text='Batch Normalization' | italic=True | bold=False | sub=None
+  [6] text=' (BN) di antara konvolusi dan aktivasi non-linear berfungsi menstabilkan distribusi masukan internal (' | italic=False | bold=False | sub=None
+  [7] text='internal covariate shift' | italic=True | bold=False | sub=None
+  [8] text='), mereduksi ketergantungan model terhadap inisialisasi parameter awal, mempercepat perambatan gradien, serta bertindak sebagai regularisator implisit. Penumpukan 17 lapisan konvolusi dengan ukuran ' | italic=False | bold=False | sub=None
+  [9] text='kernel' | italic=True | bold=False | sub=None
+  [10] text=' 3 × 3 secara bertahap memperluas bidang pandang reseptif efektif (' | italic=False | bold=False | sub=None
+  [11] text='effective receptive field' | italic=True | bold=False | sub=None
+  [12] text=') jaringan hingga mencapai ukuran 35 × 35 piksel pada lapisan akhir, yang memungkinkan jaringan menangkap korelasi konteks spasial derau pada area sangkar toraks yang lebih luas.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 206 (style=Normal, align=JUSTIFY (3)):
+Full text: 3.	Lapisan Rekonstruksi Akhir (Reconstruction Layer): Terdiri atas satu lapisan konvolusi tunggal Conv menggunakan 1 penapis berukuran 3 × 3 × 64 tanpa aktivasi non-linear maupun BN. Lapisan terminal ini mengagregasi 64 peta fitur antara menjadi satu matriks keluaran tunggal yang merepresentasikan prediksi derau residual R (y).
+oMath count: 0
+drawings count: 0
+Runs (9):
+  [0] text='3.	' | italic=False | bold=True | sub=None
+  [1] text='Lapisan Rekonstruksi Akhir (' | italic=False | bold=True | sub=None
+  [2] text='Reconstruction Layer' | italic=True | bold=True | sub=None
+  [3] text='): ' | italic=False | bold=True | sub=None
+  [4] text='Terdiri atas satu lapisan konvolusi tunggal Conv menggunakan 1 penapis berukuran 3 × 3 × 64 tanpa aktivasi non-linear maupun BN. Lapisan terminal ini mengagregasi 64 peta fitur antara menjadi satu matriks keluaran tunggal yang merepresentasikan prediksi derau residual ' | italic=False | bold=False | sub=None
+  [5] text='R' | italic=True | bold=False | sub=None
+  [6] text=' (' | italic=False | bold=False | sub=None
+  [7] text='y' | italic=True | bold=False | sub=None
+  [8] text=').' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 207 (style=Normal, align=JUSTIFY (3)):
+Full text: Mekanisme pemisahan derau residual dan konfigurasi hierarkis 17 lapisan konvolusional pada arsitektur DnCNN diilustrasikan secara sistematis pada Gambar 2.3.
+oMath count: 0
+drawings count: 0
+Runs (1):
+  [0] text='Mekanisme pemisahan derau residual dan konfigurasi hierarkis 17 lapisan konvolusional pada arsitektur DnCNN diilustrasikan secara sistematis pada Gambar 2.3.' | italic=False | bold=False | sub=None
+
+========================================
+Paragraph 208 (style=Normal, align=CENTER (1)):
+Full text: 
+oMath count: 0
+drawings count: 1
+Runs (1):
+  [0] text='' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 209 (style=Caption, align=CENTER (1)):
+Full text: Gambar 2. 3 Arsitektur Jaringan DnCNN Berbasis Residual Learning untuk Pemisahan Derau Citra (Zhang et al., 2017)
+oMath count: 0
+drawings count: 0
+Runs (3):
+  [0] text='Gambar 2. 3 Arsitektur Jaringan DnCNN Berbasis ' | italic=False | bold=False | sub=None
+  [1] text='Residual Learning' | italic=True | bold=False | sub=None
+  [2] text=' untuk Pemisahan Derau Citra (Zhang et al., 2017)' | italic=False | bold=False | sub=None

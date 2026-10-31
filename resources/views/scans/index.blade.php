@@ -591,7 +591,475 @@
             cursor: not-allowed;
             background-color: rgba(15, 23, 42, 0.5);
         }
+
+        /* ==========================================================================
+           WORKSTATION PROTOCOL PICKER (FULL SCREEN CLINICAL CONSOLE - 180 PROTOKOL)
+           ========================================================================== */
+        #modalProtocolPicker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #040812;
+            display: none;
+            z-index: 10050;
+            overflow: hidden;
+            animation: pickerFadeIn 0.15s ease-out;
+        }
+
+        @keyframes pickerFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .protocol-modal-dialog {
+            background: #060b14;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Top Header */
+        .protocol-header {
+            background: #0b1324;
+            border-bottom: 1px solid #1c2b44;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .protocol-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .protocol-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .protocol-tool-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #111a2e;
+            border: 1px solid #1e293b;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .protocol-tool-btn:hover {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .protocol-tool-btn.active {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .protocol-search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+
+        .protocol-search-wrap input {
+            width: 100%;
+            background: #040812;
+            border: 1px solid #1e2d44;
+            border-radius: 6px;
+            padding: 0.52rem 2.2rem 0.52rem 2.3rem;
+            font-size: 0.84rem;
+            color: #f8fafc;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .protocol-search-wrap input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+        }
+
+        .protocol-search-wrap .protocol-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .protocol-search-wrap #protocolSearchClear {
+            position: absolute;
+            right: 0.65rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.25rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+
+        /* Tooltip custom - Aligned safely to NEVER clip off screen edges */
+        .protocol-tool-btn .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.9);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #btnSortFreq .custom-tooltip {
+            left: 0 !important;
+            transform: none !important;
+        }
+
+        .protocol-tool-btn:hover .custom-tooltip,
+        .skel-tab-btn:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Body Split Layout */
+        .protocol-body {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Left Column: Skeleton */
+        .protocol-anatomy-col {
+            width: 320px;
+            flex-shrink: 0;
+            background: #040812;
+            border-right: 1px solid #142033;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            gap: 0.65rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .skel-hud {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: rgba(11, 19, 36, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-align: center;
+            letter-spacing: 0.02em;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .skeleton-container {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.06) 0%, #040812 75%);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(30, 41, 59, 0.6);
+        }
+
+        .skeleton-svg {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 210px);
+            display: block;
+            margin: 0 auto;
+            user-select: none;
+        }
+
+        .skel-glow-layer {
+            opacity: 0;
+            transition: opacity 0.15s ease, filter 0.15s ease;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .skel-glow-layer.hovered {
+            opacity: 0.85;
+            filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.85));
+        }
+
+        .skel-glow-layer.active {
+            opacity: 1 !important;
+            filter: drop-shadow(0 0 3px #00f0ff) drop-shadow(0 0 6px rgba(0, 240, 255, 0.7)) !important;
+        }
+
+        .skel-region {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .skel-region path {
+            fill: transparent !important;
+            stroke: none !important;
+            pointer-events: all;
+        }
+
+        .skel-tabs-wrap {
+            display: flex;
+            gap: 0.65rem;
+            width: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .skel-tab-btn {
+            flex: 1;
+            background: #0f1a30;
+            border: 1px solid #1c2b44;
+            border-radius: 6px;
+            padding: 0.65rem 0.5rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .skel-tab-btn:hover {
+            background: #172644;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .skel-tab-btn.active {
+            background: rgba(2, 132, 199, 0.28);
+            color: #38bdf8;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Tooltip tabOftenUsed: align to left edge so it NEVER clips! */
+        #tabOftenUsed .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0 !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        /* Tooltip tabAdvanced: align to right edge */
+        #tabAdvanced .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #tabOftenUsed:hover .custom-tooltip,
+        #tabAdvanced:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Right Column: Protocols Grid */
+        .protocol-main-col {
+            background: #070d18;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 1.25rem 1.75rem;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .protocol-grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            overflow-y: auto;
+            flex: 1;
+            padding: 0.25rem 0.5rem 1rem 0;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        .protocol-card {
+            background: #10192e;
+            border: 1px solid #1a283e;
+            border-radius: 6px;
+            padding: 0.85rem 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.86rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 56px;
+            line-height: 1.3;
+            user-select: none;
+            word-break: break-word;
+            position: relative;
+        }
+
+        .protocol-card:hover {
+            background: #17243c;
+            border-color: #38bdf8;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        .protocol-card.selected {
+            background: rgba(14, 165, 233, 0.26) !important;
+            border-color: #00f0ff !important;
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.25) !important;
+        }
+
+        .protocol-card-tag {
+            font-size: 0.66rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Bottom Selection Tray */
+        .protocol-picker-tray {
+            padding: 0.75rem 1.75rem;
+            background: #040812;
+            border-top: 1px solid #142033;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* Footer Action Buttons */
+        .protocol-picker-footer {
+            padding: 0.85rem 1.75rem;
+            background: #0b1324;
+            border-top: 1px solid #1c2b44;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
     </style>
+
 </head>
 <body>
 
@@ -894,15 +1362,24 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Modalitas Pemeriksaan *</label>
-                    <select name="modality" class="form-control" required>
-                        <option value="Thorax PA">Thorax PA (Rontgen Dada)</option>
-                        <option value="Thorax AP">Thorax AP</option>
-                        <option value="Thorax Lateral">Thorax Lateral</option>
-                        <option value="Waters">Waters (Sinus Paranasal / SPN)</option>
-                        <option value="USG Abdomen">USG Abdomen</option>
-                        <option value="USG Pelvic">USG Pelvic</option>
-                    </select>
+                    <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <span>Pemeriksaan Terpilih *</span>
+                        <span id="selectedModalityCategoryBadge" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.35); text-transform: uppercase; letter-spacing: 0.03em;">Thorax</span>
+                    </label>
+                    <input type="hidden" name="modality" id="selectedModalityInput" value="Chest PA" required>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <div id="selectedModalityDisplayBox" style="flex: 1; padding: 0.55rem 0.85rem; background: #070d18; border: 1px solid #1e293b; border-radius: 6px; color: #f8fafc; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem; min-height: 42px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                            <span id="selectedModalityIcon" style="font-size: 1.1rem; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));">🫁</span>
+                            <span id="selectedModalityText" style="color: #38bdf8; letter-spacing: 0.01em;">Chest PA</span>
+                        </div>
+                        <button type="button" class="btn" onclick="openProtocolPickerModal()" style="white-space: nowrap; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: 1px solid #38bdf8; padding: 0.55rem 0.95rem; border-radius: 6px; font-weight: 700; font-size: 0.84rem; display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); transition: all 0.2s ease;" title="Buka katalog workstation 180 pemeriksaan radiologi">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                            <span>Tambah Pemeriksaan</span>
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -924,6 +1401,160 @@
     </div>
 </div>
 
+
+<!-- MODAL: WORKSTATION PROTOCOL PICKER (FULL SCREEN CONSOLE - 180 PROTOKOL LENGKAP) -->
+<div id="modalProtocolPicker" class="modal-backdrop">
+    <div class="protocol-modal-dialog">
+        <!-- TOP HEADER -->
+        <div class="protocol-header">
+            <div class="protocol-header-left">
+                <div class="protocol-title">
+                    <span>Tambah Pemeriksaan</span>
+                </div>
+
+                <!-- Sort Buttons -->
+                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                    <button type="button" id="btnSortFreq" class="protocol-tool-btn active" onclick="setProtocolSort('default')">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20V10"></path>
+                            <path d="M18 20V4"></path>
+                            <path d="M6 20v-4"></path>
+                        </svg>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Frekuensi</span>
+                    </button>
+                    <button type="button" id="btnSortAz" class="protocol-tool-btn" onclick="setProtocolSort('az')">
+                        <span style="font-size: 0.78rem; font-weight: 800; font-family: monospace;">A-Z</span>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Abjad (A–Z)</span>
+                    </button>
+                </div>
+
+                <!-- Real-time Search Box -->
+                <div class="protocol-search-wrap">
+                    <svg class="protocol-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="protocolSearchInput" placeholder="Cari pemeriksaan, proyeksi, atau organ..." autocomplete="off" oninput="handleProtocolSearch(this.value)">
+                    <button type="button" id="protocolSearchClear" onclick="clearProtocolSearch()" style="display: none;">&times;</button>
+                </div>
+            </div>
+
+            <!-- Close Modal -->
+            <button type="button" class="btn-close" onclick="closeProtocolPickerModal()" title="Tutup" style="font-size: 1.8rem;">&times;</button>
+        </div>
+
+        <!-- MAIN SPLIT BODY -->
+        <div class="protocol-body">
+            <!-- LEFT COLUMN: SKELETON & TABS -->
+            <div class="protocol-anatomy-col">
+                <!-- Floating Medical English Anatomy HUD -->
+                <div id="skelRegionHud" class="skel-hud">Select Anatomical Region</div>
+
+                <!-- Real Anatomical Radiographic Human Skeleton with Interactive Glowing Regions -->
+                <div class="skeleton-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 768 1376" id="skeletonSvg" class="skeleton-svg">
+                        <!-- True 3D Medical Radiographic Human Skeleton Base Image -->
+                        <image href="/images/workstation_skeleton.jpg" xlink:href="/images/workstation_skeleton.jpg" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet" />
+
+                        <!-- Organic Glowing Organ Overlays (Pixel-perfect on actual bones) -->
+                        <image id="glow-head" class="skel-glow-layer" href="/images/parts/skeleton_part_head.png?v=3" xlink:href="/images/parts/skeleton_part_head.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-spine" class="skel-glow-layer" href="/images/parts/skeleton_part_spine.png?v=3" xlink:href="/images/parts/skeleton_part_spine.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-thorax" class="skel-glow-layer" href="/images/parts/skeleton_part_thorax.png?v=3" xlink:href="/images/parts/skeleton_part_thorax.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-pelvis" class="skel-glow-layer" href="/images/parts/skeleton_part_pelvis.png?v=3" xlink:href="/images/parts/skeleton_part_pelvis.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_right_arm.png?v=3" xlink:href="/images/parts/skeleton_part_right_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_left_arm.png?v=3" xlink:href="/images/parts/skeleton_part_left_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_right_leg.png?v=3" xlink:href="/images/parts/skeleton_part_right_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_left_leg.png?v=3" xlink:href="/images/parts/skeleton_part_left_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+
+                        <!-- Interactive Clickable Hitbox Zones (Transparent, Zero Rigid Boxes) -->
+                        <g id="skel-head" class="skel-region" data-category="head" data-label="Head / Skull" tabindex="0" role="button">
+                            <path d="M 295 50 L 472 50 L 472 214 L 295 214 Z" />
+                        </g>
+
+                        <g id="skel-right-arm" class="skel-region" data-category="right_arm" data-label="Right Upper Limb" tabindex="0" role="button">
+                            <path d="M 75 260 L 250 260 L 250 535 L 246 830 L 75 830 Z" />
+                        </g>
+
+                        <g id="skel-left-arm" class="skel-region" data-category="left_arm" data-label="Left Upper Limb" tabindex="0" role="button">
+                            <path d="M 525 260 L 700 260 L 700 830 L 532 830 L 525 535 Z" />
+                        </g>
+
+                        <g id="skel-thorax" class="skel-region" data-category="thorax" data-label="Thorax" tabindex="0" role="button">
+                            <path d="M 250 265 L 525 265 L 525 535 L 250 535 Z" />
+                        </g>
+
+                        <g id="skel-pelvis" class="skel-region" data-category="pelvis" data-label="Pelvis &amp; Abdomen" tabindex="0" role="button">
+                            <path d="M 245 535 L 532 535 L 532 720 L 245 720 Z" />
+                        </g>
+
+                        <g id="skel-right-leg" class="skel-region" data-category="right_leg" data-label="Right Lower Limb" tabindex="0" role="button">
+                            <path d="M 240 720 L 388 720 L 388 1370 L 240 1370 Z" />
+                        </g>
+
+                        <g id="skel-left-leg" class="skel-region" data-category="left_leg" data-label="Left Lower Limb" tabindex="0" role="button">
+                            <path d="M 388 720 L 540 720 L 540 1370 L 388 1370 Z" />
+                        </g>
+
+                        <!-- Spine sits on the TOP layer of the SVG DOM so midline hover & clicks are 100% responsive -->
+                        <g id="skel-spine" class="skel-region" data-category="spine" data-label="Spine" tabindex="0" role="button">
+                            <path d="M 352 210 L 424 210 L 424 690 L 352 690 Z" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Bottom Tabs below Skeleton (Aligned so tooltips NEVER get cut off) -->
+                <div class="skel-tabs-wrap">
+                    <button type="button" id="tabOftenUsed" class="skel-tab-btn active" onclick="selectProtocolCategory('often_used')">
+                        <span>Often Used</span>
+                        <span class="custom-tooltip">Pemeriksaan yang Sering Digunakan</span>
+                    </button>
+                    <button type="button" id="tabAdvanced" class="skel-tab-btn" onclick="selectProtocolCategory('advanced')">
+                        <span>Advanced</span>
+                        <span class="custom-tooltip">Pemeriksaan Lanjutan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: PROTOCOLS 4-COLUMN GRID -->
+            <div class="protocol-main-col">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.6rem; border-bottom: 1px solid #1c2b44;">
+                    <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        <span id="protocolGridTitle" style="font-weight: 700; font-size: 1.05rem; color: #f1f5f9;">Often Used</span>
+                        <span id="protocolGridCount" style="font-size: 0.74rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.18rem 0.65rem; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">30 Pemeriksaan</span>
+                    </div>
+                    <span style="font-size: 0.76rem; color: #64748b; font-style: italic;">Klik 1x untuk memilih • Klik 2x untuk konfirmasi cepat</span>
+                </div>
+
+                <div id="protocolGridContainer" class="protocol-grid-container">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM TRAY (SELECTION SUMMARY) -->
+        <div class="protocol-picker-tray">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700;">Pemeriksaan Terpilih:</span>
+                <span id="pickerSelectedName" style="color: #00f0ff; font-weight: 800; font-size: 1.02rem; font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 10px rgba(0, 240, 255, 0.45);">Chest PA</span>
+                <span id="pickerSelectedCategoryBadge" style="font-size: 0.74rem; background: #111a2e; color: #38bdf8; padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 600;">Thorax</span>
+            </div>
+            <div style="font-size: 0.74rem; color: #64748b;">Standar Protokol DICOM CR / DX Konsol Digital Radiologi</div>
+        </div>
+
+        <!-- FOOTER BAR (ACTIONS IN BAHASA INDONESIA) -->
+        <div class="protocol-picker-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 120px; font-weight: 600;">
+                Kembali
+            </button>
+            <button type="button" class="btn btn-primary" onclick="confirmProtocolSelection()" style="min-width: 190px; font-weight: 700; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);">
+                Pilih Pemeriksaan
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 110px; border-color: #334155; color: #94a3b8;">
+                Batal
+            </button>
+        </div>
+    </div>
+</div>
 <!-- MODAL: SETUP KONFIGURASI DICOM NODE -->
 <div id="modalDicomConfig" class="modal-backdrop">
     <div class="modal-content" style="max-width: 480px;">
@@ -1305,11 +1936,18 @@
             genderSelect.dispatchEvent(new Event('change', { bubbles: true }));
         }
 
-        // Modalitas
+        // Modalitas (Mendukung 180+ Protokol Workstation)
+        var modalityInput = form.querySelector('input[name="modality"]');
         var modalitySelect = form.querySelector('select[name="modality"]');
-        if (modalitySelect && data.modalitas) {
-            modalitySelect.value = data.modalitas;
-            modalitySelect.dispatchEvent(new Event('change', { bubbles: true }));
+        if (data.modalitas) {
+            if (modalityInput) {
+                modalityInput.value = data.modalitas;
+                updateSelectedModalityBadge(data.modalitas);
+            }
+            if (modalitySelect) {
+                modalitySelect.value = data.modalitas;
+                modalitySelect.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         }
 
         // Indikasi Klinis
@@ -1364,10 +2002,12 @@
     }
 
     window.onclick = function(event) {
+        const modalProtocol = document.getElementById('modalProtocolPicker');
         const modalOrder = document.getElementById('modalOrder');
         const modalDicom = document.getElementById('modalDicomConfig');
         const modalCstore = document.getElementById('modalCstoreResult');
         const modalDelete = document.getElementById('modalConfirmDelete');
+        if (event.target === modalProtocol) closeProtocolPickerModal();
         if (event.target === modalOrder) closeOrderModal();
         if (event.target === modalDicom) closeDicomModal();
         if (event.target === modalCstore) closeCstoreModal();
@@ -1376,6 +2016,7 @@
 
     window.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
+            closeProtocolPickerModal();
             closeOrderModal();
             closeDicomModal();
             closeCstoreModal();
@@ -1533,6 +2174,347 @@
             btn.disabled = false;
         });
     }
+
+    // ==========================================================================
+    // WORKSTATION PROTOCOL PICKER DATASET & CONTROLLER (180 PROTOKOL LENGKAP)
+    // ==========================================================================
+    const WORKSTATION_PROTOCOLS = {
+        often_used: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Skull PA Axial',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Right Hip LAT', 'Right Hip Axial',
+            'Right Clavicle AP', 'Right Ankle OBL', 'Right Ankle LAT', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Clavicle AP', 'Left Ankle OBL', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,left', 'Chest AP', 'Abdomen LAT,left', 'Abdomen AP,erect'
+        ],
+        head: [
+            'Zygomatic Arche', 'Stenvers view', 'Skull Townes', 'Skull PA Axial', 'Skull PA', 'Skull LAT,right',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Sella Turcica', 'Petrous Bone',
+            'Orbit PA', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Nasal Bone Axial', 'Mastoid',
+            'Mandible,jaw open', 'Mandible,jaw close'
+        ],
+        thorax: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Sternum LAT,left',
+            'Right Clavicle AP Axial', 'Right Clavicle AP', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Rib PA', 'Left Clavicle AP Axial', 'Left Clavicle AP', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,right', 'Chest LAT,left', 'Chest AP'
+        ],
+        spine: [
+            'T-spine LAT,right', 'T-spine LAT,left', 'T-spine AP', 'Sacrum LAT,right', 'Sacrum LAT,left',
+            'Sacrum AP', 'L-spine OBL,right', 'L-spine OBL,left', 'L-spine LAT,right', 'L-spine LAT,left',
+            'L-spine AP', 'Coccyx LAT,right', 'Coccyx LAT,left', 'Coccyx AP', 'C-spine OBL,right',
+            'C-spine OBL,left', 'C-spine LAT,right', 'C-spine LAT,left', 'C-spine AP'
+        ],
+        right_arm: [
+            'Right Wrist PA', 'Right Wrist LAT', 'Right Shoulder Transaxillary', 'Right Shoulder AP',
+            'Right Scapula LAT', 'Right Scapula AP', 'Right Humerus LAT', 'Right Humerus AP', 'Right Hand PA',
+            'Right Hand OBL', 'Right Hand LAT', 'Right Forearm LAT', 'Right Forearm AP', 'Right Finger PA',
+            'Right Finger LAT', 'Right Elbow LAT', 'Right Elbow AP'
+        ],
+        left_arm: [
+            'Left Wrist PA', 'Left Wrist LAT', 'Left Shoulder Transaxillary', 'Left Shoulder AP',
+            'Left Scapula LAT', 'Left Scapula AP', 'Left Humerus LAT', 'Left Humerus AP', 'Left Hand PA',
+            'Left Hand OBL', 'Left Hand LAT', 'Left Forearm LAT', 'Left Forearm AP', 'Left Finger PA',
+            'Left Finger LAT', 'Left Elbow LAT', 'Left Elbow AP'
+        ],
+        pelvis: [
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Pelvis AP', 'IVP9', 'IVP8', 'IVP7', 'IVP6', 'IVP5',
+            'IVP4', 'IVP3', 'IVP2', 'IVP10', 'IVP1', 'Abdomen LAT,right', 'Abdomen LAT,left',
+            'Abdomen AP,supine', 'Abdomen AP,erect'
+        ],
+        right_leg: [
+            'Right Toe OBL', 'Right Toe LAT', 'Right Toe AP', 'Right Tibia LAT', 'Right Tibia AP',
+            'Right Patella Tangential', 'Right Patella AP', 'Right Knee LAT', 'Right Knee AP', 'Right Hip LAT',
+            'Right Hip Axial', 'Right Foot OBL', 'Right Foot LAT,standing', 'Right Foot LAT', 'Right Foot AP',
+            'Right Femur LAT', 'Right Femur AP', 'Right Calcaneus LAT', 'Right Calcaneus Axial', 'Right Ankle OBL',
+            'Right Ankle LAT', 'Hip AP'
+        ],
+        left_leg: [
+            'Left Toe OBL', 'Left Toe LAT', 'Left Toe AP', 'Left Tibia LAT', 'Left Tibia AP',
+            'Left Patella Tangential', 'Left Patella AP', 'Left Knee LAT', 'Left Knee AP', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Foot OBL', 'Left Foot LAT,standing', 'Left Foot LAT', 'Left Foot AP',
+            'Left Femur LAT', 'Left Femur AP', 'Left Calcaneus LAT', 'Left Calcaneus Axial', 'Left Ankle OBL',
+            'Left Ankle LAT', 'Hip AP'
+        ],
+        advanced: [
+            'IVP Series (1-10)', 'Whole Spine AP Standing', 'Whole Spine LAT Standing', 'Scoliosis Series AP/LAT',
+            'Scanogram (Leg Length Discrepancy)', 'Barium Swallow / Meal', 'Barium Enema Double Contrast',
+            'HSG (Hysterosalpingography)', 'Urethrocystography', 'Fistulography', 'T-Tube Cholangiography',
+            'Arthrography', 'Stress View Knee Valgus/Varus', 'Stress View Ankle Inversion', 'Mandible Panorex View'
+        ]
+    };
+
+    const PROTOCOL_CATEGORY_INFO = {
+        often_used: { en: 'Often Used', id: 'Often Used', icon: '⚡' },
+        head: { en: 'Head / Skull', id: 'Head / Skull', icon: '🧠' },
+        spine: { en: 'Spine', id: 'Spine', icon: '🦴' },
+        thorax: { en: 'Thorax', id: 'Thorax', icon: '🫁' },
+        right_arm: { en: 'Right Upper Limb', id: 'Right Upper Limb', icon: '💪' },
+        left_arm: { en: 'Left Upper Limb', id: 'Left Upper Limb', icon: '💪' },
+        pelvis: { en: 'Pelvis & Abdomen', id: 'Pelvis & Abdomen', icon: '🩻' },
+        right_leg: { en: 'Right Lower Limb', id: 'Right Lower Limb', icon: '🦵' },
+        left_leg: { en: 'Left Lower Limb', id: 'Left Lower Limb', icon: '🦵' },
+        advanced: { en: 'Advanced', id: 'Advanced', icon: '🔬' }
+    };
+
+    let currentPickerCategory = 'often_used';
+    let currentPickerSort = 'default';
+    let currentPickerSearch = '';
+    let tempSelectedProtocol = 'Chest PA';
+
+    function openProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        // Set initial temp selection from hidden input
+        const currentVal = document.getElementById('selectedModalityInput')?.value || 'Chest PA';
+        tempSelectedProtocol = currentVal;
+        updatePickerTraySelection(tempSelectedProtocol);
+
+        // Find initial category for currentVal
+        const foundCat = findCategoryForProtocol(tempSelectedProtocol);
+        selectProtocolCategory(foundCat || 'often_used', false);
+    }
+
+    function closeProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (modal) modal.style.display = 'none';
+        clearProtocolSearch();
+    }
+
+    function selectProtocolCategory(categoryKey, clearSearch = true) {
+        if (clearSearch && currentPickerSearch) {
+            clearProtocolSearch(false);
+        }
+
+        currentPickerCategory = categoryKey;
+
+        // Reset skeleton and glowing layers
+        document.querySelectorAll('.skel-region').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-glow-layer').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-tab-btn').forEach(el => el.classList.remove('active'));
+
+        const hudEl = document.getElementById('skelRegionHud');
+        const info = PROTOCOL_CATEGORY_INFO[categoryKey] || { en: 'Select Anatomical Region' };
+
+        if (categoryKey === 'often_used') {
+            document.getElementById('tabOftenUsed')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Often Used (Frequently Performed)';
+        } else if (categoryKey === 'advanced') {
+            document.getElementById('tabAdvanced')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Advanced (Specialized Protocols)';
+        } else {
+            const skelEl = document.getElementById('skel-' + categoryKey.replace('_', '-'));
+            if (skelEl) skelEl.classList.add('active');
+            const glowEl = document.getElementById('glow-' + categoryKey);
+            if (glowEl) glowEl.classList.add('active');
+            if (hudEl) hudEl.textContent = info.en;
+        }
+
+        renderProtocolGrid();
+    }
+
+    function renderProtocolGrid() {
+        const container = document.getElementById('protocolGridContainer');
+        const titleEl = document.getElementById('protocolGridTitle');
+        const countEl = document.getElementById('protocolGridCount');
+        if (!container) return;
+
+        let list = [];
+        let isSearching = Boolean(currentPickerSearch.trim());
+
+        if (isSearching) {
+            const q = currentPickerSearch.toLowerCase().trim();
+            const seen = new Set();
+            for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+                for (const item of items) {
+                    if (item.toLowerCase().includes(q) && !seen.has(item)) {
+                        seen.add(item);
+                        list.push({ name: item, category: catKey });
+                    }
+                }
+            }
+            if (titleEl) titleEl.textContent = 'Hasil Pencarian: "' + currentPickerSearch + '"';
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        } else {
+            const items = WORKSTATION_PROTOCOLS[currentPickerCategory] || [];
+            list = items.map(name => ({ name: name, category: currentPickerCategory }));
+            const info = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+            if (titleEl) titleEl.textContent = info ? info.en : currentPickerCategory;
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        }
+
+        // Apply sort
+        if (currentPickerSort === 'az') {
+            list.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: #64748b;">
+                    <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
+                    <div style="font-weight: 600; color: #94a3b8; font-size: 0.92rem;">Tidak ada pemeriksaan yang cocok</div>
+                    <div style="font-size: 0.78rem; margin-top: 0.25rem;">Coba gunakan kata kunci organ atau proyeksi lain.</div>
+                </div>
+            `;
+            return;
+        }
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'protocol-card' + (item.name === tempSelectedProtocol ? ' selected' : '');
+            
+            const catInfo = PROTOCOL_CATEGORY_INFO[item.category] || { en: item.category };
+            
+            card.innerHTML = `
+                ${isSearching ? `<span class="protocol-card-tag">${escapeHtml(catInfo.en)}</span>` : ''}
+                <span>${escapeHtml(item.name)}</span>
+            `;
+
+            // Single click selects
+            card.onclick = function() {
+                tempSelectedProtocol = item.name;
+                updatePickerTraySelection(item.name, item.category);
+                container.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            };
+
+            // Double click selects and confirms immediately
+            card.ondblclick = function() {
+                tempSelectedProtocol = item.name;
+                confirmProtocolSelection();
+            };
+
+            container.appendChild(card);
+        });
+    }
+
+    function setProtocolSort(mode) {
+        currentPickerSort = mode;
+        const btnFreq = document.getElementById('btnSortFreq');
+        const btnAz = document.getElementById('btnSortAz');
+        if (mode === 'az') {
+            btnFreq?.classList.remove('active');
+            btnAz?.classList.add('active');
+        } else {
+            btnFreq?.classList.add('active');
+            btnAz?.classList.remove('active');
+        }
+        renderProtocolGrid();
+    }
+
+    function handleProtocolSearch(query) {
+        currentPickerSearch = query || '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = currentPickerSearch ? 'block' : 'none';
+        renderProtocolGrid();
+    }
+
+    function clearProtocolSearch(reRender = true) {
+        currentPickerSearch = '';
+        const input = document.getElementById('protocolSearchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (reRender) renderProtocolGrid();
+    }
+
+    function updatePickerTraySelection(protocolName, categoryKey = null) {
+        const nameEl = document.getElementById('pickerSelectedName');
+        const catBadge = document.getElementById('pickerSelectedCategoryBadge');
+        if (nameEl) nameEl.textContent = protocolName;
+
+        const cat = categoryKey || findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat];
+        if (catBadge) {
+            catBadge.textContent = info ? info.en : 'General';
+        }
+    }
+
+    function confirmProtocolSelection() {
+        if (!tempSelectedProtocol) return;
+        const input = document.getElementById('selectedModalityInput');
+        if (input) {
+            input.value = tempSelectedProtocol;
+            updateSelectedModalityBadge(tempSelectedProtocol);
+        }
+        closeProtocolPickerModal();
+    }
+
+    function updateSelectedModalityBadge(protocolName) {
+        const textEl = document.getElementById('selectedModalityText');
+        const badgeEl = document.getElementById('selectedModalityCategoryBadge');
+        const iconEl = document.getElementById('selectedModalityIcon');
+        const inputEl = document.getElementById('selectedModalityInput');
+
+        if (inputEl) inputEl.value = protocolName;
+        if (textEl) textEl.textContent = protocolName;
+
+        const cat = findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat] || { en: 'Rontgen / CR', icon: '🩻' };
+
+        if (badgeEl) badgeEl.textContent = info.en;
+        if (iconEl) iconEl.textContent = info.icon || '🩻';
+    }
+
+    function findCategoryForProtocol(protocolName) {
+        if (!protocolName) return 'often_used';
+        for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+            if (catKey === 'often_used') continue; // Prioritaskan anatomi spesifik
+            if (items.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+                return catKey;
+            }
+        }
+        // Cek often_used jika tidak ditemukan di anatomi spesifik
+        if (WORKSTATION_PROTOCOLS.often_used.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+            return 'often_used';
+        }
+        // Fallback berdasarkan kata kunci
+        const lower = protocolName.toLowerCase();
+        if (lower.includes('chest') || lower.includes('sternum') || lower.includes('rib')) return 'thorax';
+        if (lower.includes('skull') || lower.includes('nasal') || lower.includes('mandible') || lower.includes('sinus')) return 'head';
+        if (lower.includes('spine') || lower.includes('sacrum') || lower.includes('coccyx')) return 'spine';
+        if (lower.includes('arm') || lower.includes('wrist') || lower.includes('hand') || lower.includes('elbow') || lower.includes('finger') || lower.includes('shoulder')) return 'right_arm';
+        if (lower.includes('leg') || lower.includes('ankle') || lower.includes('knee') || lower.includes('femur') || lower.includes('foot') || lower.includes('toe')) return 'right_leg';
+        if (lower.includes('pelvis') || lower.includes('abdomen') || lower.includes('ivp')) return 'pelvis';
+        return 'often_used';
+    }
+
+    // Attach Skeleton Region Hover and Click Events
+    document.addEventListener('DOMContentLoaded', function() {
+        const regions = document.querySelectorAll('.skel-region');
+        const hudEl = document.getElementById('skelRegionHud');
+
+        regions.forEach(region => {
+            const cat = region.getAttribute('data-category');
+            const label = region.getAttribute('data-label');
+
+            region.addEventListener('mouseenter', function() {
+                if (hudEl) hudEl.textContent = label;
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl && cat !== currentPickerCategory) {
+                    glowEl.classList.add('hovered');
+                }
+            });
+
+            region.addEventListener('mouseleave', function() {
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl) glowEl.classList.remove('hovered');
+                if (hudEl) {
+                    const activeInfo = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+                    hudEl.textContent = activeInfo ? activeInfo.en : 'Select Anatomical Region';
+                }
+            });
+
+            region.addEventListener('click', function() {
+                selectProtocolCategory(cat);
+            });
+        });
+    });
+
 </script>
 
 </body>

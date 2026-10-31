@@ -1,0 +1,108 @@
+
+========================================
+Paragraph 181 (style=Heading 3, align=None):
+Text: 2.4.2	Bilateral Filter
+oMath count: 0
+Runs (2):
+  [0] text='2.4.2' | italic=None | bold=None | sub=None
+  [1] text='	Bilateral Filter' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 182 (style=Normal, align=JUSTIFY (3)):
+Text: Bilateral Filter merupakan filter spasial non-linear yang dirancang khusus untuk menghaluskan derau sembari mempertahankan ketajaman garis batas tepi objek (edge-preserving smoothing) (Tomasi & Manduchi, 1998). Berbeda dengan filter konvensional yang hanya memperhitungkan kedekatan jarak geometris, Bilateral Filter menggabungkan dua fungsi pembobot Gaussian secara simultan: fungsi domain spasial (Gσs) yang mengukur kedekatan posisi geometris, dan fungsi rentang radiometrik (Gσr) yang mengukur kemiripan nilai intensitas piksel. Intensitas piksel terestorasi pada titik p diformulasikan melalui persamaan matematis:
+oMath count: 0
+Runs (10):
+  [0] text='Bilateral Filter merupakan filter spasial non-linear yang dirancang khusus untuk menghaluskan derau sembari mempertahankan ketajaman garis batas tepi objek (' | italic=None | bold=None | sub=None
+  [1] text='edge-preserving smoothing' | italic=True | bold=None | sub=None
+  [2] text=') (Tomasi & Manduchi, 1998). Berbeda dengan filter konvensional yang hanya memperhitungkan kedekatan jarak geometris, ' | italic=None | bold=None | sub=None
+  [3] text='Bilateral Filter menggabungkan dua fungsi pembobot Gaussian secara simultan: fungsi domain spasial (' | italic=None | bold=None | sub=None
+  [4] text='Gσs' | italic=True | bold=None | sub=None
+  [5] text=') yang mengukur kedekatan posisi geometris, dan fungsi rentang radiometrik (' | italic=None | bold=None | sub=None
+  [6] text='Gσr' | italic=True | bold=None | sub=None
+  [7] text=') yang mengukur kemiripan nilai intensitas piksel. Intensitas piksel terestorasi pada titik ' | italic=None | bold=None | sub=None
+  [8] text='p' | italic=True | bold=None | sub=None
+  [9] text=' diformulasikan melalui persamaan matematis:' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 183 (style=Normal, align=CENTER (1)):
+Text: 
+oMath count: 1
+  Math tokens: I filtered (p)= 1 W p q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)·I(q)
+Runs (0):
+
+========================================
+Paragraph 184 (style=Normal, align=CENTER (1)):
+Text: 
+oMath count: 1
+  Math tokens: W p = q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)
+Runs (0):
+
+========================================
+Paragraph 185 (style=Normal, align=JUSTIFY (3)):
+Text: Kinerja penapisan Bilateral Filter dikendalikan secara presisi oleh interaksi dua parameter independen, yaitu simpangan baku spasial (σs) dan simpangan baku intensitas (σr):
+oMath count: 0
+Runs (5):
+  [0] text='Kinerja penapisan Bilateral Filter dikendalikan secara presisi oleh interaksi dua parameter independen, yaitu simpangan baku spasial (' | italic=None | bold=None | sub=None
+  [1] text='σs' | italic=True | bold=None | sub=None
+  [2] text=') dan simpangan baku intensitas (' | italic=None | bold=None | sub=None
+  [3] text='σr' | italic=True | bold=None | sub=None
+  [4] text='):' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 186 (style=Normal, align=JUSTIFY (3)):
+Text: a.	Parameter Spasial (σs): Mengendalikan bobot kedekatan geometris di dalam domain spasial melalui fungsi pembobot Gσs(||p − q||) = exp(−||p − q||² / (2σs²)). Parameter ini menentukan radius lingkungan piksel tetangga yang dilibatkan dalam perhitungan rata-rata terbobot. Nilai σs yang moderat diperlukan pada radiografi toraks untuk menangkap korelasi spasial fluktuasi derau kuantum mottle, namun nilai yang terlalu besar berpotensi mengaburkan detail kurvatur anatomis lokal yang halus.
+oMath count: 0
+Runs (10):
+  [0] text='a.' | italic=None | bold=True | sub=None
+  [1] text='	Parameter Spasial (' | italic=None | bold=True | sub=None
+  [2] text='σs' | italic=True | bold=True | sub=None
+  [3] text='): Mengendalikan bobot kedekatan geometris di dalam domain spasial melalui fungsi pembobot ' | italic=None | bold=True | sub=None
+  [4] text='Gσs(||p − q||) = exp(−||p − q||² / (2σs²))' | italic=True | bold=None | sub=None
+  [5] text='. Parameter ini menentukan radius lingkungan piksel tetangga yang dilibatkan dalam perhitungan rata-rata terbobot. Nilai ' | italic=None | bold=None | sub=None
+  [6] text='σs' | italic=True | bold=None | sub=None
+  [7] text=' yang moderat diperlukan pada radiografi toraks untuk menangkap korelasi spasial fluktuasi derau kuantum ' | italic=None | bold=None | sub=None
+  [8] text='mottle' | italic=True | bold=None | sub=None
+  [9] text=', namun nilai yang terlalu besar berpotensi mengaburkan detail kurvatur anatomis lokal yang halus.' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 187 (style=Normal, align=JUSTIFY (3)):
+Text: b.	Parameter Rentang Intensitas (σr): Mengendalikan sensitivitas filter terhadap variasi gradien intensitas radiometrik melalui fungsi pembobot Gσr(|I(p) − I(q)|) = exp(−|I(p) − I(q)|² / (2σr²)). Parameter σr berperan sebagai gerbang selektivitas ambang batas fotometrik. Pada area jaringan homogen di mana selisih |I(p) − I(q)| kecil, bobot rentang bernilai mendekati satu (Gσr ≈ 1) sehingga filter bekerja meratakan derau. Sebaliknya, pada area garis batas tepi kardiak di mana selisih intensitas besar, bobot rentang seketika anjlok mendekati nol (Gσr → 0). Akibatnya, piksel dari sisi seberang garis batas diabaikan dalam pembobotan, menjaga batas terluar kardiak tetap terlindungi dari efek pengaburan (edge preservation).
+oMath count: 0
+Runs (16):
+  [0] text='b.' | italic=None | bold=True | sub=None
+  [1] text='	Parameter Rentang Intensitas (' | italic=None | bold=True | sub=None
+  [2] text='σr' | italic=True | bold=True | sub=None
+  [3] text='): Mengendalikan sensitivitas filter terhadap variasi gradien intensitas radiometrik melalui fungsi pembobot ' | italic=None | bold=True | sub=None
+  [4] text='Gσr(|I(p) − I(q)|) = exp(−|I(p) − I(q)|² / (2σr²))' | italic=True | bold=None | sub=None
+  [5] text='. Parameter ' | italic=None | bold=None | sub=None
+  [6] text='σr' | italic=True | bold=None | sub=None
+  [7] text=' berperan sebagai gerbang selektivitas ambang batas fotometrik. Pada area jaringan homogen di mana selisih |' | italic=None | bold=None | sub=None
+  [8] text='I(p) − I(q)' | italic=True | bold=None | sub=None
+  [9] text='| kecil, bobot rentang bernilai mendekati satu (' | italic=None | bold=None | sub=None
+  [10] text='Gσr ≈ 1' | italic=True | bold=None | sub=None
+  [11] text=') sehingga filter bekerja meratakan derau. Sebaliknya, pada area garis batas tepi kardiak di mana selisih intensitas besar, bobot rentang seketika anjlok mendekati nol (' | italic=None | bold=None | sub=None
+  [12] text='Gσr → 0' | italic=True | bold=None | sub=None
+  [13] text='). Akibatnya, piksel dari sisi seberang garis batas diabaikan dalam pembobotan, menjaga batas terluar kardiak tetap terlindungi dari efek pengaburan (' | italic=None | bold=None | sub=None
+  [14] text='edge preservation' | italic=True | bold=None | sub=None
+  [15] text=').' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 188 (style=Normal, align=JUSTIFY (3)):
+Text: Prinsip kerja penapisan bilateral yang memadukan bobot kedekatan geometris domain spasial dan bobot kemiripan radiometrik dalam mempertahankan ketajaman batas tepi kardiak diilustrasikan secara komprehensif pada Gambar 2.2.
+oMath count: 0
+Runs (1):
+  [0] text='Prinsip kerja penapisan bilateral yang memadukan bobot kedekatan geometris domain spasial dan bobot kemiripan radiometrik dalam mempertahankan ketajaman batas tepi kardiak diilustrasikan secara komprehensif pada Gambar 2.2.' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 189 (style=Normal, align=CENTER (1)):
+Text: 
+oMath count: 0
+Runs (1):
+  [0] text='' | italic=None | bold=None | sub=None
+
+========================================
+Paragraph 190 (style=Caption, align=CENTER (1)):
+Text: Gambar 2. 2 Prinsip Kerja Bilateral Filtering dalam Mereduksi Derau sembari Mempertahankan Batas Tepi Organ (Tomasi & Manduchi, 1998)
+oMath count: 0
+Runs (1):
+  [0] text='Gambar 2. 2 Prinsip Kerja Bilateral Filtering dalam Mereduksi Derau sembari Mempertahankan Batas Tepi Organ (Tomasi & Manduchi, 1998)' | italic=None | bold=False | sub=None

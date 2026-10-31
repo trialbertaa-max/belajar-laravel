@@ -1,0 +1,10 @@
+=== P180 ===
+Text: Bilateral Filter merupakan filter spasial non-linear yang dirancang khusus untuk menghaluskan derau sembari mempertahankan ketajaman garis batas tepi objek (edge-preserving smoothing) (Tomasi & Manduchi, 1998). Berbeda dengan filter konvensional yang hanya memperhitungkan kedekatan jarak geometris, Bilateral Filter menggabungkan dua fungsi pembobot Gaussian secara simultan: fungsi domain spasial (Gσs) yang mengukur kedekatan posisi geometris, dan fungsi rentang radiometrik (Gσr) yang mengukur kemiripan nilai intensitas piksel. Intensitas piksel terestorasi pada titik p diformulasikan melalui persamaan matematis:
+=== P181 ===
+Text: 
+Math: I filtered (p)= 1 W p q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)·I(q)
+=== P182 ===
+Text: 
+Math: W p = q∈Ω G σ s (‖p-q‖)· G σ r (|I(p)-I(q)|)
+=== P183 ===
+Text: Kinerja penapisan Bilateral Filter dikendalikan secara presisi oleh interaksi dua parameter independen, yaitu simpangan baku spasial (σs) dan simpangan baku intensitas (σr):

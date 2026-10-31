@@ -170,8 +170,11 @@ class McuRowNormalizer
             $modKey = strtolower(trim($mod));
             if (isset(self::$modalityMap[$modKey])) {
                 $data['modalitas'] = self::$modalityMap[$modKey];
+            } elseif (mb_strlen($mod) <= 100) {
+                // Mendukung 180+ protokol workstation digital & input klinis kustom
+                $data['modalitas'] = $mod;
             } else {
-                $errors[] = "Modalitas \"{$mod}\" tidak dikenali. Opsi yang tersedia: Thorax PA, Thorax AP, Thorax Lateral, Waters, USG Abdomen, USG Pelvic.";
+                $errors[] = "Modalitas \"{$mod}\" melebihi batas 100 karakter.";
             }
         }
 

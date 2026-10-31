@@ -1,0 +1,19 @@
+
+--- Gambar 2.1 ---
+p[146] Text:  (Diameter Toraks): Jarak transversal internal sangkar toraks (Maximum Thoracic Diameter atau MTD) yang diukur dari tepi dalam arkus kosta kanan hingga tepi dalam arkus kosta kiri pada tingkat puncak hemidiafragma kanan (Gambar 2.1).
+p[147] Drawings count: 1
+p[148] Caption: Gambar 2. 1 Penentuan Garis Ukur Diameter Jantung D_H dan Diameter Toraks D_T pada Radiografi Toraks PA Berdasarkan Metode Danzer (Saiviroonporn et al., 2021)
+
+--- Gambar 2.2 ---
+p[193] Text: ra hasil restorasi dievaluasi menggunakan metrik berbasis tugas klinis (task-based evaluation), dengan visualisasi prinsip kerja penapisan bilateral yang disajikan pada Gambar 2.2.
+p[194] Drawings count: 1
+p[195] Caption: Gambar 2. 2 Prinsip Kerja Bilateral Filtering dalam Mereduksi Derau sembari Mempertahankan Batas Tepi Organ (Tomasi & Manduchi, 1998)
+
+--- Gambar 2.3 ---
+p[205] Text: vasi nonlinier maupun BN. Lapisan terminal ini mengagregasi 64 peta fitur antara menjadi satu matriks keluaran tunggal yang merepresentasikan estimasi sisa derau R(y) (Gambar 2.3).
+p[206] Drawings count: 1
+p[207] Caption: Gambar 2. 3 Arsitektur Jaringan DnCNN Berbasis Residual Learning untuk Pemisahan Derau Citra (Zhang et al., 2017)
+
+--- Sebelum Heading 2.4.4 ---
+p[208] Text: rategi adaptasi ranah dan pembelajaran alih (domain adaptation and transfer learning) yang komprehensif guna menjamin keandalan restorasi batas anatomis kardioperikardial tersebut.
+p[209] Heading: 2.4.4	Domain Shift dan Tantangan Deep Denoising pada Radiografi Medis

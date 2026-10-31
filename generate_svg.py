@@ -1,0 +1,77 @@
+svg_content = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 870" width="500" height="870" style="background-color: white;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#000"/>
+    </marker>
+  </defs>
+  <style>
+    text { font-family: 'Times New Roman', serif; text-anchor: middle; fill: #000; }
+    .term { fill: #fff; stroke: #000; stroke-width: 1.5; rx: 18; ry: 18; }
+    .proc { fill: #fff; stroke: #000; stroke-width: 1.5; }
+    .line { stroke: #000; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+    .title { font-size: 13px; font-weight: bold; }
+    .sub { font-size: 11px; }
+  </style>
+
+  <!-- Start -->
+  <rect x="180" y="30" width="140" height="36" class="term"/>
+  <text x="250" y="53" class="title">Mulai</text>
+  <line x1="250" y1="66" x2="250" y2="95" class="line"/>
+
+  <!-- S1 -->
+  <rect x="70" y="95" width="360" height="52" class="proc"/>
+  <text x="250" y="116" class="title">Kurasi dan De-identifikasi Dataset PA</text>
+  <text x="250" y="134" class="sub">(JSRT, VinDr-CXR, dan CDC Surabaya)</text>
+  <line x1="250" y1="147" x2="250" y2="175" class="line"/>
+
+  <!-- S2 -->
+  <rect x="70" y="175" width="360" height="52" class="proc"/>
+  <text x="250" y="196" class="title">Prapemrosesan Citra DICOM Terstandarisasi</text>
+  <text x="250" y="214" class="sub">(Inversi Fotometrik dan Normalisasi Skala)</text>
+  <line x1="250" y1="227" x2="250" y2="255" class="line"/>
+
+  <!-- S3 -->
+  <rect x="70" y="255" width="360" height="52" class="proc"/>
+  <text x="250" y="276" class="title">Injeksi Derau Campuran Poisson-Gaussian</text>
+  <text x="250" y="294" class="sub">(Simulasi Dosis Rendah: &#963;&lt;tspan dy="2" font-size="9"&gt;n&lt;/tspan&gt;&lt;tspan dy="-2"&gt; = 15, 25, 50)&lt;/tspan&gt;</text>
+  <line x1="250" y1="307" x2="250" y2="335" class="line"/>
+
+  <!-- S4 -->
+  <rect x="70" y="335" width="360" height="52" class="proc"/>
+  <text x="250" y="356" class="title">Restorasi Citra Komparatif</text>
+  <text x="250" y="374" class="sub">(Gaussian, Bilateral Filter, dan DnCNN)</text>
+  <line x1="250" y1="387" x2="250" y2="415" class="line"/>
+
+  <!-- S5 -->
+  <rect x="70" y="415" width="360" height="52" class="proc"/>
+  <text x="250" y="436" class="title">Segmentasi Kontur dan Pengukuran CTR</text>
+  <text x="250" y="454" class="sub">(Kaidah Baku Metode Danzer 1919)</text>
+  <line x1="250" y1="467" x2="250" y2="495" class="line"/>
+
+  <!-- S6 -->
+  <rect x="70" y="495" width="360" height="52" class="proc"/>
+  <text x="250" y="516" class="title">Evaluasi Metrik Berbasis Tugas Klinis</text>
+  <text x="250" y="534" class="sub">(PSNR, SSIM, DSC, HD95, MSD, dan MAE)</text>
+  <line x1="250" y1="547" x2="250" y2="575" class="line"/>
+
+  <!-- S7 -->
+  <rect x="70" y="575" width="360" height="52" class="proc"/>
+  <text x="250" y="596" class="title">Analisis Statistik Inferensial</text>
+  <text x="250" y="614" class="sub">(ANOVA / Friedman dan Koreksi Holm)</text>
+  <line x1="250" y1="627" x2="250" y2="655" class="line"/>
+
+  <!-- S8 -->
+  <rect x="70" y="655" width="360" height="52" class="proc"/>
+  <text x="250" y="676" class="title">Integrasi Demonstrator Web DICOM Workstation</text>
+  <text x="250" y="694" class="sub">(Pengujian Interoperabilitas dan Latensi)</text>
+  <line x1="250" y1="707" x2="250" y2="735" class="line"/>
+
+  <!-- End -->
+  <rect x="180" y="735" width="140" height="36" class="term"/>
+  <text x="250" y="758" class="title">Selesai</text>
+</svg>'''
+
+with open(r'd:\laragon\www\belajar-laravel\diagram_3_1_aliran_penelitian.svg', 'w', encoding='utf-8') as f:
+    f.write(svg_content)
+print("Successfully generated SVG!")
+
