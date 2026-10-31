@@ -25,7 +25,9 @@ class MedicalScan extends Model
         'preview_image_path',
         'denoised_image_path',
         'doctor_name',
-        'order_notes'
+        'order_notes',
+        'sesi_id',
+        'created_at',
     ];
 
     protected $casts = [

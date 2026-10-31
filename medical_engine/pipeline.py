@@ -8,6 +8,8 @@ Menyediakan interface terpadu untuk:
 4. Image Denoising / Restorasi (Bilateral, NLM, DnCNN - Backward Compatibility)
 """
 
+from medical_engine import segment_lung_fields
+from medical_engine import segment_bone_cortex
 import sys
 import os
 import json

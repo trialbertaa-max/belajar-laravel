@@ -5,13 +5,14 @@ use App\Http\Controllers\PatientScanController;
 use App\Http\Controllers\GlossaryController;
 use App\Http\Controllers\McuImportController;
 
-// Halaman utama otomatis diarahkan ke Dashboard Pasien & Viewer
-Route::get('/', function () {
-    return redirect()->route('scans.index');
-});
+// Halaman utama Dashboard Pasien & Viewer
+Route::get('/', [PatientScanController::class, 'index']);
 
-// Endpoint Import Excel MCU (preview & template) dengan rate limiting
-Route::middleware(['throttle:20,1'])->group(function () {
+// Endpoint Import Excel MCU (preview, template, dan batch import) dengan rate limiting
+Route::middleware(['throttle:30,1'])->group(function () {
+    Route::post('/worklist/excel/preview', [McuImportController::class, 'preview'])->name('worklist.excel.preview');
+    Route::get('/worklist/excel/template', [McuImportController::class, 'template'])->name('worklist.excel.template');
+    Route::post('/worklist/import', [McuImportController::class, 'importBatch'])->name('worklist.import');
     Route::post('/mcu/import-preview', [McuImportController::class, 'preview'])->name('mcu.import.preview');
     Route::get('/mcu/import-template', [McuImportController::class, 'template'])->name('mcu.import.template');
 });

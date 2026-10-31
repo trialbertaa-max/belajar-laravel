@@ -105,12 +105,12 @@ class McuImportTest extends TestCase
         $file = $this->createExcelFile('mixed.xlsx', [
             'nama_lengkap', 'mrn_nik', 'usia', 'jenis_kelamin', 'modalitas'
         ], [
-            // Baris 1: valid
-            ['Siti Rahma', '123456', 28, 'P', 'USG Abdomen'],
+            // Baris 1: valid (NIK 16 digit, usia, JK terisi)
+            ['Siti Rahma', '3201234567890001', 28, 'P', 'USG Abdomen'],
             // Baris 2: nama kosong (invalid)
-            ['', '123457', 30, 'L', 'Thorax PA'],
+            ['', '3201234567890002', 30, 'L', 'Thorax PA'],
             // Baris 3: modalitas tidak valid
-            ['Ahmad Yani', '123458', 40, 'L', 'MRI Brain Ultra'],
+            ['Ahmad Yani', '3201234567890003', 40, 'L', 'MRI Brain Ultra'],
         ]);
 
         $response = $this->post(route('mcu.import.preview'), ['file' => $file]);
@@ -174,9 +174,9 @@ class McuImportTest extends TestCase
     public function test_unrecognized_modality_returns_error(): void
     {
         $file = $this->createExcelFile('bad_modality.xlsx', [
-            'nama_lengkap', 'modalitas'
+            'nama_lengkap', 'mrn_nik', 'usia', 'jenis_kelamin', 'modalitas'
         ], [
-            ['Budi', 'X-Ray Gigi 3D']
+            ['Budi Santoso', '3201234567890001', 30, 'L', 'X-Ray Gigi 3D']
         ]);
 
         $response = $this->post(route('mcu.import.preview'), ['file' => $file]);
