@@ -167,7 +167,8 @@ class PatientScanController extends Controller
             $defaultVp2Series = null;
         } else {
             // Susun seri citra nyata berdasarkan modalitas
-            $isUsg = str_contains(strtoupper($scan->modality), 'USG');
+            $mUpper = strtoupper($scan->modality ?? '');
+            $isUsg = str_contains($mUpper, 'USG') || str_contains($mUpper, 'ULTRASOUND') || $mUpper === 'US' || str_starts_with($mUpper, 'US ');
             $primarySeries = [
                 'id'          => 'series-1',
                 'name'        => $scan->modality ?: ($isUsg ? 'USG Abdomen' : 'Thorax PA (CR)'),
@@ -212,7 +213,8 @@ class PatientScanController extends Controller
                 $patientSeries = [$primarySeries];
 
                 foreach ($relatedScans as $rIdx => $rScan) {
-                    $rIsUsg = str_contains(strtoupper($rScan->modality), 'USG');
+                    $rMUpper = strtoupper($rScan->modality ?? '');
+                    $rIsUsg = str_contains($rMUpper, 'USG') || str_contains($rMUpper, 'ULTRASOUND') || $rMUpper === 'US' || str_starts_with($rMUpper, 'US ');
                     $patientSeries[] = [
                         'id'          => 'series-' . ($rIdx + 2),
                         'name'        => $rScan->modality ?: 'Seri Tambahan',
@@ -261,8 +263,8 @@ class PatientScanController extends Controller
                 ->with('info', 'Pasien ini sudah pernah menjalani pemeriksaan.');
         }
 
-        $modalityUpper = strtoupper($scan->modality . ' ' . $scan->study_description);
-        $isUsg = str_contains($modalityUpper, 'USG');
+        $modalityUpper = strtoupper(($scan->modality ?? '') . ' ' . ($scan->study_description ?? ''));
+        $isUsg = str_contains($modalityUpper, 'USG') || str_contains($modalityUpper, 'ULTRASOUND') || str_contains($modalityUpper, 'US ') || trim($scan->modality ?? '') === 'US';
         $isHead = str_contains($modalityUpper, 'WATERS') 
             || str_contains($modalityUpper, 'SINUS') 
             || str_contains($modalityUpper, 'KEPALA') 

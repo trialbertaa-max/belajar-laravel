@@ -593,6 +593,496 @@
             background-color: rgba(15, 23, 42, 0.5);
         }
 
+        /* ==========================================================================
+           WORKSTATION PROTOCOL PICKER (FULL SCREEN CLINICAL CONSOLE - 180 PROTOKOL)
+           ========================================================================== */
+        #modalProtocolPicker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #040812;
+            display: none;
+            z-index: 10050;
+            overflow: hidden;
+            animation: pickerFadeIn 0.15s ease-out;
+        }
+
+        @keyframes pickerFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .protocol-modal-dialog {
+            background: #060b14;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Top Header */
+        .protocol-header {
+            background: #0b1324;
+            border-bottom: 1px solid #1c2b44;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .protocol-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .protocol-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .protocol-tool-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #111a2e;
+            border: 1px solid #1e293b;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .protocol-tool-btn:hover {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .protocol-tool-btn.active {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .protocol-search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+
+        .protocol-search-wrap input {
+            width: 100%;
+            background: #040812;
+            border: 1px solid #1e2d44;
+            border-radius: 6px;
+            padding: 0.52rem 2.2rem 0.52rem 2.3rem;
+            font-size: 0.84rem;
+            color: #f8fafc;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .protocol-search-wrap input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+        }
+
+        .protocol-search-wrap .protocol-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .protocol-search-wrap #protocolSearchClear {
+            position: absolute;
+            right: 0.65rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.25rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+
+        /* Tooltip custom - Aligned safely to NEVER clip off screen edges */
+        .protocol-tool-btn .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.9);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #btnSortFreq .custom-tooltip {
+            left: 0 !important;
+            transform: none !important;
+        }
+
+        .protocol-tool-btn:hover .custom-tooltip,
+        .skel-tab-btn:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Body Split Layout */
+        .protocol-body {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Left Column: Skeleton */
+        .protocol-anatomy-col {
+            width: 320px;
+            flex-shrink: 0;
+            background: #040812;
+            border-right: 1px solid #142033;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            gap: 0.65rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .skel-hud {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: rgba(11, 19, 36, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-align: center;
+            letter-spacing: 0.02em;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .skeleton-container {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.06) 0%, #040812 75%);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(30, 41, 59, 0.6);
+        }
+
+        .skeleton-svg {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 210px);
+            display: block;
+            margin: 0 auto;
+            user-select: none;
+        }
+
+        .skel-glow-layer {
+            opacity: 0;
+            transition: opacity 0.15s ease, filter 0.15s ease;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .skel-glow-layer.hovered {
+            opacity: 0.85;
+            filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.85));
+        }
+
+        .skel-glow-layer.active {
+            opacity: 1 !important;
+            filter: drop-shadow(0 0 3px #00f0ff) drop-shadow(0 0 6px rgba(0, 240, 255, 0.7)) !important;
+        }
+
+        .skel-region {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .skel-region path {
+            fill: transparent !important;
+            stroke: none !important;
+            pointer-events: all;
+        }
+
+        .skel-tabs-wrap {
+            display: flex;
+            gap: 0.65rem;
+            width: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .skel-tab-btn {
+            flex: 1;
+            background: #0f1a30;
+            border: 1px solid #1c2b44;
+            border-radius: 6px;
+            padding: 0.65rem 0.5rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .skel-tab-btn:hover {
+            background: #172644;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .skel-tab-btn.active {
+            background: rgba(2, 132, 199, 0.28);
+            color: #38bdf8;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Tooltip tabOftenUsed: align to left edge so it NEVER clips! */
+        #tabOftenUsed .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0 !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        /* Tooltip tabAdvanced: align to right edge */
+        #tabAdvanced .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        /* Tooltip tabUltrasound: align center */
+        #tabUltrasound .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #tabOftenUsed:hover .custom-tooltip,
+        #tabUltrasound:hover .custom-tooltip,
+        #tabAdvanced:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Right Column: Protocols Grid */
+        .protocol-main-col {
+            background: #070d18;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 1.25rem 1.75rem;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .protocol-grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            overflow-y: auto;
+            flex: 1;
+            padding: 0.25rem 0.5rem 1rem 0;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        .protocol-card {
+            background: #10192e;
+            border: 1px solid #1a283e;
+            border-radius: 6px;
+            padding: 0.85rem 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.86rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 56px;
+            line-height: 1.3;
+            user-select: none;
+            word-break: break-word;
+            position: relative;
+        }
+
+        .protocol-card:hover {
+            background: #17243c;
+            border-color: #38bdf8;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        .protocol-card.selected {
+            background: rgba(14, 165, 233, 0.26) !important;
+            border-color: #00f0ff !important;
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.25) !important;
+        }
+
+        .protocol-card-tag {
+            font-size: 0.66rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Bottom Selection Tray */
+        .protocol-picker-tray {
+            padding: 0.75rem 1.75rem;
+            background: #040812;
+            border-top: 1px solid #142033;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* Footer Action Buttons */
+        .protocol-picker-footer {
+            padding: 0.85rem 1.75rem;
+            background: #0b1324;
+            border-top: 1px solid #1c2b44;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
         /* ── Staging Table (Excel CRUD) Styles ── */
         .modal-content-wide {
             max-width: 1240px !important;
@@ -1165,15 +1655,24 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">Modalitas Pemeriksaan *</label>
-                        <select name="modality" class="form-control" required>
-                            <option value="Thorax PA">Thorax PA (Rontgen Dada)</option>
-                            <option value="Thorax AP">Thorax AP</option>
-                            <option value="Thorax Lateral">Thorax Lateral</option>
-                            <option value="Waters">Waters (Sinus Paranasal / SPN)</option>
-                            <option value="USG Abdomen">USG Abdomen</option>
-                            <option value="USG Pelvic">USG Pelvic</option>
-                        </select>
+                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span>Pemeriksaan Terpilih *</span>
+                            <span id="selectedModalityCategoryBadge" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.35); text-transform: uppercase; letter-spacing: 0.03em;">Thorax</span>
+                        </label>
+                        <input type="hidden" name="modality" id="selectedModalityInput" value="Chest PA" required>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div id="selectedModalityDisplayBox" style="flex: 1; padding: 0.55rem 0.85rem; background: #070d18; border: 1px solid #1e293b; border-radius: 6px; color: #f8fafc; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem; min-height: 42px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                                <span id="selectedModalityIcon" style="font-size: 1.1rem; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));">🫁</span>
+                                <span id="selectedModalityText" style="color: #38bdf8; letter-spacing: 0.01em;">Chest PA</span>
+                            </div>
+                            <button type="button" class="btn" onclick="openProtocolPickerModal()" style="white-space: nowrap; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: 1px solid #38bdf8; padding: 0.55rem 0.95rem; border-radius: 6px; font-weight: 700; font-size: 0.84rem; display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); transition: all 0.2s ease;" title="Buka katalog workstation 180 pemeriksaan radiologi">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Tambah Pemeriksaan</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1283,6 +1782,164 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: WORKSTATION PROTOCOL PICKER (FULL SCREEN CONSOLE - 180 PROTOKOL LENGKAP) -->
+<div id="modalProtocolPicker" class="modal-backdrop">
+    <div class="protocol-modal-dialog">
+        <!-- TOP HEADER -->
+        <div class="protocol-header">
+            <div class="protocol-header-left">
+                <div class="protocol-title">
+                    <span>Tambah Pemeriksaan</span>
+                </div>
+
+                <!-- Sort Buttons -->
+                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                    <button type="button" id="btnSortFreq" class="protocol-tool-btn active" onclick="setProtocolSort('default')">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20V10"></path>
+                            <path d="M18 20V4"></path>
+                            <path d="M6 20v-4"></path>
+                        </svg>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Frekuensi</span>
+                    </button>
+                    <button type="button" id="btnSortAz" class="protocol-tool-btn" onclick="setProtocolSort('az')">
+                        <span style="font-size: 0.78rem; font-weight: 800; font-family: monospace;">A-Z</span>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Abjad (A–Z)</span>
+                    </button>
+                </div>
+
+                <!-- Real-time Search Box -->
+                <div class="protocol-search-wrap">
+                    <svg class="protocol-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="protocolSearchInput" placeholder="Cari pemeriksaan, proyeksi, atau organ..." autocomplete="off" oninput="handleProtocolSearch(this.value)">
+                    <button type="button" id="protocolSearchClear" onclick="clearProtocolSearch()" style="display: none;">&times;</button>
+                </div>
+            </div>
+
+            <!-- Close Modal -->
+            <button type="button" class="btn-close" onclick="closeProtocolPickerModal()" title="Tutup" style="font-size: 1.8rem;">&times;</button>
+        </div>
+
+        <!-- MAIN SPLIT BODY -->
+        <div class="protocol-body">
+            <!-- LEFT COLUMN: SKELETON & TABS -->
+            <div class="protocol-anatomy-col">
+                <!-- Floating Medical English Anatomy HUD -->
+                <div id="skelRegionHud" class="skel-hud">Select Anatomical Region</div>
+
+                <!-- Real Anatomical Radiographic Human Skeleton with Interactive Glowing Regions -->
+                <div class="skeleton-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 768 1376" id="skeletonSvg" class="skeleton-svg">
+                        <!-- True 3D Medical Radiographic Human Skeleton Base Image -->
+                        <image href="/images/workstation_skeleton.jpg" xlink:href="/images/workstation_skeleton.jpg" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet" />
+
+                        <!-- Organic Glowing Organ Overlays (Pixel-perfect on actual bones) -->
+                        <image id="glow-head" class="skel-glow-layer" href="/images/parts/skeleton_part_head.png?v=3" xlink:href="/images/parts/skeleton_part_head.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-spine" class="skel-glow-layer" href="/images/parts/skeleton_part_spine.png?v=3" xlink:href="/images/parts/skeleton_part_spine.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-thorax" class="skel-glow-layer" href="/images/parts/skeleton_part_thorax.png?v=3" xlink:href="/images/parts/skeleton_part_thorax.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-pelvis" class="skel-glow-layer" href="/images/parts/skeleton_part_pelvis.png?v=3" xlink:href="/images/parts/skeleton_part_pelvis.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_right_arm.png?v=3" xlink:href="/images/parts/skeleton_part_right_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_left_arm.png?v=3" xlink:href="/images/parts/skeleton_part_left_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_right_leg.png?v=3" xlink:href="/images/parts/skeleton_part_right_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_left_leg.png?v=3" xlink:href="/images/parts/skeleton_part_left_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+
+                        <!-- Interactive Clickable Hitbox Zones (Transparent, Zero Rigid Boxes) -->
+                        <g id="skel-head" class="skel-region" data-category="head" data-label="Head / Skull" tabindex="0" role="button">
+                            <path d="M 295 50 L 472 50 L 472 214 L 295 214 Z" />
+                        </g>
+
+                        <g id="skel-right-arm" class="skel-region" data-category="right_arm" data-label="Right Upper Limb" tabindex="0" role="button">
+                            <path d="M 75 260 L 250 260 L 250 535 L 246 830 L 75 830 Z" />
+                        </g>
+
+                        <g id="skel-left-arm" class="skel-region" data-category="left_arm" data-label="Left Upper Limb" tabindex="0" role="button">
+                            <path d="M 525 260 L 700 260 L 700 830 L 532 830 L 525 535 Z" />
+                        </g>
+
+                        <g id="skel-thorax" class="skel-region" data-category="thorax" data-label="Thorax" tabindex="0" role="button">
+                            <path d="M 250 265 L 525 265 L 525 535 L 250 535 Z" />
+                        </g>
+
+                        <g id="skel-pelvis" class="skel-region" data-category="pelvis" data-label="Pelvis &amp; Abdomen" tabindex="0" role="button">
+                            <path d="M 245 535 L 532 535 L 532 720 L 245 720 Z" />
+                        </g>
+
+                        <g id="skel-right-leg" class="skel-region" data-category="right_leg" data-label="Right Lower Limb" tabindex="0" role="button">
+                            <path d="M 240 720 L 388 720 L 388 1370 L 240 1370 Z" />
+                        </g>
+
+                        <g id="skel-left-leg" class="skel-region" data-category="left_leg" data-label="Left Lower Limb" tabindex="0" role="button">
+                            <path d="M 388 720 L 540 720 L 540 1370 L 388 1370 Z" />
+                        </g>
+
+                        <!-- Spine sits on the TOP layer of the SVG DOM so midline hover & clicks are 100% responsive -->
+                        <g id="skel-spine" class="skel-region" data-category="spine" data-label="Spine" tabindex="0" role="button">
+                            <path d="M 352 210 L 424 210 L 424 690 L 352 690 Z" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Bottom Tabs below Skeleton (Aligned so tooltips NEVER get cut off) -->
+                <div class="skel-tabs-wrap">
+                    <button type="button" id="tabOftenUsed" class="skel-tab-btn active" onclick="selectProtocolCategory('often_used')">
+                        <span>Often Used</span>
+                        <span class="custom-tooltip">Pemeriksaan yang Sering Digunakan</span>
+                    </button>
+                    <button type="button" id="tabUltrasound" class="skel-tab-btn" onclick="selectProtocolCategory('ultrasound')">
+                        <span>USG (Mindray)</span>
+                        <span class="custom-tooltip">Pemeriksaan USG Mindray DP-10</span>
+                    </button>
+                    <button type="button" id="tabAdvanced" class="skel-tab-btn" onclick="selectProtocolCategory('advanced')">
+                        <span>Advanced</span>
+                        <span class="custom-tooltip">Pemeriksaan Lanjutan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: PROTOCOLS 4-COLUMN GRID -->
+            <div class="protocol-main-col">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.6rem; border-bottom: 1px solid #1c2b44;">
+                    <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        <span id="protocolGridTitle" style="font-weight: 700; font-size: 1.05rem; color: #f1f5f9;">Often Used</span>
+                        <span id="protocolGridCount" style="font-size: 0.74rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.18rem 0.65rem; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">30 Pemeriksaan</span>
+                    </div>
+                    <span style="font-size: 0.76rem; color: #64748b; font-style: italic;">Klik 1x untuk memilih • Klik 2x untuk konfirmasi cepat</span>
+                </div>
+
+                <div id="protocolGridContainer" class="protocol-grid-container">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM TRAY (SELECTION SUMMARY) -->
+        <div class="protocol-picker-tray">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700;">Pemeriksaan Terpilih:</span>
+                <span id="pickerSelectedName" style="color: #00f0ff; font-weight: 800; font-size: 1.02rem; font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 10px rgba(0, 240, 255, 0.45);">Chest PA</span>
+                <span id="pickerSelectedCategoryBadge" style="font-size: 0.74rem; background: #111a2e; color: #38bdf8; padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 600;">Thorax</span>
+            </div>
+            <div style="font-size: 0.74rem; color: #64748b;">Standar Protokol DICOM CR / DX Konsol Digital Radiologi</div>
+        </div>
+
+        <!-- FOOTER BAR (ACTIONS IN BAHASA INDONESIA) -->
+        <div class="protocol-picker-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 120px; font-weight: 600;">
+                Kembali
+            </button>
+            <button type="button" class="btn btn-primary" onclick="confirmProtocolSelection()" style="min-width: 190px; font-weight: 700; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);">
+                Pilih Pemeriksaan
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 110px; border-color: #334155; color: #94a3b8;">
+                Batal
+            </button>
         </div>
     </div>
 </div>
@@ -2672,6 +3329,7 @@
         const modalCstore = document.getElementById('modalCstoreResult');
         const modalDelete = document.getElementById('modalConfirmDelete');
         const modalEditStaging = document.getElementById('modalEditStagingPatient');
+        if (event.target === modalProtocol) closeProtocolPickerModal();
         if (event.target === modalOrder) confirmCloseOrderModal();
         if (event.target === modalDicom) closeDicomModal();
         if (event.target === modalCstore) closeCstoreModal();
@@ -2681,6 +3339,11 @@
 
     window.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
+            const modalProtocol = document.getElementById('modalProtocolPicker');
+            if (modalProtocol && modalProtocol.style.display === 'flex') {
+                closeProtocolPickerModal();
+                return;
+            }
             const modalEditStaging = document.getElementById('modalEditStagingPatient');
             if (modalEditStaging && modalEditStaging.style.display === 'flex') {
                 closeEditStagingModal();
@@ -2929,11 +3592,29 @@
             'Scanogram (Leg Length Discrepancy)', 'Barium Swallow / Meal', 'Barium Enema Double Contrast',
             'HSG (Hysterosalpingography)', 'Urethrocystography', 'Fistulography', 'T-Tube Cholangiography',
             'Arthrography', 'Stress View Knee Valgus/Varus', 'Stress View Ankle Inversion', 'Mandible Panorex View'
+        ],
+        ultrasound: [
+            'USG Abdomen Complete',
+            'USG Abdomen Upper',
+            'USG Abdomen Lower',
+            'USG Hepar & Kandung Empedu',
+            'USG Ginjal & Saluran Kemih',
+            'USG Pelvic / Ginekologi',
+            'USG Obstetri (Kehamilan)',
+            'USG Tiroid & Leher',
+            'USG Mammae (Payudara)',
+            'USG Scrotum / Testis',
+            'USG Thorax / Pleura',
+            'USG Muskuloskeletal (MSK)',
+            'USG Prostat Transabdominal',
+            'USG Appendix (Apendisitis)',
+            'USG FAST (Trauma Akut)'
         ]
     };
 
     const PROTOCOL_CATEGORY_INFO = {
         often_used: { en: 'Often Used', id: 'Often Used', icon: '⚡' },
+        ultrasound: { en: 'Ultrasound (USG)', id: 'Ultrasound (USG)', icon: '📡' },
         head: { en: 'Head / Skull', id: 'Head / Skull', icon: '🧠' },
         spine: { en: 'Spine', id: 'Spine', icon: '🦴' },
         thorax: { en: 'Thorax', id: 'Thorax', icon: '🫁' },
@@ -2992,6 +3673,9 @@
         } else if (categoryKey === 'advanced') {
             document.getElementById('tabAdvanced')?.classList.add('active');
             if (hudEl) hudEl.textContent = 'Advanced (Specialized Protocols)';
+        } else if (categoryKey === 'ultrasound') {
+            document.getElementById('tabUltrasound')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Ultrasound (USG Mindray DP-10)';
         } else {
             const skelEl = document.getElementById('skel-' + categoryKey.replace('_', '-'));
             if (skelEl) skelEl.classList.add('active');
@@ -3162,6 +3846,7 @@
         }
         // Fallback berdasarkan kata kunci
         const lower = protocolName.toLowerCase();
+        if (lower.includes('usg') || lower.includes('ultrasound') || lower.includes('sonografi') || lower.includes('echo')) return 'ultrasound';
         if (lower.includes('chest') || lower.includes('sternum') || lower.includes('rib')) return 'thorax';
         if (lower.includes('skull') || lower.includes('nasal') || lower.includes('mandible') || lower.includes('sinus')) return 'head';
         if (lower.includes('spine') || lower.includes('sacrum') || lower.includes('coccyx')) return 'spine';
