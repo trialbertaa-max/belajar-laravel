@@ -892,6 +892,9 @@
         </div>
 
         <div class="header-actions">
+            <a href="{{ route('system.start') }}" class="btn btn-secondary" style="border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; font-weight: 700; text-decoration: none;">
+                🚀 Start Screen & Health
+            </a>
             <button class="btn btn-fuji" onclick="triggerSimulateFuji()">
                 📡 Simulasi Kirim Citra Fujifilm (C-STORE)
             </button>
@@ -919,7 +922,13 @@
             <span class="pacs-pill">AE Title: <strong id="lblIdxAeTitle">{{ $pacsConfig['ae_title'] }}</strong></span>
             <span class="pacs-pill">Port: <strong id="lblIdxPort">{{ $pacsConfig['port'] }}</strong></span>
             <span class="pacs-pill">Target: <strong id="lblIdxTarget">{{ $pacsConfig['modality_ae'] }}</strong></span>
-            <span style="color: #10b981; font-weight: 700; font-size: 0.75rem;">● Server Standalone Aktif</span>
+            <span id="lblLiveDicomBadge" style="font-weight: 700; font-size: 0.75rem; color: #fbbf24;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fbbf24; margin-right:4px;"></span>
+                Memeriksa Status Server...
+            </span>
+            <a href="{{ route('system.start') }}" class="btn btn-secondary" style="padding: 0.25rem 0.65rem; font-size: 0.72rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399; margin-left: 0.25rem; text-decoration: none;">
+                ⚡ Kontrol Server
+            </a>
             <button class="btn btn-secondary" onclick="openDicomModal()" style="padding: 0.25rem 0.65rem; font-size: 0.72rem; border-color: rgba(56, 189, 248, 0.35); color: #38bdf8; margin-left: 0.25rem;">
                 ⚙️ Setup Node
             </button>
@@ -1105,7 +1114,7 @@
                         <span>Upload Excel</span>
                     </button>
 
-                    <a href="{{ route('mcu.import.template', [], false) }}" class="mcu-header-btn mcu-header-btn-template" title="Unduh format template Excel MCU (.xlsx)">
+                    <a href="{{ route('mcu.import.template') }}" class="mcu-header-btn mcu-header-btn-template" title="Unduh format template Excel MCU (.xlsx)">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                             <polyline points="7 10 12 15 17 10"></polyline>
@@ -1668,7 +1677,7 @@
         formData.append('file', file);
         formData.append('_token', getCsrfToken());
 
-        fetch("{{ route('worklist.excel.preview', [], false) }}", {
+        fetch("{{ route('worklist.excel.preview') }}", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
@@ -2066,8 +2075,13 @@
             valSpan.style.fontSize = "0.74rem";
         }
 
-        var displayVal = (value !== null && value !== undefined && value !== '') ? value : (required ? '<span style="color: #f87171; font-style: italic;">[Kosong]</span>' : '—');
-        valSpan.innerHTML = (typeof displayVal === 'string' && displayVal.indexOf('<') !== -1) ? displayVal : escapeHtml(displayVal);
+        if (value !== null && value !== undefined && value !== '') {
+            valSpan.textContent = value;
+        } else if (required) {
+            valSpan.innerHTML = '<span style="color: #f87171; font-style: italic;">[Kosong]</span>';
+        } else {
+            valSpan.textContent = '—';
+        }
         cellWrap.appendChild(valSpan);
 
         if (err) {
@@ -2489,7 +2503,7 @@
             };
         });
 
-        fetch("{{ route('worklist.import', [], false) }}", {
+        fetch("{{ route('worklist.import') }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2829,6 +2843,25 @@
             btn.disabled = false;
         });
     }
+
+    // Periksa status server DICOM secara asinkron
+    async function checkLiveDicomStatus() {
+        try {
+            const res = await fetch("{{ route('system.status') }}");
+            const data = await res.json();
+            const badge = document.getElementById('lblLiveDicomBadge');
+            if (badge && data && data.dicom) {
+                if (data.dicom.running) {
+                    badge.style.color = '#10b981';
+                    badge.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; margin-right:4px; box-shadow: 0 0 8px #10b981;"></span>● Server DICOM Aktif (Port ${data.dicom.port})`;
+                } else {
+                    badge.style.color = '#f87171';
+                    badge.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171; margin-right:4px;"></span>○ Server DICOM Offline`;
+                }
+            }
+        } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', checkLiveDicomStatus);
 
     // ==========================================================================
     // WORKSTATION PROTOCOL PICKER DATASET & CONTROLLER (180 PROTOKOL LENGKAP)

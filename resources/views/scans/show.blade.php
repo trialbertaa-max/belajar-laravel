@@ -3877,6 +3877,16 @@
             }
         }
 
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
         // Load Series into Specific Viewport (1=A, 2=B)
         function loadSeriesToVp(targetVp, imgUrl, name, studyDesc, station, matrix, cardId) {
             const targetImg = (targetVp === 1) ? img1 : img2;
@@ -3908,12 +3918,12 @@
             if (targetVp === 1) {
                 document.getElementById('vp1Title').innerText = `VP-A: ${name} (PRIMARY)`;
                 document.getElementById('vp1SeriesInfo').innerText = `${station} | ${matrix}`;
-                document.getElementById('vp1HudTopRight').innerHTML = `Modalitas: ${name}<br>Studi: ${studyDesc}<br>Station: ${station}`;
+                document.getElementById('vp1HudTopRight').innerHTML = `Modalitas: ${escapeHtml(name)}<br>Studi: ${escapeHtml(studyDesc)}<br>Station: ${escapeHtml(station)}`;
                 selectViewport(1);
             } else {
                 document.getElementById('vp2Title').innerText = `VP-B: ${name} (COMPARISON)`;
                 document.getElementById('vp2SeriesInfo').innerText = `${station} | ${matrix}`;
-                document.getElementById('vp2HudTopRight').innerHTML = `Modalitas: ${name}<br>Studi: ${studyDesc}<br>Station: ${station}`;
+                document.getElementById('vp2HudTopRight').innerHTML = `Modalitas: ${escapeHtml(name)}<br>Studi: ${escapeHtml(studyDesc)}<br>Station: ${escapeHtml(station)}`;
                 if (!isMultimodal) setLayoutMode('1x2');
                 selectViewport(2);
             }

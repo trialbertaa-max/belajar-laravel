@@ -15,8 +15,8 @@ class PatientScanController extends Controller
      */
     public function index(Request $request)
     {
-        // Inisialisasi data contoh MCU jika database masih kosong
-        if (MedicalScan::count() === 0) {
+        // Inisialisasi data contoh MCU jika database masih kosong (hanya di mode development/testing)
+        if (MedicalScan::count() === 0 && app()->environment(['local', 'testing'])) {
             MedicalScan::create([
                 'patient_id'        => 'CDC-00001',
                 'accession_number'  => 'ACC-20260921-001',
@@ -302,15 +302,15 @@ class PatientScanController extends Controller
      */
     public function saveDiagnosis(Request $request, string $id)
     {
-        $request->validate([
-            'diagnosis_notes' => 'required|string',
-            'doctor_name'     => 'nullable|string|max:255',
+        $validated = $request->validate([
+            'diagnosis_notes' => 'required|string|max:10000',
+            'doctor_name'     => 'nullable|string|max:100|regex:/^[A-Za-z0-9_\-\.\s,]+$/',
         ]);
 
         $scan = MedicalScan::findOrFail($id);
         $scan->update([
-            'diagnosis_notes' => $request->diagnosis_notes,
-            'doctor_name'     => $request->doctor_name ?: 'dr. Radiolog Sp.Rad',
+            'diagnosis_notes' => strip_tags($validated['diagnosis_notes']),
+            'doctor_name'     => !empty($validated['doctor_name']) ? trim($validated['doctor_name']) : 'dr. Radiolog Sp.Rad',
             'mcu_status'      => 'selesai_diagnosa',
         ]);
 
@@ -340,18 +340,33 @@ class PatientScanController extends Controller
             ], 400);
         }
 
-        $engine      = $request->input('engine', 'bilateral');
-        $sigmaColor  = (float) $request->input('sigma_color', 25);
-        $sigmaSpace  = (float) $request->input('sigma_space', 20);
+        $validated = $request->validate([
+            'engine'       => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_:\-]+$/'],
+            'sigma_color'  => 'nullable|numeric|min:1|max:250',
+            'sigma_space'  => 'nullable|numeric|min:1|max:250',
+            'viewport'     => 'nullable|integer|in:1,2',
+            'target_image' => 'nullable|string|max:500',
+        ]);
 
-        $viewport    = (int) $request->input('viewport', 1);
-        $targetImage = $request->input('target_image');
+        $engine      = $validated['engine'] ?? 'bilateral';
+        $sigmaColor  = (float) ($validated['sigma_color'] ?? 25);
+        $sigmaSpace  = (float) ($validated['sigma_space'] ?? 20);
+
+        $viewport    = (int) ($validated['viewport'] ?? 1);
+        $targetImage = $validated['target_image'] ?? null;
 
         // Bersihkan jika formatnya full URL atau memiliki subdirektori web server
         $cleanRelPath = null;
         if ($targetImage) {
             $parsedUrl = parse_url($targetImage, PHP_URL_PATH);
             $rawPath = $parsedUrl ? ltrim($parsedUrl, '/') : '';
+            // Pencegahan Directory Traversal
+            if (str_contains($rawPath, '..')) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Path berkas citra tidak valid.'
+                ], 400);
+            }
             if (str_contains($rawPath, 'scan-assets/')) {
                 $cleanRelPath = 'scan-assets/' . substr($rawPath, strpos($rawPath, 'scan-assets/') + strlen('scan-assets/'));
             } elseif (str_contains($rawPath, 'storage/')) {
@@ -366,7 +381,7 @@ class PatientScanController extends Controller
 
         // Prioritaskan file DICOM asli jika tersedia untuk mendapatkan akurasi bit-depth 12/16-bit
         $dicomPath = null;
-        if ($viewport === 1 && $scan->dicom_raw_path) {
+        if ($viewport === 1 && $scan->dicom_raw_path && !str_contains($scan->dicom_raw_path, '..')) {
             $p1 = storage_path('app/public/' . $scan->dicom_raw_path);
             $p2 = base_path($scan->dicom_raw_path);
             if (file_exists($p1)) {
@@ -385,7 +400,7 @@ class PatientScanController extends Controller
                 $dicomPath = base_path($cleanRelPath);
             } elseif ($viewport === 2 && file_exists(public_path('scan-assets/usg_sample.jpg'))) {
                 $dicomPath = public_path('scan-assets/usg_sample.jpg');
-            } elseif ($scan->dicom_raw_path) {
+            } elseif ($scan->dicom_raw_path && !str_contains($scan->dicom_raw_path, '..')) {
                 $p1 = storage_path('app/public/' . $scan->dicom_raw_path);
                 $p2 = base_path($scan->dicom_raw_path);
                 if (file_exists($p1)) $dicomPath = $p1;
@@ -399,10 +414,10 @@ class PatientScanController extends Controller
                 : base_path('sample_toraks.dcm');
         }
 
-        // Folder output denoised JPG & Residual Map
+        // Folder output denoised JPG & Residual Map (permission aman 0755)
         $outputFolder = public_path('scan-assets');
         if (!file_exists($outputFolder)) {
-            mkdir($outputFolder, 0777, true);
+            mkdir($outputFolder, 0755, true);
         }
         $outputPath   = $outputFolder . DIRECTORY_SEPARATOR . "denoised_scan_{$id}_vp{$viewport}.jpg";
         $residualPath = $outputFolder . DIRECTORY_SEPARATOR . "residual_scan_{$id}_vp{$viewport}.jpg";
@@ -418,7 +433,17 @@ class PatientScanController extends Controller
             'PYTHONHASHSEED' => '0',
         ];
 
-        $command = "\"{$pythonBinary}\" \"{$scriptPath}\" \"{$dicomPath}\" \"{$outputPath}\" \"{$engine}\" \"{$sigmaColor}\" \"{$sigmaSpace}\" \"{$residualPath}\"";
+        // Eksekusi subprocess Python secara aman dengan array arguments (kebal Command Injection)
+        $command = [
+            $pythonBinary,
+            $scriptPath,
+            $dicomPath,
+            $outputPath,
+            $engine,
+            (string) $sigmaColor,
+            (string) $sigmaSpace,
+            $residualPath
+        ];
         $result = Process::env($env)->timeout(60)->run($command);
 
         $stdout = trim($result->output());
@@ -480,14 +505,28 @@ class PatientScanController extends Controller
             ], 400);
         }
 
-        $sigmaColor  = (float) $request->input('sigma_color', 25);
-        $sigmaSpace  = (float) $request->input('sigma_space', 20);
-        $viewport    = (int) $request->input('viewport', 1);
-        $targetImage = $request->input('target_image');
+        $validated = $request->validate([
+            'sigma_color'  => 'nullable|numeric|min:1|max:250',
+            'sigma_space'  => 'nullable|numeric|min:1|max:250',
+            'viewport'     => 'nullable|integer|in:1,2',
+            'target_image' => 'nullable|string|max:500',
+        ]);
+
+        $sigmaColor  = (float) ($validated['sigma_color'] ?? 25);
+        $sigmaSpace  = (float) ($validated['sigma_space'] ?? 20);
+        $viewport    = (int) ($validated['viewport'] ?? 1);
+        $targetImage = $validated['target_image'] ?? null;
 
         if ($targetImage) {
             $parsedUrl = parse_url($targetImage, PHP_URL_PATH);
-            $cleanRelPath = ltrim($parsedUrl, '/');
+            $rawPath = $parsedUrl ? ltrim($parsedUrl, '/') : '';
+            if (str_contains($rawPath, '..')) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Path berkas tidak valid.'
+                ], 400);
+            }
+            $cleanRelPath = $rawPath;
         } else {
             $cleanRelPath = null;
         }
@@ -500,13 +539,13 @@ class PatientScanController extends Controller
             $dicomPath = public_path($cleanRelPath);
         } elseif ($viewport === 2 && file_exists(public_path('scan-assets/usg_sample.jpg'))) {
             $dicomPath = public_path('scan-assets/usg_sample.jpg');
-        } elseif ($scan->dicom_raw_path && file_exists(base_path($scan->dicom_raw_path))) {
+        } elseif ($scan->dicom_raw_path && !str_contains($scan->dicom_raw_path, '..') && file_exists(base_path($scan->dicom_raw_path))) {
             $dicomPath = base_path($scan->dicom_raw_path);
         }
 
         $outputFolder = public_path('scan-assets');
         if (!file_exists($outputFolder)) {
-            mkdir($outputFolder, 0777, true);
+            mkdir($outputFolder, 0755, true);
         }
         $outputPath   = $outputFolder . DIRECTORY_SEPARATOR . "benchmark_scan_{$id}_vp{$viewport}.jpg";
 
@@ -520,7 +559,16 @@ class PatientScanController extends Controller
             'PYTHONHASHSEED' => '0',
         ];
 
-        $command = "\"{$pythonBinary}\" \"{$scriptPath}\" \"{$dicomPath}\" \"{$outputPath}\" \"benchmark\" \"{$sigmaColor}\" \"{$sigmaSpace}\"";
+        // Eksekusi subprocess Python secara aman dengan array arguments
+        $command = [
+            $pythonBinary,
+            $scriptPath,
+            $dicomPath,
+            $outputPath,
+            'benchmark',
+            (string) $sigmaColor,
+            (string) $sigmaSpace
+        ];
         $result = Process::env($env)->timeout(60)->run($command);
 
         $stdout = trim($result->output());
@@ -550,11 +598,11 @@ class PatientScanController extends Controller
     {
         $candidates = [
             env('PYTHON_BINARY'),
-            'C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
-            'C:\\laragon\\bin\\python\\python-3.13\\python.exe',
             'C:\\Python310\\python.exe',
+            'python',
             'py',
-            'python'
+            'C:\\Users\\user\\AppData\\Local\\Programs\\Python\\Python313\\python.exe',
+            'C:\\laragon\\bin\\python\\python-3.13\\python.exe'
         ];
 
         foreach ($candidates as $cand) {
@@ -586,7 +634,7 @@ class PatientScanController extends Controller
             ];
 
             try {
-                $command = "\"{$pythonBinary}\" \"{$scriptPath}\" \"{$dcmFile}\"";
+                $command = [$pythonBinary, $scriptPath, $dcmFile];
                 $result = Process::env($env)->timeout(8)->run($command);
                 if ($result->successful()) {
                     $executedViaPython = true;
@@ -874,15 +922,46 @@ class PatientScanController extends Controller
         $hasExamined = ($scan->mcu_status !== 'siap_rontgen')
             && (!empty($scan->dicom_raw_path) || !empty($scan->preview_image_path));
 
-        if (!$hasExamined) {
+        if (!$hasExamined || empty($scan->dicom_raw_path)) {
             return back()->with('error', 'Pemeriksaan belum dilakukan. File DICOM belum tersedia.');
         }
 
-        if ($scan->dicom_raw_path && file_exists(base_path($scan->dicom_raw_path))) {
-            return response()->download(base_path($scan->dicom_raw_path), "DICOM_{$scan->patient_id}_{$scan->accession_number}.dcm");
+        $rawPath = $scan->dicom_raw_path;
+        // Pencegahan Directory Traversal
+        if (str_contains($rawPath, '..')) {
+            abort(403, 'Akses berkas tidak diizinkan.');
         }
 
-        return back()->with('error', 'File DICOM mentah tidak ditemukan di server.');
+        $cleanRel = ltrim(str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $rawPath), DIRECTORY_SEPARATOR);
+        $candidates = [
+            storage_path('app' . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . $cleanRel),
+            base_path($cleanRel),
+        ];
+
+        $targetFile = null;
+        foreach ($candidates as $cand) {
+            if (file_exists($cand) && is_file($cand)) {
+                $real = realpath($cand);
+                $baseReal = realpath(base_path());
+                $storageReal = realpath(storage_path());
+                if ($real && (($baseReal && str_starts_with($real, $baseReal)) || ($storageReal && str_starts_with($real, $storageReal)))) {
+                    $targetFile = $real;
+                    break;
+                }
+            }
+        }
+
+        if (!$targetFile) {
+            return back()->with('error', 'File DICOM mentah tidak ditemukan di server.');
+        }
+
+        $cleanPid = preg_replace('/[^A-Za-z0-9_\-]/', '', $scan->patient_id) ?: 'PASIEN';
+        $cleanAcc = preg_replace('/[^A-Za-z0-9_\-]/', '', $scan->accession_number) ?: 'ACC';
+        $filename = "DICOM_{$cleanPid}_{$cleanAcc}.dcm";
+
+        return response()->download($targetFile, $filename, [
+            'Content-Type' => 'application/dicom',
+        ]);
     }
 
     /**
@@ -891,16 +970,17 @@ class PatientScanController extends Controller
     public function updateDicomNode(Request $request)
     {
         $validated = $request->validate([
-            'ae_title'        => 'required|string|max:16',
+            'ae_title'        => 'required|string|max:16|regex:/^[A-Za-z0-9_\-]+$/',
             'port'            => 'required|integer|min:1|max:65535',
-            'modality_source' => 'nullable|string|max:100',
+            'modality_source' => 'nullable|string|max:100|regex:/^[A-Za-z0-9_\-\(\)\s\/\.,&]+$/',
         ]);
 
         $aeTitle = strtoupper(preg_replace('/[^A-Za-z0-9_\-]/', '', $validated['ae_title']));
         $port = (int) $validated['port'];
-        $modality = $validated['modality_source'] ?: 'FUJIFILM (CR) & MINDRAY (US)';
+        $rawModality = $validated['modality_source'] ?? '';
+        $modality = preg_replace('/[\r\n"\'\\\\]/', '', $rawModality) ?: 'FUJIFILM (CR) & MINDRAY (US)';
 
-        // Update file .env
+        // Update file .env secara aman tanpa risiko injeksi baris baru
         $envPath = base_path('.env');
         if (file_exists($envPath)) {
             $envContent = file_get_contents($envPath);

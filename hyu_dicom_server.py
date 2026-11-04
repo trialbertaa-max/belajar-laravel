@@ -7,6 +7,7 @@ Menanggapi tes koneksi C-ECHO dan kueri antrian pasien Modality Worklist (C-FIND
 
 import sys
 import os
+import re
 import argparse
 import datetime
 import sqlite3
@@ -104,17 +105,30 @@ def handle_store(event):
     save_dir = os.path.join(STORAGE_SCANS_DIR, subfolder)
     os.makedirs(save_dir, exist_ok=True)
     
-    filename_clean = f"{patient_id}_{accession_no or timestamp_str}.dcm".replace(" ", "_")
+    # Sanitasi karakter berbahaya dari ID & Accession (Pencegahan Path Traversal)
+    safe_patient_id = re.sub(r'[^A-Za-z0-9_\-]', '', patient_id) or "UNKNOWN"
+    safe_accession_no = re.sub(r'[^A-Za-z0-9_\-]', '', accession_no) or timestamp_str
+    
+    filename_clean = f"{safe_patient_id}_{safe_accession_no}.dcm"
     dcm_full_path = os.path.join(save_dir, filename_clean)
     rel_dcm_path = f"scans/{subfolder}/{filename_clean}"
     
+    # Validasi direktori target agar tidak bisa keluar dari STORAGE_SCANS_DIR
+    if not os.path.abspath(dcm_full_path).startswith(os.path.abspath(STORAGE_SCANS_DIR)):
+        print(f"[HYU PACS WARNING] Percobaan path traversal terdeteksi pada PatientID: {patient_id}")
+        return 0xC000
+
     # 1. Simpan file DICOM asli
     ds.save_as(dcm_full_path, write_like_original=False)
     
     # 2. Ekstrak preview JPG untuk Web Viewer
-    jpg_filename = f"scan_{patient_id}_{timestamp_str}.jpg".replace(" ", "_")
+    jpg_filename = f"scan_{safe_patient_id}_{timestamp_str}.jpg"
     jpg_full_path = os.path.join(PUBLIC_ASSETS_DIR, jpg_filename)
     rel_jpg_path = f"scan-assets/{jpg_filename}"
+
+    if not os.path.abspath(jpg_full_path).startswith(os.path.abspath(PUBLIC_ASSETS_DIR)):
+        print(f"[HYU PACS WARNING] Percobaan path traversal terdeteksi pada file preview JPG: {jpg_filename}")
+        return 0xC000
     
     extract_preview_jpg(ds, jpg_full_path)
     

@@ -7,6 +7,57 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# 🏥 Hyu PACS & MCU Radiology Workstation
+
+Sistem Manajemen Radiologi & Standalone PACS berbasis **Laravel 11**, **Python 3.10 AI (PyTorch/OpenCV)**, dan protokol **DICOM C-STORE / C-FIND / C-ECHO**.
+
+---
+
+## 🚀 Cara Menjalankan Program (Quick Start)
+
+### Metode 1: 1-Click Launcher (Paling Mudah)
+Cukup **double-click** file:
+👉 **[`run.bat`](file:///d:/laragon/www/belajar-laravel/run.bat)**
+> File ini akan otomatis mengatur PHP 8.3 dari Laragon, menyalakan web server di `http://127.0.0.1:8000`, dan membuka browser langsung ke halaman **Start Screen & Health Center**.
+
+---
+
+### Metode 2: Lewat PowerShell / Terminal
+Buka PowerShell di folder project:
+```powershell
+# 1. Atur PATH ke PHP 8.3 Laragon
+$env:PATH = "D:\laragon\bin\php\php-8.3.33-Win32-vs16-x64;" + $env:PATH
+
+# 2. Jalankan Server Laravel
+php artisan serve
+```
+Buka browser ke:
+* **Start Screen & Health Check**: [http://127.0.0.1:8000/start](http://127.0.0.1:8000/start)
+* **Dashboard Pasien & Viewer**: [http://127.0.0.1:8000/scans](http://127.0.0.1:8000/scans)
+
+---
+
+### Metode 3: Lewat Laragon GUI (Apache / Virtual Host)
+1. Buka aplikasi **Laragon**.
+2. Pastikan versi PHP aktif adalah **PHP 8.3** (*Klik kanan di Laragon > PHP > Version > pilih `php-8.3.33`*).
+3. Klik tombol **"Start All"**.
+4. Buka browser ke:
+   - `http://belajar-laravel.test/start` atau `http://localhost/belajar-laravel/public/start`
+
+---
+
+## 📡 Menjalankan DICOM PACS Server (Port 4242)
+
+Anda **tidak perlu** menjalankan script terminal secara manual.
+1. Buka halaman **Start Screen** ([http://127.0.0.1:8000/start](http://127.0.0.1:8000/start)).
+2. Pada panel **DICOM PACS Listener**, klik tombol **"Start DICOM Server"**.
+3. Klik tombol **"Ping (C-ECHO)"** untuk memverifikasi handshake DICOM.
+4. Klik **"Buka Antrian Pasien & Viewer"** untuk masuk ke modul klinis radiologi.
+
+*(Alternatif manual via terminal jika diinginkan: `python hyu_dicom_server.py`)*
+
+---
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
