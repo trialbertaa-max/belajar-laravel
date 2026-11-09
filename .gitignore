@@ -25,3 +25,6 @@ yarn-error.log
 __pycache__/
 *.py[cod]
 *.pyo
+
+# System & Application logs
+*.log

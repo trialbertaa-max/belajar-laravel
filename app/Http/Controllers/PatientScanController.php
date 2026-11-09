@@ -15,59 +15,28 @@ class PatientScanController extends Controller
      */
     public function index(Request $request)
     {
-        // Inisialisasi data contoh MCU jika database masih kosong (hanya di mode development/testing)
-        if (MedicalScan::count() === 0 && app()->environment(['local', 'testing'])) {
-            MedicalScan::create([
-                'patient_id'        => 'CDC-00001',
-                'accession_number'  => 'ACC-20260921-001',
-                'patient_name'      => 'Budi Santoso',
-                'gender'            => 'L',
-                'age'               => 45,
-                'modality'          => 'Thorax PA',
-                'study_description' => 'Evaluasi Pulmo & Cor MCU Tahunan',
-                'scan_image_path'   => 'scan-assets/raw_toraks.jpg',
-                'preview_image_path'=> 'scan-assets/raw_toraks.jpg',
-                'dicom_raw_path'    => 'sample_toraks.dcm',
-                'mcu_status'        => 'rontgen_selesai',
-                'station_name'      => 'FUJIFILM_FDR_01',
-                'diagnosis_notes'   => 'Cor dan pulmo dalam batas normal, sinus costophrenicus tajam, tidak tampak infiltrat aktif.'
-            ]);
-
-            MedicalScan::create([
-                'patient_id'        => 'CDC-00002',
-                'accession_number'  => 'ACC-20260921-002',
-                'patient_name'      => 'Siti Rahma',
-                'gender'            => 'P',
-                'age'               => 38,
-                'modality'          => 'USG Abdomen',
-                'study_description' => 'Pemeriksaan USG Upper Abdomen',
-                'scan_image_path'   => 'scan-assets/usg_sample.jpg',
-                'preview_image_path'=> 'scan-assets/usg_sample.jpg',
-                'dicom_raw_path'    => 'sample_usg.dcm',
-                'mcu_status'        => 'rontgen_selesai',
-                'station_name'      => 'USG_MINDRAY_02',
-                'diagnosis_notes'   => 'Hepar dan vesica fellea dalam batas normal, tidak tampak batu empedu atau massa abnormal.'
-            ]);
-
-            MedicalScan::create([
-                'patient_id'        => 'CDC-00003',
-                'accession_number'  => 'ACC-20260921-003',
-                'patient_name'      => 'Ahmad Fauzi (MCU Gresik)',
-                'gender'            => 'L',
-                'age'               => 29,
-                'modality'          => 'Thorax PA',
-                'study_description' => 'Screening Kesehatan Paru Karyawan',
-                'mcu_status'        => 'siap_rontgen',
-                'station_name'      => 'FUJIFILM_FDR_01',
-                'order_notes'       => 'Order otomatis dari Sesi MCU Hyu, menunggu antrian ekspos rontgen.'
-            ]);
-        }
-
         // Query & Filter Data
         $query = MedicalScan::latest();
 
         if ($request->filled('status')) {
             $query->where('mcu_status', $request->status);
+        }
+
+        if ($request->filled('date')) {
+            $dateStr = $request->date;
+            $dateCompact = str_replace('-', '', $dateStr);
+            $query->where(function ($q) use ($dateStr, $dateCompact) {
+                $q->whereDate('created_at', $dateStr)
+                  ->orWhere('accession_number', 'like', "%{$dateCompact}%");
+            });
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
 
         if ($request->filled('search')) {
@@ -82,12 +51,28 @@ class PatientScanController extends Controller
 
         $scans = $query->paginate(10)->withQueryString();
 
-        // Statistik Dashboard Pos MCU
+        // Statistik Dashboard Pos MCU (menyesuaikan filter tanggal jika dipilih)
+        $statsBase = MedicalScan::query();
+        if ($request->filled('date')) {
+            $dateStr = $request->date;
+            $dateCompact = str_replace('-', '', $dateStr);
+            $statsBase->where(function ($q) use ($dateStr, $dateCompact) {
+                $q->whereDate('created_at', $dateStr)
+                  ->orWhere('accession_number', 'like', "%{$dateCompact}%");
+            });
+        }
+        if ($request->filled('date_from')) {
+            $statsBase->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $statsBase->whereDate('created_at', '<=', $request->date_to);
+        }
+
         $stats = [
-            'total'             => MedicalScan::count(),
-            'siap_rontgen'      => MedicalScan::where('mcu_status', 'siap_rontgen')->count(),
-            'rontgen_selesai'   => MedicalScan::where('mcu_status', 'rontgen_selesai')->count(),
-            'selesai_diagnosa'  => MedicalScan::where('mcu_status', 'selesai_diagnosa')->count(),
+            'total'             => (clone $statsBase)->count(),
+            'siap_rontgen'      => (clone $statsBase)->where('mcu_status', 'siap_rontgen')->count(),
+            'rontgen_selesai'   => (clone $statsBase)->where('mcu_status', 'rontgen_selesai')->count(),
+            'selesai_diagnosa'  => (clone $statsBase)->where('mcu_status', 'selesai_diagnosa')->count(),
         ];
 
         // Konfigurasi Parameter DICOM Node Hyu (Port & AE Fleksibel dari .env)

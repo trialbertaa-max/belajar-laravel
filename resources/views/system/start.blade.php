@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyu PACS & MCU Workstation — System Readiness & Control Center</title>
+    <title>Hyu — System Readiness & Control Center</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -70,15 +70,15 @@
         }
 
         .brand-badge {
-            background: linear-gradient(135deg, #0284c7, #0369a1);
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
             color: #ffffff;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Plus Jakarta Sans', sans-serif;
             font-weight: 800;
-            font-size: 1.25rem;
-            padding: 0.5rem 0.85rem;
+            font-size: 1.15rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 8px;
-            box-shadow: 0 0 20px rgba(2, 132, 199, 0.4);
-            letter-spacing: 0.04em;
+            box-shadow: 0 0 16px rgba(2, 132, 199, 0.35);
+            letter-spacing: -0.01em;
         }
 
         .brand-title {
@@ -631,13 +631,13 @@
     <!-- Top Bar -->
     <header class="top-bar">
         <div class="brand-section">
-            <div class="brand-badge">HYU</div>
+            <div class="brand-badge">Hyu</div>
             <div>
                 <div class="brand-title">
-                    <span>Medical Imaging & Standalone PACS</span>
+                    <span>MCU Central & PACS Radiologi</span>
                 </div>
                 <div class="brand-subtitle">
-                    System Readiness Center &bull; Cahaya Diagnostic Centre (CDC) MCU Central
+                    System Readiness Center &bull; Cahaya Diagnostic Centre (CDC)
                 </div>
             </div>
         </div>

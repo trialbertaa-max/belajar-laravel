@@ -3030,7 +3030,7 @@
                                 <option value="segmentation_lung">Segmentasi Lapangan Paru (Lung Contours)</option>
                             </optgroup>
                             <optgroup label="── 4. AI Bone Suppression (Dual-Engine) ──">
-                                <option value="bone_suppression_commercial">[AI-01] In-House Commercial Engine</option>
+                                <option value="bone_suppression_commercial">[AI-01] ALBA-Net (Bone Suppression)</option>
                                 <option value="bone_suppression_qure">[AI-02] Qure.ai Research Baseline</option>
                             </optgroup>
                         </select>
@@ -3054,48 +3054,39 @@
                                 <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
                             </div>
 
-                            <div style="font-size: 0.65rem; color: #94a3b8; background: rgba(15, 23, 42, 0.6); border-left: 2px solid #38bdf8; padding: 4px 8px; border-radius: 2px; margin-bottom: 0.5rem; line-height: 1.3;">
-                                💡 <strong>Sweet Spot Thorax:</strong> &sigma;<sub>s</sub> = 20, &sigma;<sub>r</sub> = 25. Nilai terlalu tinggi (>50) menyebabkan <em>over-smoothing</em> (blur) pada detail paru.
-                            </div>
-
                             <!-- Telemetry Grid -->
                             <div class="telemetry-grid">
                                 <div class="telemetry-item">
                                     <span class="telemetry-label">PSNR Metric:</span>
-                                    <span class="telemetry-val" id="telPsnr">40.22 dB</span>
+                                    <span class="telemetry-val" id="telPsnr">-</span>
                                 </div>
                                 <div class="telemetry-item">
                                     <span class="telemetry-label">SNR Gain:</span>
-                                    <span class="telemetry-val" id="telSnrGain" style="color: #10b981;">+9.75 dB</span>
+                                    <span class="telemetry-val" id="telSnrGain">-</span>
                                 </div>
                                 <div class="telemetry-item">
                                     <span class="telemetry-label">Noise Reduction:</span>
-                                    <span class="telemetry-val" id="telNoiseRed">67.4%</span>
+                                    <span class="telemetry-val" id="telNoiseRed">-</span>
                                 </div>
                                 <div class="telemetry-item">
                                     <span class="telemetry-label">Inference Time:</span>
-                                    <span class="telemetry-val" id="telLatency">32.0 ms</span>
+                                    <span class="telemetry-val" id="telLatency">-</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- KONTROL KHUSUS 2: AI BONE SUPPRESSION (DUAL-ENGINE DASHBOARD) -->
                         <div id="boxAiBoneSuppressionCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.6rem;">
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.4rem;">
+                            <div style="margin-bottom: 0.4rem;">
                                 <span style="font-size: 0.7rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
-                                    <span>🧠</span> <span id="lblAiCardEngineName">In-House Commercial Engine</span>
-                                </span>
-                                <span id="lblAiCardBadge" style="font-size: 0.6rem; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4);">
-                                    100% Commercial Cleared
+                                    <span>🧠</span> <span id="lblAiCardEngineName">ALBA-Net (Bone Suppression)</span>
                                 </span>
                             </div>
-                            <div style="font-size: 0.66rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 0.5rem;" id="lblAiCardDesc">
-                                Model mandiri hasil training internal Klinik CDC. 100% bebas royalti, aman lisensi, dan legal untuk operasional komersial.
-                            </div>
+                            <div style="font-size: 0.66rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 0.5rem; display: none;" id="lblAiCardDesc"></div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.64rem; margin-bottom: 0.5rem; background: rgba(2, 6, 23, 0.5); padding: 6px; border-radius: 4px;">
                                 <div>
                                     <span style="color: #64748b; display: block;">Arsitektur / Bobot:</span>
-                                    <span style="color: #f1f5f9; font-weight: 600;" id="lblAiCardArch">ResNet34-UNet In-House (93.9 MB)</span>
+                                    <span style="color: #f1f5f9; font-weight: 600;" id="lblAiCardArch">ResNet34-UNet (93.9 MB)</span>
                                 </div>
                                 <div>
                                     <span style="color: #64748b; display: block;">Akselerasi Komputasi:</span>
@@ -3267,14 +3258,6 @@
                             </table>
                         </div>
 
-                        <div style="margin-top: 0.75rem;">
-                            <span style="font-size: 0.65rem; color: #64748b;">Formula: Wang 2004, Immerkaer 1996</span>
-                        </div>
-                    </div>
-
-                    <div class="dock-card" style="font-size: 0.7rem; color: #64748b; line-height: 1.4;">
-                        <strong style="color: #94a3b8; display: block; margin-bottom: 0.2rem;">Landasan Ilmiah Pemrosesan Citra:</strong>
-                        Menerapkan non-linear edge-preserving filter untuk mereduksi <em>quantum mottle noise</em> pada akusisi dosis rendah tanpa mengaburkan batas vaskular paru dan trabekula tulang.
                     </div>
                 </div>
 
@@ -3317,11 +3300,7 @@
                         </div>
 
                         <div id="ctrLiveResultContent">
-                            <div style="font-size: 0.72rem; color: #94a3b8; line-height: 1.4; margin-bottom: 0.5rem;">
-                                Formula: <code>CTR = (Diameter Jantung / Diameter Toraks) &times; 100%</code><br>
-                                &bull; <strong>Normal:</strong> &le; 50% &bull; <strong>Suspek Kardiomegali:</strong> &gt; 50%
-                            </div>
-                            <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.6rem; text-align: center;">
+                            <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.65rem; text-align: center;">
                                 <span style="font-size: 0.72rem; color: var(--ws-text-muted);">
                                     Gunakan tool <strong>🫀 CTR</strong> di toolbar atas untuk menghitung rasio diameter transversal jantung & toraks secara langsung.
                                 </span>
@@ -4524,32 +4503,25 @@
                 if (btnCurtain) btnCurtain.style.flex = '1';
 
                 const lblName = document.getElementById('lblAiCardEngineName');
-                const lblBadge = document.getElementById('lblAiCardBadge');
                 const lblDesc = document.getElementById('lblAiCardDesc');
                 const lblArch = document.getElementById('lblAiCardArch');
                 const lblDev = document.getElementById('lblAiCardDevice');
 
                 if (engine === 'bone_suppression_commercial') {
-                    if (lblName) lblName.innerText = '[AI-01] In-House Commercial Engine';
-                    if (lblBadge) {
-                        lblBadge.innerText = '100% Commercial Cleared';
-                        lblBadge.style.color = '#10b981';
-                        lblBadge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-                        lblBadge.style.background = 'rgba(16, 185, 129, 0.2)';
+                    if (lblName) lblName.innerText = '[AI-01] ALBA-Net (Bone Suppression)';
+                    if (lblDesc) {
+                        lblDesc.innerText = '';
+                        lblDesc.style.display = 'none';
                     }
-                    if (lblDesc) lblDesc.innerText = 'Model mandiri hasil training internal Klinik CDC. 100% bebas royalti, aman lisensi, dan legal untuk operasional komersial.';
-                    if (lblArch) lblArch.innerText = 'ResNet34-UNet In-House (93.9 MB)';
+                    if (lblArch) lblArch.innerText = 'ResNet34-UNet (93.9 MB)';
                     if (lblDev) lblDev.innerText = 'PyTorch CUDA / CPU (~0.45s)';
-                    if (btn) btn.innerHTML = '<span>▶ Jalankan In-House AI Bone Suppression</span>';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan ALBA-Net Bone Suppression</span>';
                 } else {
                     if (lblName) lblName.innerText = '[AI-02] Qure.ai Research Baseline';
-                    if (lblBadge) {
-                        lblBadge.innerText = 'Research Only (CC BY-NC-SA 4.0)';
-                        lblBadge.style.color = '#f59e0b';
-                        lblBadge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
-                        lblBadge.style.background = 'rgba(245, 158, 11, 0.2)';
+                    if (lblDesc) {
+                        lblDesc.innerText = '';
+                        lblDesc.style.display = 'none';
                     }
-                    if (lblDesc) lblDesc.innerText = 'Model tervalidasi Qure.ai (arXiv:2609.24937). Digunakan sebagai pembanding standar emas riset radiologi toraks.';
                     if (lblArch) lblArch.innerText = 'Qure.ai Decomposed (398.14 MB)';
                     if (lblDev) lblDev.innerText = 'PyTorch CUDA (~4.5s)';
                     if (btn) btn.innerHTML = '<span>▶ Jalankan Qure.ai Research Bone Suppression</span>';
@@ -4708,7 +4680,7 @@
                 // Jika engine AI menggunakan fallback, tampilkan keterangan tambahan
                 const isFallback = data.details && data.details.is_fallback;
                 if (isFallback) {
-                    showToolHint('🔄', `${displayTitle} berhasil (Fallback ke Commercial Engine — Qure.ai weights belum ada di server)`);
+                    showToolHint('🔄', `${displayTitle} berhasil (Fallback ke ALBA-Net: Qure.ai weights belum ada di server)`);
                     setTimeout(hideToolHint, 5000);
                 } else {
                     showToolHint('✅', `${displayTitle} berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A' : 'B'} (${sNameActive})!`);
@@ -6096,11 +6068,7 @@
                 badgePill.style.borderColor = 'rgba(148, 163, 184, 0.3)';
 
                 ctrContent.innerHTML = `
-                    <div style="font-size: 0.72rem; color: #94a3b8; line-height: 1.4; margin-bottom: 0.5rem;">
-                        Formula: <code>CTR = (Diameter Jantung / Diameter Toraks) &times; 100%</code><br>
-                        &bull; <strong>Normal:</strong> &le; 50% &bull; <strong>Suspek Kardiomegali:</strong> &gt; 50%
-                    </div>
-                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.6rem; text-align: center;">
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.65rem; text-align: center;">
                         <span style="font-size: 0.72rem; color: var(--ws-text-muted);">
                             Gunakan tombol <strong>🫀 CTR</strong> di toolbar atas untuk mengukur rasio jantung & toraks secara langsung.
                         </span>

@@ -1,9 +1,0 @@
-======================================================================
- [HYU] MEDICAL IMAGING & STANDALONE PACS SERVER
- * Server AE Title : HYU_PACS
- * IP Address      : 0.0.0.0
- * Port Listener   : 4242
- * Modalitas Target: DROC, Fujifilm FDR/FDL, CR, DX, Ultrasound
- * Status Database : Terhubung ke D:\laragon\www\belajar-laravel\database\database.sqlite
-======================================================================
-[HYU PACS] Menunggu koneksi pengiriman citra dari alat medis...

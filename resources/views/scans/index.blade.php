@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyu - Pusat Operasional MCU & Standalone PACS Radiologi</title>
+    <title>Hyu — MCU Central & PACS Radiologi</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -1378,16 +1378,13 @@
                 <span class="brand-logo">Hyu</span>
                 <span>MCU Central & PACS Radiologi</span>
             </div>
-            <p class="subtitle">Cahaya Diagnostic Centre (CDC) &bull; Medical Check Up & Sistem Radiologi Terintegrasi</p>
+            <p class="subtitle">Pusat Operasional &bull; Cahaya Diagnostic Centre (CDC)</p>
         </div>
 
         <div class="header-actions">
             <a href="{{ route('system.start') }}" class="btn btn-secondary" style="border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; font-weight: 700; text-decoration: none;">
-                🚀 Start Screen & Health
+                ⚡ Status & Kesiapan Sistem
             </a>
-            <button class="btn btn-fuji" onclick="triggerSimulateFuji()">
-                📡 Simulasi Kirim Citra Fujifilm (C-STORE)
-            </button>
             <button class="btn btn-primary" onclick="openOrderModal()">
                 ➕ Buat Order MCU Baru
             </button>
@@ -1448,15 +1445,22 @@
     <!-- Filter & Search Bar -->
     <div class="filter-bar">
         <div class="filter-tabs">
-            <a href="{{ route('scans.index') }}" class="filter-tab {{ !request('status') ? 'active' : '' }}">Semua Pos ({{ $stats['total'] }})</a>
-            <a href="{{ route('scans.index', ['status' => 'siap_rontgen']) }}" class="filter-tab {{ request('status') == 'siap_rontgen' ? 'active' : '' }}">Antrian Rontgen ({{ $stats['siap_rontgen'] }})</a>
-            <a href="{{ route('scans.index', ['status' => 'rontgen_selesai']) }}" class="filter-tab {{ request('status') == 'rontgen_selesai' ? 'active' : '' }}">Siap Baca ({{ $stats['rontgen_selesai'] }})</a>
-            <a href="{{ route('scans.index', ['status' => 'selesai_diagnosa']) }}" class="filter-tab {{ request('status') == 'selesai_diagnosa' ? 'active' : '' }}">Selesai ({{ $stats['selesai_diagnosa'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ !request('status') ? 'active' : '' }}">Semua Pos ({{ $stats['total'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'siap_rontgen' ? 'active' : '' }}">Antrian Rontgen ({{ $stats['siap_rontgen'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'rontgen_selesai' ? 'active' : '' }}">Siap Baca ({{ $stats['rontgen_selesai'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'selesai_diagnosa' ? 'active' : '' }}">Selesai ({{ $stats['selesai_diagnosa'] }})</a>
         </div>
 
-        <form action="{{ route('scans.index') }}" method="GET" class="search-box">
+        <form action="{{ route('scans.index') }}" method="GET" class="search-box" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+            @if(request('status'))
+                <input type="hidden" name="status" value="{{ request('status') }}">
+            @endif
+            <input type="date" name="date" value="{{ request('date') }}" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan">
             <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Cari nama, No. RM, Accession No...">
-            <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.85rem;">🔍 Cari</button>
+            <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.85rem;">🔍 Filter</button>
+            @if(request('search') || request('date'))
+                <a href="{{ route('scans.index', array_filter(['status' => request('status')])) }}" class="btn btn-secondary" style="padding: 0.45rem 0.65rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.35); text-decoration: none;" title="Reset Filter">✕</a>
+            @endif
         </form>
     </div>
 
@@ -1484,6 +1488,9 @@
                                 </div>
                                 <div style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">
                                     {{ $scan->accession_number ?: 'ACC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT) }}
+                                </div>
+                                <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">
+                                    📅 {{ $scan->created_at ? $scan->created_at->format('d/m/Y H:i') : '-' }}
                                 </div>
                             </a>
                         </td>
@@ -2051,11 +2058,16 @@
                 <input type="text" id="cfgModality" name="modality_source" class="form-control" value="{{ $pacsConfig['modality_ae'] }}" placeholder="Contoh: FUJIFILM (CR) & MINDRAY (US)">
             </div>
 
-            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                <button type="button" class="btn btn-secondary" onclick="closeDicomModal()">Batal</button>
-                <button type="submit" class="btn btn-primary" id="btnSaveDicomCfg">
-                    💾 Simpan Konfigurasi
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--card-border);">
+                <button type="button" class="btn btn-fuji" onclick="triggerSimulateFuji()" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;">
+                    📡 Uji Transmisi C-STORE (Fujifilm)
                 </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDicomModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveDicomCfg">
+                        💾 Simpan Konfigurasi
+                    </button>
+                </div>
             </div>
         </form>
     </div>

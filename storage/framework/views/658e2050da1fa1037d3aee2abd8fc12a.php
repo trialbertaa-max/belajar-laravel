@@ -1,0 +1,3916 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyu — MCU Central & PACS Radiologi</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #090e17;
+            --card-bg: #111a2e;
+            --card-border: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-purple: #8b5cf6;
+            --accent-amber: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        /* Top Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand-title {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .brand-logo {
+            background: linear-gradient(135deg, #0284c7, #38bdf8);
+            color: white;
+            padding: 0.35rem 0.75rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.55rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-primary:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background-color: rgba(30, 41, 59, 0.8);
+            color: var(--text-main);
+            border-color: var(--card-border);
+        }
+
+        .btn-secondary:hover {
+            background-color: #1e293b;
+            border-color: #475569;
+        }
+
+        .btn-fuji {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(6, 182, 212, 0.2));
+            color: #c084fc;
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-fuji:hover {
+            background: rgba(139, 92, 246, 0.3);
+            color: #e9d5ff;
+        }
+
+        /* DICOM Node Info Card */
+        .pacs-info-card {
+            background: linear-gradient(90deg, rgba(15, 23, 42, 0.9), rgba(17, 26, 46, 0.9));
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            margin-bottom: 1.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .pacs-node-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+        }
+
+        .pacs-pill {
+            background-color: rgba(2, 132, 199, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: #38bdf8;
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+        }
+
+        /* KPI Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.15rem 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+        }
+
+        .stat-card.stat-all::before { background-color: var(--primary); }
+        .stat-card.stat-waiting::before { background-color: var(--accent-amber); }
+        .stat-card.stat-ready::before { background-color: var(--accent-cyan); }
+        .stat-card.stat-done::before { background-color: var(--accent-green); }
+
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 800;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.4rem;
+            background-color: rgba(15, 23, 42, 0.6);
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--card-border);
+        }
+
+        .filter-tab {
+            padding: 0.35rem 0.8rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 6px;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+
+        .filter-tab:hover, .filter-tab.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .search-input {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-main);
+            padding: 0.45rem 0.85rem;
+            border-radius: 8px;
+            font-size: 0.825rem;
+            outline: none;
+            min-width: 260px;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+        }
+
+        /* Table Card */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem 0.75rem;
+            }
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+            .header-actions {
+                width: 100%;
+                justify-content: flex-start;
+                overflow-x: auto;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .filter-tabs {
+                overflow-x: auto;
+                white-space: nowrap;
+                padding-bottom: 0.35rem;
+                scrollbar-width: none;
+            }
+            .filter-tabs::-webkit-scrollbar {
+                display: none;
+            }
+            .search-box {
+                width: 100%;
+            }
+            .search-input {
+                min-width: 0;
+                flex: 1;
+            }
+            .card table {
+                min-width: 850px;
+            }
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(15, 23, 42, 0.8);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid var(--card-border);
+            font-size: 0.875rem;
+            vertical-align: middle;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        /* Status Badges */
+        .badge-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .badge-waiting {
+            background-color: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .badge-ready {
+            background-color: rgba(6, 182, 212, 0.15);
+            color: #22d3ee;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .badge-done {
+            background-color: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .badge-modality {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: rgba(139, 92, 246, 0.15);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        /* Modal Form */
+        .modal-backdrop, .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .modal-content {
+            background-color: #0f172a;
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 520px;
+            padding: 1.75rem;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.8);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0.2rem;
+            transition: color 0.15s;
+        }
+
+        .btn-close:hover {
+            color: white;
+        }
+
+        /* MCU Header Action Buttons */
+        .mcu-header-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .mcu-header-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.38rem;
+            padding: 0.34rem 0.72rem;
+            font-size: 0.74rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            line-height: 1.1;
+            transition: all 0.18s ease;
+            border: 1px solid transparent;
+            font-family: inherit;
+        }
+
+        .mcu-header-btn-upload {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.22), rgba(14, 165, 233, 0.12));
+            border-color: rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.18);
+        }
+
+        .mcu-header-btn-upload:hover {
+            background: linear-gradient(135deg, rgba(2, 132, 199, 0.4), rgba(14, 165, 233, 0.28));
+            border-color: #38bdf8;
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .mcu-header-btn-upload:active {
+            transform: translateY(0);
+        }
+
+        .mcu-header-btn-template {
+            background: rgba(30, 41, 59, 0.75);
+            border-color: rgba(148, 163, 184, 0.25);
+            color: #94a3b8;
+        }
+
+        .mcu-header-btn-template:hover {
+            background: rgba(51, 65, 85, 0.85);
+            border-color: rgba(148, 163, 184, 0.5);
+            color: #f1f5f9;
+            transform: translateY(-1px);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            color: var(--text-main);
+            padding: 0.55rem 0.85rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .alert-success {
+            background-color: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.25rem;
+            font-size: 0.85rem;
+        }
+
+        /* Pagination */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-top: 1px solid var(--card-border);
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .pagination-info {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .pagination-links a,
+        .pagination-links span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            padding: 0 0.5rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .pagination-links a {
+            background-color: rgba(30, 41, 59, 0.8);
+            color: var(--text-muted);
+            border-color: var(--card-border);
+        }
+
+        .pagination-links a:hover {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination-links span.current {
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            border-color: #38bdf8;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .pagination-links span.disabled {
+            color: #334155;
+            border-color: #1e293b;
+            cursor: not-allowed;
+            background-color: rgba(15, 23, 42, 0.5);
+        }
+
+        /* ==========================================================================
+           WORKSTATION PROTOCOL PICKER (FULL SCREEN CLINICAL CONSOLE - 180 PROTOKOL)
+           ========================================================================== */
+        #modalProtocolPicker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #040812;
+            display: none;
+            z-index: 10050;
+            overflow: hidden;
+            animation: pickerFadeIn 0.15s ease-out;
+        }
+
+        @keyframes pickerFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .protocol-modal-dialog {
+            background: #060b14;
+            width: 100vw;
+            height: 100vh;
+            max-width: 100vw;
+            max-height: 100vh;
+            border-radius: 0;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: none;
+            overflow: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        /* Top Header */
+        .protocol-header {
+            background: #0b1324;
+            border-bottom: 1px solid #1c2b44;
+            padding: 0.85rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+
+        .protocol-header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .protocol-title {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: -0.01em;
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .protocol-tool-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            background: #111a2e;
+            border: 1px solid #1e293b;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+        }
+
+        .protocol-tool-btn:hover {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .protocol-tool-btn.active {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+        }
+
+        .protocol-search-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+
+        .protocol-search-wrap input {
+            width: 100%;
+            background: #040812;
+            border: 1px solid #1e2d44;
+            border-radius: 6px;
+            padding: 0.52rem 2.2rem 0.52rem 2.3rem;
+            font-size: 0.84rem;
+            color: #f8fafc;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .protocol-search-wrap input:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+        }
+
+        .protocol-search-wrap .protocol-search-icon {
+            position: absolute;
+            left: 0.75rem;
+            color: #64748b;
+            pointer-events: none;
+        }
+
+        .protocol-search-wrap #protocolSearchClear {
+            position: absolute;
+            right: 0.65rem;
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 1.25rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0;
+        }
+
+        /* Tooltip custom - Aligned safely to NEVER clip off screen edges */
+        .protocol-tool-btn .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.9);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #btnSortFreq .custom-tooltip {
+            left: 0 !important;
+            transform: none !important;
+        }
+
+        .protocol-tool-btn:hover .custom-tooltip,
+        .skel-tab-btn:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Body Split Layout */
+        .protocol-body {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        /* Left Column: Skeleton */
+        .protocol-anatomy-col {
+            width: 320px;
+            flex-shrink: 0;
+            background: #040812;
+            border-right: 1px solid #142033;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            gap: 0.65rem;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .skel-hud {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: rgba(11, 19, 36, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            border-radius: 6px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #38bdf8;
+            text-align: center;
+            letter-spacing: 0.02em;
+            min-height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .skeleton-container {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, rgba(14, 165, 233, 0.06) 0%, #040812 75%);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid rgba(30, 41, 59, 0.6);
+        }
+
+        .skeleton-svg {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 210px);
+            display: block;
+            margin: 0 auto;
+            user-select: none;
+        }
+
+        .skel-glow-layer {
+            opacity: 0;
+            transition: opacity 0.15s ease, filter 0.15s ease;
+            pointer-events: none;
+            mix-blend-mode: screen;
+        }
+
+        .skel-glow-layer.hovered {
+            opacity: 0.85;
+            filter: drop-shadow(0 0 4px rgba(0, 240, 255, 0.85));
+        }
+
+        .skel-glow-layer.active {
+            opacity: 1 !important;
+            filter: drop-shadow(0 0 3px #00f0ff) drop-shadow(0 0 6px rgba(0, 240, 255, 0.7)) !important;
+        }
+
+        .skel-region {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .skel-region path {
+            fill: transparent !important;
+            stroke: none !important;
+            pointer-events: all;
+        }
+
+        .skel-tabs-wrap {
+            display: flex;
+            gap: 0.65rem;
+            width: 100%;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .skel-tab-btn {
+            flex: 1;
+            background: #0f1a30;
+            border: 1px solid #1c2b44;
+            border-radius: 6px;
+            padding: 0.65rem 0.5rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #94a3b8;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+
+        .skel-tab-btn:hover {
+            background: #172644;
+            color: #f8fafc;
+            border-color: #38bdf8;
+        }
+
+        .skel-tab-btn.active {
+            background: rgba(2, 132, 199, 0.28);
+            color: #38bdf8;
+            border-color: #00f0ff;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.4);
+        }
+
+        /* Tooltip tabOftenUsed: align to left edge so it NEVER clips! */
+        #tabOftenUsed .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 0 !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        /* Tooltip tabAdvanced: align to right edge */
+        #tabAdvanced .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            right: 0 !important;
+            left: auto !important;
+            transform: none !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        /* Tooltip tabUltrasound: align center */
+        #tabUltrasound .custom-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            background: #020617;
+            color: #f8fafc;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            padding: 0.4rem 0.7rem;
+            border-radius: 5px;
+            font-size: 0.74rem;
+            font-weight: 600;
+            white-space: nowrap;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.85);
+            transition: opacity 0.15s ease, visibility 0.15s ease;
+        }
+
+        #tabOftenUsed:hover .custom-tooltip,
+        #tabUltrasound:hover .custom-tooltip,
+        #tabAdvanced:hover .custom-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Right Column: Protocols Grid */
+        .protocol-main-col {
+            background: #070d18;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            padding: 1.25rem 1.75rem;
+            min-width: 0;
+            min-height: 0;
+            height: 100%;
+        }
+
+        .protocol-grid-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.75rem;
+            overflow-y: auto;
+            flex: 1;
+            padding: 0.25rem 0.5rem 1rem 0;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+
+        .protocol-grid-container::-webkit-scrollbar-thumb:hover {
+            background: #38bdf8;
+        }
+
+        .protocol-card {
+            background: #10192e;
+            border: 1px solid #1a283e;
+            border-radius: 6px;
+            padding: 0.85rem 0.75rem;
+            color: #cbd5e1;
+            font-size: 0.86rem;
+            font-weight: 500;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 56px;
+            line-height: 1.3;
+            user-select: none;
+            word-break: break-word;
+            position: relative;
+        }
+
+        .protocol-card:hover {
+            background: #17243c;
+            border-color: #38bdf8;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.4);
+        }
+
+        .protocol-card.selected {
+            background: rgba(14, 165, 233, 0.26) !important;
+            border-color: #00f0ff !important;
+            color: #38bdf8 !important;
+            font-weight: 700 !important;
+            box-shadow: 0 0 14px rgba(0, 240, 255, 0.45), inset 0 0 8px rgba(0, 240, 255, 0.25) !important;
+        }
+
+        .protocol-card-tag {
+            font-size: 0.66rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Bottom Selection Tray */
+        .protocol-picker-tray {
+            padding: 0.75rem 1.75rem;
+            background: #040812;
+            border-top: 1px solid #142033;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        /* Footer Action Buttons */
+        .protocol-picker-footer {
+            padding: 0.85rem 1.75rem;
+            background: #0b1324;
+            border-top: 1px solid #1c2b44;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Staging Table (Excel CRUD) Styles ── */
+        .modal-content-wide {
+            max-width: 1240px !important;
+            width: 96vw !important;
+            max-height: 92vh !important;
+            display: flex !important;
+            flex-direction: column !important;
+            transition: max-width 0.25s ease, width 0.25s ease;
+        }
+
+        .staging-top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding: 0.65rem 0.9rem;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            margin-bottom: 0.85rem;
+        }
+
+        .staging-summary-info {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            font-size: 0.82rem;
+            flex-wrap: wrap;
+        }
+
+        .staging-file-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 5px;
+            background: rgba(2, 132, 199, 0.2);
+            color: #38bdf8;
+            font-weight: 600;
+            font-size: 0.75rem;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+        }
+
+        .staging-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.65rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .staging-tabs {
+            display: flex;
+            gap: 0.35rem;
+            align-items: center;
+        }
+
+        .staging-tab {
+            padding: 0.35rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            background: rgba(30, 41, 59, 0.7);
+            color: var(--text-muted);
+            transition: all 0.15s;
+        }
+
+        .staging-tab:hover {
+            color: #f1f5f9;
+            background: rgba(51, 65, 85, 0.8);
+        }
+
+        .staging-tab.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: #38bdf8;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+
+        .staging-search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex: 1;
+            max-width: 340px;
+        }
+
+        .staging-search-input {
+            width: 100%;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            color: var(--text-main);
+            padding: 0.38rem 0.7rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .staging-search-input:focus {
+            border-color: #38bdf8;
+        }
+
+        .staging-table-container {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: auto;
+            max-height: calc(88vh - 290px);
+            min-height: 280px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.65);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .staging-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.78rem;
+            text-align: left;
+        }
+
+        .staging-table th {
+            position: sticky;
+            top: 0;
+            background: #0f172a;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.55rem 0.65rem;
+            border-bottom: 2px solid var(--card-border);
+            z-index: 5;
+            white-space: nowrap;
+        }
+
+        .staging-table td {
+            padding: 0.45rem 0.55rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            vertical-align: middle;
+            color: #e2e8f0;
+        }
+
+        .staging-table tr:hover td {
+            background-color: rgba(30, 41, 59, 0.45);
+        }
+
+        .staging-row-invalid td {
+            background-color: rgba(245, 158, 11, 0.05);
+        }
+
+        .staging-row-invalid:hover td {
+            background-color: rgba(245, 158, 11, 0.1) !important;
+        }
+
+        .staging-cell {
+            cursor: pointer;
+            border-radius: 4px;
+            padding: 0.22rem 0.4rem;
+            min-height: 1.6rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.3rem;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+        }
+
+        .staging-cell:hover {
+            background: rgba(2, 132, 199, 0.15);
+            border-color: rgba(56, 189, 248, 0.45);
+        }
+
+        .staging-cell-error {
+            border: 1px solid rgba(239, 68, 68, 0.75) !important;
+            background: rgba(239, 68, 68, 0.18) !important;
+            color: #fca5a5 !important;
+            border-radius: 4px;
+        }
+
+        .staging-error-badge {
+            color: #f87171;
+            font-size: 0.8rem;
+            font-weight: bold;
+            flex-shrink: 0;
+            cursor: help;
+        }
+
+        .staging-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .staging-status-ready {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.35);
+        }
+
+        .staging-status-invalid {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-action-icon {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 0.22rem 0.45rem;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+            font-size: 0.8rem;
+            line-height: 1;
+        }
+
+        .btn-action-edit:hover {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.45);
+        }
+
+        .btn-action-delete:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.45);
+        }
+
+        .staging-footer-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            padding-top: 0.85rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .staging-undo-toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 99999;
+            background: #1e293b;
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.85), 0 0 20px rgba(2, 132, 199, 0.3);
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            color: #f8fafc;
+            font-size: 0.82rem;
+            animation: slideUpFade 0.25s ease-out;
+        }
+
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Flash Message -->
+    <?php if(session('success')): ?>
+        <div class="alert-success">
+            ✅ <?php echo e(session('success')); ?>
+
+        </div>
+    <?php endif; ?>
+
+    <!-- Header Section -->
+    <header class="header">
+        <div>
+            <div class="brand-title">
+                <span class="brand-logo">Hyu</span>
+                <span>MCU Central & PACS Radiologi</span>
+            </div>
+            <p class="subtitle">Pusat Operasional &bull; Cahaya Diagnostic Centre (CDC)</p>
+        </div>
+
+        <div class="header-actions">
+            <a href="<?php echo e(route('system.start')); ?>" class="btn btn-secondary" style="border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; font-weight: 700; text-decoration: none;">
+                ⚡ Status & Kesiapan Sistem
+            </a>
+            <button class="btn btn-primary" onclick="openOrderModal()">
+                ➕ Buat Order MCU Baru
+            </button>
+        </div>
+    </header>
+
+    <!-- DICOM Node & Network Parameter Status -->
+    <div class="pacs-info-card">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.2rem;">🏥</span>
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #f8fafc;">
+                    Hyu DICOM Node Listener (C-STORE / C-ECHO SCP)
+                </div>
+                <div style="font-size: 0.75rem; color: #94a3b8;">
+                    Layanan terpadu penerima transmisi citra radiologi & Modality Worklist (DICOM 3.0)
+                </div>
+            </div>
+        </div>
+
+        <div class="pacs-node-badges">
+            <span class="pacs-pill">AE Title: <strong id="lblIdxAeTitle"><?php echo e($pacsConfig['ae_title']); ?></strong></span>
+            <span class="pacs-pill">Port: <strong id="lblIdxPort"><?php echo e($pacsConfig['port']); ?></strong></span>
+            <span class="pacs-pill">Target: <strong id="lblIdxTarget"><?php echo e($pacsConfig['modality_ae']); ?></strong></span>
+            <span id="lblLiveDicomBadge" style="font-weight: 700; font-size: 0.75rem; color: #fbbf24;">
+                <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fbbf24; margin-right:4px;"></span>
+                Memeriksa Status Server...
+            </span>
+            <a href="<?php echo e(route('system.start')); ?>" class="btn btn-secondary" style="padding: 0.25rem 0.65rem; font-size: 0.72rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399; margin-left: 0.25rem; text-decoration: none;">
+                ⚡ Kontrol Server
+            </a>
+            <button class="btn btn-secondary" onclick="openDicomModal()" style="padding: 0.25rem 0.65rem; font-size: 0.72rem; border-color: rgba(56, 189, 248, 0.35); color: #38bdf8; margin-left: 0.25rem;">
+                ⚙️ Setup Node
+            </button>
+        </div>
+    </div>
+
+    <!-- Pos Pelacakan MCU KPI Stats -->
+    <div class="stats-grid" id="statsGridWrap">
+        <div class="stat-card stat-all">
+            <div class="stat-label">Total Pemeriksaan MCU</div>
+            <div class="stat-value" style="color: #38bdf8;"><?php echo e($stats['total']); ?></div>
+        </div>
+        <div class="stat-card stat-waiting">
+            <div class="stat-label">🟡 Siap di Ruang Rontgen</div>
+            <div class="stat-value" style="color: #fbbf24;"><?php echo e($stats['siap_rontgen']); ?></div>
+        </div>
+        <div class="stat-card stat-ready">
+            <div class="stat-label">🟢 Citra Masuk (Siap Baca)</div>
+            <div class="stat-value" style="color: #22d3ee;"><?php echo e($stats['rontgen_selesai']); ?></div>
+        </div>
+        <div class="stat-card stat-done">
+            <div class="stat-label">🔵 Selesai Ekspertise Dokter</div>
+            <div class="stat-value" style="color: #34d399;"><?php echo e($stats['selesai_diagnosa']); ?></div>
+        </div>
+    </div>
+
+    <!-- Filter & Search Bar -->
+    <div class="filter-bar">
+        <div class="filter-tabs">
+            <a href="<?php echo e(route('scans.index', array_filter(['date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(!request('status') ? 'active' : ''); ?>">Semua Pos (<?php echo e($stats['total']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'siap_rontgen' ? 'active' : ''); ?>">Antrian Rontgen (<?php echo e($stats['siap_rontgen']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'rontgen_selesai' ? 'active' : ''); ?>">Siap Baca (<?php echo e($stats['rontgen_selesai']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'selesai_diagnosa' ? 'active' : ''); ?>">Selesai (<?php echo e($stats['selesai_diagnosa']); ?>)</a>
+        </div>
+
+        <form action="<?php echo e(route('scans.index')); ?>" method="GET" class="search-box" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+            <?php if(request('status')): ?>
+                <input type="hidden" name="status" value="<?php echo e(request('status')); ?>">
+            <?php endif; ?>
+            <input type="date" name="date" value="<?php echo e(request('date')); ?>" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan">
+            <input type="text" name="search" value="<?php echo e(request('search')); ?>" class="search-input" placeholder="Cari nama, No. RM, Accession No...">
+            <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.85rem;">🔍 Filter</button>
+            <?php if(request('search') || request('date')): ?>
+                <a href="<?php echo e(route('scans.index', array_filter(['status' => request('status')]))); ?>" class="btn btn-secondary" style="padding: 0.45rem 0.65rem; color: #ef4444; border-color: rgba(239, 68, 68, 0.35); text-decoration: none;" title="Reset Filter">✕</a>
+            <?php endif; ?>
+        </form>
+    </div>
+
+    <!-- Table Card -->
+    <div class="card" id="worklistTableWrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>No. RM & Accession</th>
+                    <th>Nama Pasien</th>
+                    <th>Modalitas & Studi</th>
+                    <th>Status Pos MCU</th>
+                    <th>Stasiun / Alat</th>
+                    <th>Catatan Klinis / Diagnosa</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php $__empty_1 = true; $__currentLoopData = $scans; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $scan): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                    <tr>
+                        <td>
+                            <a href="<?php echo e(route('scans.show', $scan->id)); ?>" style="text-decoration: none; color: inherit; display: block;">
+                                <div style="font-weight: 700; color: #38bdf8; font-family: 'JetBrains Mono', monospace;">
+                                    <?php echo e($scan->patient_id ?: '#CDC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT)); ?>
+
+                                </div>
+                                <div style="font-size: 0.72rem; color: var(--text-muted); font-family: monospace;">
+                                    <?php echo e($scan->accession_number ?: 'ACC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT)); ?>
+
+                                </div>
+                                <div style="font-size: 0.68rem; color: #64748b; margin-top: 2px;">
+                                    📅 <?php echo e($scan->created_at ? $scan->created_at->format('d/m/Y H:i') : '-'); ?>
+
+                                </div>
+                            </a>
+                        </td>
+                        <td>
+                            <a href="<?php echo e(route('scans.show', $scan->id)); ?>" style="text-decoration: none; color: inherit; display: block;">
+                                <div style="font-weight: 700; color: #f8fafc;"><?php echo e($scan->patient_name); ?></div>
+                                <div style="font-size: 0.75rem; color: var(--text-muted);">
+                                    <?php echo e($scan->gender == 'P' ? 'Perempuan' : 'Laki-laki'); ?>, <?php echo e($scan->age ? $scan->age . ' th' : '-'); ?>
+
+                                </div>
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge-modality"><?php echo e($scan->modality); ?></span>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.2rem;">
+                                <?php echo e($scan->study_description ?: 'Thorax View'); ?>
+
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-status <?php echo e($scan->status_badge_class); ?>">
+                                <?php echo e($scan->status_label); ?>
+
+                            </span>
+                        </td>
+                        <td>
+                            <span style="font-size: 0.75rem; font-family: monospace; color: #cbd5e1;">
+                                <?php echo e($scan->station_name ?: 'FUJIFILM_FDR'); ?>
+
+                            </span>
+                        </td>
+                        <td style="color: var(--text-muted); max-width: 280px; font-size: 0.825rem; line-height: 1.4;">
+                            <?php echo e($scan->diagnosis_notes ?: ($scan->order_notes ?: 'Menunggu pemeriksaan rontgen...')); ?>
+
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap;">
+                                <?php if($scan->mcu_status === 'siap_rontgen'): ?>
+                                    
+                                    <span class="badge-status badge-waiting" style="padding: 0.35rem 0.65rem; font-size: 0.76rem; border: 1px dashed rgba(245,158,11,0.5); cursor: default;" title="Pemeriksaan rontgen belum dilakukan. Citra medis belum tersedia.">
+                                        ⏳ Belum Diperiksa
+                                    </span>
+                                    <a href="<?php echo e(route('scans.show', $scan->id)); ?>" class="btn btn-secondary" style="padding: 0.35rem 0.6rem; font-size: 0.76rem; color: #94a3b8; border-color: #334155;" title="Lihat Informasi Order MCU">
+                                        📋 Detail Order
+                                    </a>
+                                <?php else: ?>
+                                    
+                                    <a href="<?php echo e(route('scans.show', $scan->id)); ?>" class="btn btn-primary" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;">
+                                        🔍 Viewer
+                                    </a>
+                                <?php endif; ?>
+                                <button type="button" class="btn btn-secondary" style="padding: 0.35rem 0.55rem; font-size: 0.78rem; color: #ef4444;" title="Hapus Order" onclick="openDeleteModal('<?php echo e(route('scans.destroy', $scan->id)); ?>', '<?php echo e(addslashes($scan->patient_name)); ?>', '<?php echo e(addslashes($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT))); ?>', '<?php echo e(addslashes($scan->accession_number ?: '-')); ?>')">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                    <tr>
+                        <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 3rem;">
+                            Belum ada antrian pemeriksaan pasien. Klik <strong>+ Buat Order MCU Baru</strong> untuk memulai.
+                        </td>
+                    </tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
+
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                <?php if($scans->total() > 0): ?>
+                    Menampilkan <strong><?php echo e($scans->firstItem()); ?>–<?php echo e($scans->lastItem()); ?></strong>
+                    dari <strong><?php echo e($scans->total()); ?></strong> data pemeriksaan
+                <?php else: ?>
+                    Tidak ada data pemeriksaan
+                <?php endif; ?>
+            </div>
+            <div class="pagination-links">
+                
+                <span class="disabled">&#8249;</span>
+
+                
+                <?php if($scans->hasPages()): ?>
+                    <?php $__currentLoopData = $scans->getUrlRange(1, $scans->lastPage()); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $page => $url): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php if($page == $scans->currentPage()): ?>
+                            <span class="current"><?php echo e($page); ?></span>
+                        <?php else: ?>
+                            <a href="<?php echo e($url); ?>"><?php echo e($page); ?></a>
+                        <?php endif; ?>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                <?php else: ?>
+                    <span class="current">1</span>
+                <?php endif; ?>
+
+                
+                <?php if($scans->hasMorePages()): ?>
+                    <a href="<?php echo e($scans->nextPageUrl()); ?>">&#8250;</a>
+                <?php else: ?>
+                    <span class="disabled">&#8250;</span>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Modal Dialog: Buat Order MCU Baru -->
+<div class="modal-backdrop" id="modalOrder">
+    <div class="modal-content" id="modalOrderContent" style="max-width: 660px; transition: max-width 0.25s ease;">
+        <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.15rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--card-border);">
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+                <div style="font-weight: 700; font-size: 1rem; color: #f8fafc; letter-spacing: -0.01em;">➕ Buat Sesi / Order MCU Baru (Hyu)</div>
+                
+                <!-- Action Buttons: Upload Excel & Unduh Template -->
+                <div class="mcu-header-actions" id="mcuHeaderActions">
+                    <input type="file" id="mcuExcelFile" accept=".xlsx,.xls,.csv" style="display: none;" onchange="handleMcuExcelUpload(this)">
+                    
+                    <button type="button" id="mcuUploadBtn" class="mcu-header-btn mcu-header-btn-upload" onclick="document.getElementById('mcuExcelFile').click()" title="Upload file Excel untuk mengisi form otomatis">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <span>Upload Excel</span>
+                    </button>
+
+                    <a href="<?php echo e(route('mcu.import.template')); ?>" class="mcu-header-btn mcu-header-btn-template" title="Unduh format template Excel MCU (.xlsx)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span>Unduh Template</span>
+                    </a>
+                </div>
+            </div>
+
+            <button type="button" class="btn-close" onclick="closeOrderModal()" title="Tutup">&times;</button>
+        </div>
+
+        <!-- Banner Notifikasi Upload (Hanya saat proses upload berlangsung atau error file) -->
+        <div id="mcuUploadNotification" style="display: none; margin-bottom: 1.15rem;">
+            <div id="mcuUploadStatus" style="padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; border: 1px solid transparent;">
+                <div id="mcuUploadStatusContent" style="display: flex; align-items: center; gap: 0.5rem; flex: 1; flex-wrap: wrap;"></div>
+                <button type="button" onclick="dismissMcuStatus()" style="background: none; border: none; color: inherit; opacity: 0.6; cursor: pointer; font-size: 1.15rem; line-height: 1; padding: 0 0.2rem;" title="Tutup pemberitahuan">&times;</button>
+            </div>
+        </div>
+
+        <!-- View 1: Form Manual (Default jika tidak ada Excel aktif) -->
+        <div id="manualOrderFormWrap">
+            <form action="<?php echo e(route('scans.store')); ?>" method="POST">
+                <?php echo csrf_field(); ?>
+                <div class="form-group">
+                    <label class="form-label">Nama Lengkap Pasien *</label>
+                    <input type="text" name="patient_name" class="form-control" placeholder="Contoh: Budi Santoso" required>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">No. Rekam Medis (MRN / NIK)</label>
+                        <input type="text" name="patient_id" class="form-control" placeholder="Otomatis jika kosong">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Usia (Tahun)</label>
+                        <input type="number" name="age" class="form-control" value="30">
+                    </div>
+                </div>
+
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Jenis Kelamin</label>
+                        <select name="gender" class="form-control">
+                            <option value="L">Laki-laki</option>
+                            <option value="P">Perempuan</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                            <span>Pemeriksaan Terpilih *</span>
+                            <span id="selectedModalityCategoryBadge" style="font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 700; border: 1px solid rgba(56, 189, 248, 0.35); text-transform: uppercase; letter-spacing: 0.03em;">Thorax</span>
+                        </label>
+                        <input type="hidden" name="modality" id="selectedModalityInput" value="Chest PA" required>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <div id="selectedModalityDisplayBox" style="flex: 1; padding: 0.55rem 0.85rem; background: #070d18; border: 1px solid #1e293b; border-radius: 6px; color: #f8fafc; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 0.6rem; min-height: 42px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);">
+                                <span id="selectedModalityIcon" style="font-size: 1.1rem; filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.5));">🫁</span>
+                                <span id="selectedModalityText" style="color: #38bdf8; letter-spacing: 0.01em;">Chest PA</span>
+                            </div>
+                            <button type="button" class="btn" onclick="openProtocolPickerModal()" style="white-space: nowrap; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color: #ffffff; border: 1px solid #38bdf8; padding: 0.55rem 0.95rem; border-radius: 6px; font-weight: 700; font-size: 0.84rem; display: inline-flex; align-items: center; gap: 0.45rem; cursor: pointer; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); transition: all 0.2s ease;" title="Buka katalog workstation 180 pemeriksaan radiologi">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                <span>Tambah Pemeriksaan</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Indikasi Klinis / Deskripsi Sesi</label>
+                    <input type="text" name="study_description" class="form-control" placeholder="Contoh: MCU Karyawan PT Semen Gresik">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Catatan Tambahan untuk Petugas Rontgen</label>
+                    <textarea name="order_notes" rows="2" class="form-control" placeholder="Catatan pengantar khusus..."></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeOrderModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan & Kirim ke Worklist</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- View 2: Staging Table CRUD (Aktif setelah file Excel diunggah) -->
+        <div id="stagingExcelWrap" style="display: none; flex-direction: column;">
+            <!-- Top Summary Bar -->
+            <div class="staging-top-bar">
+                <div class="staging-summary-info">
+                    <span class="staging-file-badge">📄 <span id="stagingFileName">data_mcu.xlsx</span></span>
+                    <span id="stagingSummaryText" style="color: #cbd5e1; font-weight: 500;">Ditemukan 0 pasien (0 siap, 0 perlu dicek)</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="confirmGantiFile()" title="Ganti dengan file Excel lain" style="font-size: 0.74rem; padding: 0.3rem 0.65rem;">
+                        🔄 Ganti File
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" onclick="confirmCloseStaging()" title="Tutup Excel dan kembali ke form manual" style="font-size: 0.74rem; padding: 0.3rem 0.65rem;">
+                        ✕ Tutup Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toolbar: Filter Status, Search, Tambah & Hapus -->
+            <div class="staging-toolbar">
+                <div class="staging-tabs">
+                    <button type="button" class="staging-tab active" data-filter="all" onclick="setStagingStatusFilter('all')">
+                        Semua (<span id="countTabAll">0</span>)
+                    </button>
+                    <button type="button" class="staging-tab" data-filter="ready" onclick="setStagingStatusFilter('ready')">
+                        ✅ Siap (<span id="countTabReady">0</span>)
+                    </button>
+                    <button type="button" class="staging-tab" data-filter="invalid" onclick="setStagingStatusFilter('invalid')">
+                        ⚠️ Perlu dicek (<span id="countTabInvalid">0</span>)
+                    </button>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                    <div class="staging-search-wrap">
+                        <input type="text" id="stagingSearchInput" class="staging-search-input" placeholder="🔍 Cari nama / NIK..." oninput="handleStagingSearch(this.value)">
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addStagingRow()" title="Tambah baris kosong di paling atas" style="border-color: #38bdf8; color: #38bdf8; background: rgba(2, 132, 199, 0.15); font-size: 0.75rem; padding: 0.35rem 0.7rem;">
+                        + Tambah Pasien
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" id="btnDeleteSelected" onclick="deleteSelectedStagingRows()" title="Hapus semua baris yang dicentang" disabled style="border-color: rgba(239, 68, 68, 0.4); color: #f87171; background: rgba(239, 68, 68, 0.1); font-size: 0.75rem; padding: 0.35rem 0.7rem; cursor: not-allowed; opacity: 0.5;">
+                        🗑️ Hapus Terpilih
+                    </button>
+                </div>
+            </div>
+
+            <!-- Staging Table Container -->
+            <div class="staging-table-container">
+                <table class="staging-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 38px; text-align: center;">
+                                <input type="checkbox" id="stagingMasterCheckbox" onchange="toggleSelectAllStaging(this.checked)" title="Centang semua baris Siap yang tampil">
+                            </th>
+                            <th style="width: 44px; text-align: center;">No</th>
+                            <th style="width: 110px;">Status</th>
+                            <th style="min-width: 160px;">Nama Lengkap *</th>
+                            <th style="min-width: 140px;">No. RM / NIK</th>
+                            <th style="width: 75px;">Usia *</th>
+                            <th style="width: 80px;">JK *</th>
+                            <th style="min-width: 140px;">Modalitas *</th>
+                            <th style="min-width: 150px;">Indikasi Klinis</th>
+                            <th style="min-width: 150px;">Catatan</th>
+                            <th style="width: 80px; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stagingTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            <div class="pagination-wrapper" style="padding: 0.65rem 0; margin-top: 0.45rem; border-top: 1px solid var(--card-border);">
+                <div id="stagingPaginationInfo" class="pagination-info" style="font-size: 0.75rem;">
+                    Menampilkan 0 dari 0 pasien
+                </div>
+                <div id="stagingPaginationLinks" class="pagination-links"></div>
+            </div>
+
+            <!-- Staging Footer Bar -->
+            <div class="staging-footer-bar">
+                <div id="stagingSelectedCountInfo" style="font-size: 0.8rem; color: #cbd5e1; font-weight: 600;">
+                    0 dipilih dari 0 pasien
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <button type="button" class="btn btn-secondary" onclick="confirmCloseStaging()">Batal</button>
+                    <button type="button" class="btn btn-primary" id="btnSubmitStaging" onclick="submitStagingToWorklist()" disabled>
+                        Kirim 0 Pasien ke Worklist
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: WORKSTATION PROTOCOL PICKER (FULL SCREEN CONSOLE - 180 PROTOKOL LENGKAP) -->
+<div id="modalProtocolPicker" class="modal-backdrop">
+    <div class="protocol-modal-dialog">
+        <!-- TOP HEADER -->
+        <div class="protocol-header">
+            <div class="protocol-header-left">
+                <div class="protocol-title">
+                    <span>Tambah Pemeriksaan</span>
+                </div>
+
+                <!-- Sort Buttons -->
+                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                    <button type="button" id="btnSortFreq" class="protocol-tool-btn active" onclick="setProtocolSort('default')">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 20V10"></path>
+                            <path d="M18 20V4"></path>
+                            <path d="M6 20v-4"></path>
+                        </svg>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Frekuensi</span>
+                    </button>
+                    <button type="button" id="btnSortAz" class="protocol-tool-btn" onclick="setProtocolSort('az')">
+                        <span style="font-size: 0.78rem; font-weight: 800; font-family: monospace;">A-Z</span>
+                        <span class="custom-tooltip">Urutkan Berdasarkan Abjad (A–Z)</span>
+                    </button>
+                </div>
+
+                <!-- Real-time Search Box -->
+                <div class="protocol-search-wrap">
+                    <svg class="protocol-search-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="protocolSearchInput" placeholder="Cari pemeriksaan, proyeksi, atau organ..." autocomplete="off" oninput="handleProtocolSearch(this.value)">
+                    <button type="button" id="protocolSearchClear" onclick="clearProtocolSearch()" style="display: none;">&times;</button>
+                </div>
+            </div>
+
+            <!-- Close Modal -->
+            <button type="button" class="btn-close" onclick="closeProtocolPickerModal()" title="Tutup" style="font-size: 1.8rem;">&times;</button>
+        </div>
+
+        <!-- MAIN SPLIT BODY -->
+        <div class="protocol-body">
+            <!-- LEFT COLUMN: SKELETON & TABS -->
+            <div class="protocol-anatomy-col">
+                <!-- Floating Medical English Anatomy HUD -->
+                <div id="skelRegionHud" class="skel-hud">Select Anatomical Region</div>
+
+                <!-- Real Anatomical Radiographic Human Skeleton with Interactive Glowing Regions -->
+                <div class="skeleton-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 768 1376" id="skeletonSvg" class="skeleton-svg">
+                        <!-- True 3D Medical Radiographic Human Skeleton Base Image -->
+                        <image href="/images/workstation_skeleton.jpg" xlink:href="/images/workstation_skeleton.jpg" x="0" y="0" width="768" height="1376" preserveAspectRatio="xMidYMid meet" />
+
+                        <!-- Organic Glowing Organ Overlays (Pixel-perfect on actual bones) -->
+                        <image id="glow-head" class="skel-glow-layer" href="/images/parts/skeleton_part_head.png?v=3" xlink:href="/images/parts/skeleton_part_head.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-spine" class="skel-glow-layer" href="/images/parts/skeleton_part_spine.png?v=3" xlink:href="/images/parts/skeleton_part_spine.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-thorax" class="skel-glow-layer" href="/images/parts/skeleton_part_thorax.png?v=3" xlink:href="/images/parts/skeleton_part_thorax.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-pelvis" class="skel-glow-layer" href="/images/parts/skeleton_part_pelvis.png?v=3" xlink:href="/images/parts/skeleton_part_pelvis.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_right_arm.png?v=3" xlink:href="/images/parts/skeleton_part_right_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_arm" class="skel-glow-layer" href="/images/parts/skeleton_part_left_arm.png?v=3" xlink:href="/images/parts/skeleton_part_left_arm.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-right_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_right_leg.png?v=3" xlink:href="/images/parts/skeleton_part_right_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+                        <image id="glow-left_leg" class="skel-glow-layer" href="/images/parts/skeleton_part_left_leg.png?v=3" xlink:href="/images/parts/skeleton_part_left_leg.png?v=3" x="0" y="0" width="768" height="1376" />
+
+                        <!-- Interactive Clickable Hitbox Zones (Transparent, Zero Rigid Boxes) -->
+                        <g id="skel-head" class="skel-region" data-category="head" data-label="Head / Skull" tabindex="0" role="button">
+                            <path d="M 295 50 L 472 50 L 472 214 L 295 214 Z" />
+                        </g>
+
+                        <g id="skel-right-arm" class="skel-region" data-category="right_arm" data-label="Right Upper Limb" tabindex="0" role="button">
+                            <path d="M 75 260 L 250 260 L 250 535 L 246 830 L 75 830 Z" />
+                        </g>
+
+                        <g id="skel-left-arm" class="skel-region" data-category="left_arm" data-label="Left Upper Limb" tabindex="0" role="button">
+                            <path d="M 525 260 L 700 260 L 700 830 L 532 830 L 525 535 Z" />
+                        </g>
+
+                        <g id="skel-thorax" class="skel-region" data-category="thorax" data-label="Thorax" tabindex="0" role="button">
+                            <path d="M 250 265 L 525 265 L 525 535 L 250 535 Z" />
+                        </g>
+
+                        <g id="skel-pelvis" class="skel-region" data-category="pelvis" data-label="Pelvis &amp; Abdomen" tabindex="0" role="button">
+                            <path d="M 245 535 L 532 535 L 532 720 L 245 720 Z" />
+                        </g>
+
+                        <g id="skel-right-leg" class="skel-region" data-category="right_leg" data-label="Right Lower Limb" tabindex="0" role="button">
+                            <path d="M 240 720 L 388 720 L 388 1370 L 240 1370 Z" />
+                        </g>
+
+                        <g id="skel-left-leg" class="skel-region" data-category="left_leg" data-label="Left Lower Limb" tabindex="0" role="button">
+                            <path d="M 388 720 L 540 720 L 540 1370 L 388 1370 Z" />
+                        </g>
+
+                        <!-- Spine sits on the TOP layer of the SVG DOM so midline hover & clicks are 100% responsive -->
+                        <g id="skel-spine" class="skel-region" data-category="spine" data-label="Spine" tabindex="0" role="button">
+                            <path d="M 352 210 L 424 210 L 424 690 L 352 690 Z" />
+                        </g>
+                    </svg>
+                </div>
+
+                <!-- Bottom Tabs below Skeleton (Aligned so tooltips NEVER get cut off) -->
+                <div class="skel-tabs-wrap">
+                    <button type="button" id="tabOftenUsed" class="skel-tab-btn active" onclick="selectProtocolCategory('often_used')">
+                        <span>Often Used</span>
+                        <span class="custom-tooltip">Pemeriksaan yang Sering Digunakan</span>
+                    </button>
+                    <button type="button" id="tabUltrasound" class="skel-tab-btn" onclick="selectProtocolCategory('ultrasound')">
+                        <span>USG (Mindray)</span>
+                        <span class="custom-tooltip">Pemeriksaan USG Mindray DP-10</span>
+                    </button>
+                    <button type="button" id="tabAdvanced" class="skel-tab-btn" onclick="selectProtocolCategory('advanced')">
+                        <span>Advanced</span>
+                        <span class="custom-tooltip">Pemeriksaan Lanjutan</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: PROTOCOLS 4-COLUMN GRID -->
+            <div class="protocol-main-col">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.85rem; padding-bottom: 0.6rem; border-bottom: 1px solid #1c2b44;">
+                    <div style="display: flex; align-items: center; gap: 0.65rem;">
+                        <span id="protocolGridTitle" style="font-weight: 700; font-size: 1.05rem; color: #f1f5f9;">Often Used</span>
+                        <span id="protocolGridCount" style="font-size: 0.74rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.18rem 0.65rem; border-radius: 9999px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 700;">30 Pemeriksaan</span>
+                    </div>
+                    <span style="font-size: 0.76rem; color: #64748b; font-style: italic;">Klik 1x untuk memilih • Klik 2x untuk konfirmasi cepat</span>
+                </div>
+
+                <div id="protocolGridContainer" class="protocol-grid-container">
+                    <!-- Populated dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- BOTTOM TRAY (SELECTION SUMMARY) -->
+        <div class="protocol-picker-tray">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span style="font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; font-weight: 700;">Pemeriksaan Terpilih:</span>
+                <span id="pickerSelectedName" style="color: #00f0ff; font-weight: 800; font-size: 1.02rem; font-family: 'JetBrains Mono', monospace; text-shadow: 0 0 10px rgba(0, 240, 255, 0.45);">Chest PA</span>
+                <span id="pickerSelectedCategoryBadge" style="font-size: 0.74rem; background: #111a2e; color: #38bdf8; padding: 0.2rem 0.6rem; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.35); font-weight: 600;">Thorax</span>
+            </div>
+            <div style="font-size: 0.74rem; color: #64748b;">Standar Protokol DICOM CR / DX Konsol Digital Radiologi</div>
+        </div>
+
+        <!-- FOOTER BAR (ACTIONS IN BAHASA INDONESIA) -->
+        <div class="protocol-picker-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 120px; font-weight: 600;">
+                Kembali
+            </button>
+            <button type="button" class="btn btn-primary" onclick="confirmProtocolSelection()" style="min-width: 190px; font-weight: 700; background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); border-color: #00f0ff; box-shadow: 0 0 15px rgba(0, 240, 255, 0.35);">
+                Pilih Pemeriksaan
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="closeProtocolPickerModal()" style="min-width: 110px; border-color: #334155; color: #94a3b8;">
+                Batal
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Sub-Dialog: Edit Pasien Staging (Dialog untuk edit nyaman) -->
+<div class="modal-backdrop" id="modalEditStagingPatient" style="display: none; z-index: 10000;">
+    <div class="modal-content" style="max-width: 580px; border: 1px solid rgba(56, 189, 248, 0.45); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9), 0 0 35px rgba(2, 132, 199, 0.2);">
+        <div class="modal-header" style="margin-bottom: 1.15rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--card-border);">
+            <div style="font-weight: 700; font-size: 0.98rem; color: #f8fafc; display: flex; align-items: center; gap: 0.5rem;">
+                <span>✏️</span> Edit Data Pasien MCU (Staging)
+            </div>
+            <button type="button" class="btn-close" onclick="closeEditStagingModal()">&times;</button>
+        </div>
+        <div>
+            <input type="hidden" id="editStagingRowId">
+            <div class="form-group">
+                <label class="form-label">Nama Lengkap Pasien *</label>
+                <input type="text" id="editStagingNama" class="form-control" placeholder="Contoh: Budi Santoso" required>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">No. RM / NIK (16 Digit jika NIK)</label>
+                    <input type="text" id="editStagingNik" class="form-control" placeholder="Kosongkan jika otomatis No. RM">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Usia (Tahun) *</label>
+                    <input type="number" id="editStagingUsia" class="form-control" min="0" max="120" placeholder="0 - 120">
+                </div>
+            </div>
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Jenis Kelamin *</label>
+                    <select id="editStagingGender" class="form-control">
+                        <option value="L">Laki-laki</option>
+                        <option value="P">Perempuan</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Modalitas Pemeriksaan *</label>
+                    <select id="editStagingModality" class="form-control">
+                        <option value="Thorax PA">Thorax PA (Rontgen Dada)</option>
+                        <option value="Thorax AP">Thorax AP</option>
+                        <option value="Thorax Lateral">Thorax Lateral</option>
+                        <option value="Waters">Waters (Sinus Paranasal / SPN)</option>
+                        <option value="USG Abdomen">USG Abdomen</option>
+                        <option value="USG Pelvic">USG Pelvic</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Indikasi Klinis / Deskripsi Sesi</label>
+                <input type="text" id="editStagingIndikasi" class="form-control" placeholder="Contoh: MCU Karyawan PT Semen Gresik">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Catatan Tambahan untuk Petugas Rontgen</label>
+                <textarea id="editStagingCatatan" rows="3" class="form-control" placeholder="Catatan pengantar khusus..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.25rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeEditStagingModal()">Batal</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditStagingModal()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Floating Toast Undo Delete -->
+<div id="stagingUndoToast" class="staging-undo-toast" style="display: none;">
+    <span id="stagingUndoMessage">🗑️ Pasien dihapus</span>
+    <button type="button" onclick="undoStagingDelete()" class="btn btn-sm btn-primary" style="padding: 0.25rem 0.65rem; font-size: 0.75rem;">Urungkan (Undo)</button>
+    <button type="button" onclick="dismissStagingUndo()" style="background:none; border:none; color:#94a3b8; font-size:1.15rem; cursor:pointer; line-height:1; padding:0 0.2rem;" title="Tutup">&times;</button>
+</div>
+
+<!-- MODAL: SETUP KONFIGURASI DICOM NODE -->
+<div id="modalDicomConfig" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 480px;">
+        <div class="modal-header">
+            <h3 class="modal-title" style="display: flex; align-items: center; gap: 0.5rem;">
+                <span>⚙️</span> Konfigurasi DICOM Node (NEMA PS 3.4 SCP)
+            </h3>
+            <button class="btn-close" onclick="closeDicomModal()">&times;</button>
+        </div>
+
+        <form id="formDicomConfig" onsubmit="saveDicomConfig(event)">
+            <?php echo csrf_field(); ?>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4; background: rgba(2, 132, 199, 0.1); padding: 0.6rem 0.85rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                Parameter jaringan ini disesuaikan dengan konfigurasi <em>Destination PACS Server</em> pada mesin Rontgen Fujifilm / USG Mindray klinik.
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Application Entity Title (AE Title)</label>
+                <input type="text" id="cfgAeTitle" name="ae_title" class="form-control" value="<?php echo e($pacsConfig['ae_title']); ?>" required maxlength="16" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: #38bdf8;">
+                <span style="font-size: 0.70rem; color: var(--text-muted);">Maks. 16 Karakter Alfanumerik (Standar NEMA). Default: HYU_PACS</span>
+            </div>
+
+            <div class="form-grid-2">
+                <div class="form-group">
+                    <label class="form-label">Nomor Port Jaringan DICOM *</label>
+                    <input type="number" id="cfgPort" name="port" class="form-control" value="<?php echo e($pacsConfig['port']); ?>" required min="1" max="65535" style="font-family: 'JetBrains Mono', monospace; font-weight: 700;">
+                    <span style="font-size: 0.70rem; color: var(--text-muted);">Port Listener: 4242 / 104 / 11112</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">IP Binding / Host</label>
+                    <input type="text" class="form-control" value="0.0.0.0 (All LAN)" disabled style="opacity: 0.7; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Target Sumber Modalitas (Hardware Klinik)</label>
+                <input type="text" id="cfgModality" name="modality_source" class="form-control" value="<?php echo e($pacsConfig['modality_ae']); ?>" placeholder="Contoh: FUJIFILM (CR) & MINDRAY (US)">
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--card-border);">
+                <button type="button" class="btn btn-fuji" onclick="triggerSimulateFuji()" style="font-size: 0.78rem; padding: 0.45rem 0.85rem;">
+                    📡 Uji Transmisi C-STORE (Fujifilm)
+                </button>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDicomModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary" id="btnSaveDicomCfg">
+                        💾 Simpan Konfigurasi
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: HASIL TRANSMISI DICOM C-STORE (SCP) -->
+<div id="modalCstoreResult" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 520px; border: 1px solid rgba(56, 189, 248, 0.35); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.85), 0 0 35px rgba(2, 132, 199, 0.15);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span id="cstoreModalHeaderIcon" style="font-size: 1.25rem;">📡</span>
+                <span id="cstoreModalHeaderTitle" style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; color: #f1f5f9;">
+                    TRANSMISI DICOM C-STORE
+                </span>
+            </div>
+            <button class="btn-close" onclick="closeCstoreModal()">&times;</button>
+        </div>
+
+        <div style="padding-top: 0.5rem;">
+            <!-- Status Badge -->
+            <div id="cstoreStatusBadge" style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem;">
+                <span id="cstoreStatusDot">●</span>
+                <span id="cstoreStatusText">STATUS 0x0000 (SUCCESS)</span>
+            </div>
+
+            <!-- Message Text -->
+            <p id="cstoreMessageText" style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1rem;">
+                Citra rontgen dari mesin Fujifilm FDR D-EVO berhasil diterima dan diarsipkan oleh Hyu PACS SCP.
+            </p>
+
+            <!-- Telemetry Details Box -->
+            <div id="cstoreDetailsBox" style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 0.85rem; font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; line-height: 1.6; margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">PASIEN / MRN</span>
+                    <strong id="cstoreDetailPatient" style="color: #f1f5f9;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">ACCESSION NO.</span>
+                    <strong id="cstoreDetailAccession" style="color: #38bdf8;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.3rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">STASIUN AKUISISI</span>
+                    <span id="cstoreDetailStation" style="color: #cbd5e1;">FUJIFILM_FDR_D-EVO</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b;">SOP CLASS UID</span>
+                    <span id="cstoreDetailSop" style="color: #cbd5e1; font-size: 0.7rem;">Digital X-Ray (PS 3.4)</span>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+                <button type="button" class="btn btn-secondary" onclick="closeCstoreModal()">Tutup</button>
+                <button type="button" class="btn btn-primary" id="btnCstoreAction" onclick="refreshAfterCstore()" style="background: linear-gradient(135deg, #0284c7, #0369a1); border: 1px solid #38bdf8; font-weight: 700; letter-spacing: 0.03em;">
+                    🔄 Buka Daftar & Sesi Pasien
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: KONFIRMASI HAPUS PEMERIKSAAN -->
+<div id="modalConfirmDelete" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 480px; border: 1px solid rgba(239, 68, 68, 0.45); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9), 0 0 35px rgba(239, 68, 68, 0.2);">
+        <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 0.85rem;">
+            <div style="display: flex; align-items: center; gap: 0.6rem;">
+                <span style="font-size: 1.25rem;">⚠️</span>
+                <span style="font-weight: 800; font-size: 0.95rem; letter-spacing: 0.04em; text-transform: uppercase; color: #f87171;">
+                    KONFIRMASI HAPUS DATA PEMERIKSAAN
+                </span>
+            </div>
+            <button class="btn-close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+
+        <div style="padding-top: 0.5rem;">
+            <!-- Warning Badge -->
+            <div style="display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.75rem; border-radius: 6px; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 0.9rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171;">
+                <span>●</span>
+                <span>TINDAKAN PERMANEN</span>
+            </div>
+
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5; margin-bottom: 1rem;">
+                Apakah Anda yakin ingin menghapus data pemeriksaan pasien ini? Rekam sesi, arsip citra DICOM, dan hasil ekspertise terkait akan dihapus secara permanen dari server Hyu PACS.
+            </p>
+
+            <!-- Details Telemetry Box -->
+            <div style="background: rgba(15, 23, 42, 0.75); border: 1px solid rgba(51, 65, 85, 0.6); border-radius: 8px; padding: 0.85rem; font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; line-height: 1.6; margin-bottom: 1.25rem;">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.35rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">NAMA PASIEN</span>
+                    <strong id="delModalPatientName" style="color: #f1f5f9;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(51, 65, 85, 0.6); padding-bottom: 0.35rem; margin-bottom: 0.4rem;">
+                    <span style="color: #64748b;">NO. REKAM MEDIS (MRN)</span>
+                    <strong id="delModalPatientId" style="color: #38bdf8;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #64748b;">ACCESSION NO.</span>
+                    <span id="delModalAccession" style="color: #cbd5e1;">-</span>
+                </div>
+            </div>
+
+            <!-- Form submission -->
+            <form id="formConfirmDelete" method="POST" action="">
+                <?php echo csrf_field(); ?>
+                <?php echo method_field('DELETE'); ?>
+                <div style="display: flex; justify-content: flex-end; gap: 0.6rem; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 1rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">
+                        Batal
+                    </button>
+                    <button type="submit" class="btn" style="background: linear-gradient(135deg, #dc2626, #b91c1c); border: 1px solid #ef4444; color: #ffffff; font-weight: 700; letter-spacing: 0.03em; padding: 0.5rem 1.15rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35); cursor: pointer;">
+                        🗑️ Ya, Hapus Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* Helper untuk mengambil CSRF Token secara aman dari meta atau form */
+    function getCsrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta && meta.content) return meta.content;
+        var input = document.querySelector('input[name="_token"]');
+        if (input && input.value) return input.value;
+        return '<?php echo e(csrf_token()); ?>';
+    }
+
+    /* ═══════════════════════════════════════════════════════════════════════
+       STATE MANAGEMENT: STAGING EXCEL TABLE (CRUD)
+       ═══════════════════════════════════════════════════════════════════════ */
+    var stagingRows = [];
+    var stagingCurrentPage = 1;
+    var stagingRowsPerPage = 25;
+    var stagingSearchQuery = '';
+    var stagingStatusFilter = 'all'; // 'all' | 'ready' | 'invalid'
+    var stagingFileName = '';
+    var recentlyDeletedRows = [];
+    var stagingUndoTimeout = null;
+    var activeInlineEdit = null;
+
+    var ALLOWED_MODALITIES = [
+        'Thorax PA',
+        'Thorax AP',
+        'Thorax Lateral',
+        'Waters',
+        'USG Abdomen',
+        'USG Pelvic'
+    ];
+
+    /* ─── Modal Open & Close Handlers ─── */
+    function openOrderModal() {
+        document.getElementById('modalOrder').style.display = 'flex';
+    }
+
+    function closeOrderModal() {
+        document.getElementById('modalOrder').style.display = 'none';
+        resetMcuUploadState();
+    }
+
+    function confirmCloseOrderModal() {
+        if (stagingRows.length > 0) {
+            if (!confirm('Data pasien di tabel staging yang belum dikirim akan hilang. Yakin ingin menutup?')) {
+                return;
+            }
+        }
+        closeOrderModal();
+    }
+
+    function confirmCloseStaging() {
+        if (stagingRows.length > 0) {
+            if (!confirm('Data hasil edit di tabel staging akan hilang. Yakin ingin kembali ke form manual?')) {
+                return;
+            }
+        }
+        resetMcuUploadState();
+    }
+
+    function confirmGantiFile() {
+        if (stagingRows.length > 0) {
+            if (!confirm('Data hasil edit saat ini akan diganti dengan file baru. Lanjutkan?')) {
+                return;
+            }
+        }
+        var fileInput = document.getElementById('mcuExcelFile');
+        if (fileInput) fileInput.click();
+    }
+
+    function resetMcuUploadState() {
+        var fileInput = document.getElementById('mcuExcelFile');
+        if (fileInput) fileInput.value = '';
+
+        dismissMcuStatus();
+        dismissStagingUndo();
+
+        stagingRows = [];
+        recentlyDeletedRows = [];
+        stagingCurrentPage = 1;
+        stagingSearchQuery = '';
+        stagingStatusFilter = 'all';
+        stagingFileName = '';
+        activeInlineEdit = null;
+
+        var modalContent = document.getElementById('modalOrderContent');
+        if (modalContent) modalContent.classList.remove('modal-content-wide');
+
+        var stagingWrap = document.getElementById('stagingExcelWrap');
+        if (stagingWrap) stagingWrap.style.display = 'none';
+
+        var manualWrap = document.getElementById('manualOrderFormWrap');
+        if (manualWrap) manualWrap.style.display = 'block';
+
+        var searchInput = document.getElementById('stagingSearchInput');
+        if (searchInput) searchInput.value = '';
+    }
+
+    function dismissMcuStatus() {
+        var notif = document.getElementById('mcuUploadNotification');
+        if (notif) notif.style.display = 'none';
+    }
+
+    function showMcuStatus(type, html) {
+        var notif = document.getElementById('mcuUploadNotification');
+        var statusEl = document.getElementById('mcuUploadStatus');
+        var contentEl = document.getElementById('mcuUploadStatusContent');
+        if (!notif || !statusEl || !contentEl) return;
+
+        contentEl.innerHTML = html;
+
+        if (type === 'loading') {
+            statusEl.style.background = 'rgba(2, 132, 199, 0.12)';
+            statusEl.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+            statusEl.style.color = '#38bdf8';
+        } else if (type === 'success') {
+            statusEl.style.background = 'rgba(16, 185, 129, 0.12)';
+            statusEl.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+            statusEl.style.color = '#34d399';
+        } else if (type === 'error') {
+            statusEl.style.background = 'rgba(239, 68, 68, 0.12)';
+            statusEl.style.borderColor = 'rgba(239, 68, 68, 0.35)';
+            statusEl.style.color = '#f87171';
+        } else {
+            statusEl.style.background = 'rgba(30, 41, 59, 0.85)';
+            statusEl.style.borderColor = 'rgba(56, 189, 248, 0.35)';
+            statusEl.style.color = '#e2e8f0';
+        }
+
+        notif.style.display = 'block';
+    }
+
+    /* ─── Excel File Upload Handler (Tahap 1) ─── */
+    function handleMcuExcelUpload(input) {
+        if (!input.files || !input.files[0]) return;
+
+        var file = input.files[0];
+        var uploadBtn = document.getElementById('mcuUploadBtn');
+
+        var allowedExt = ['xlsx', 'xls', 'csv'];
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (allowedExt.indexOf(ext) === -1) {
+            showMcuStatus('error', '<span>❌ Format file tidak didukung. Gunakan file <strong>.xlsx</strong>, <strong>.xls</strong>, atau <strong>.csv</strong>.</span>');
+            input.value = '';
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            showMcuStatus('error', '<span>❌ Ukuran file terlalu besar (maksimal 5 MB).</span>');
+            input.value = '';
+            return;
+        }
+
+        showMcuStatus('loading', '<span>⏳ Memproses file <strong>' + escapeHtml(file.name) + '</strong>...</span>');
+        if (uploadBtn) { uploadBtn.disabled = true; uploadBtn.style.opacity = '0.6'; }
+
+        var formData = new FormData();
+        formData.append('file', file);
+        formData.append('_token', getCsrfToken());
+
+        fetch("<?php echo e(route('worklist.excel.preview')); ?>", {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: formData
+        })
+        .then(function(res) {
+            return res.text().then(function(rawText) {
+                var data = null;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    data = null;
+                }
+                return { ok: res.ok, status: res.status, data: data, rawText: rawText };
+            });
+        })
+        .then(function(result) {
+            if (!result.ok) {
+                if (result.status === 419) {
+                    showMcuStatus('error', '<span>⚠️ Sesi Anda telah kedaluwarsa. Silakan <a href="javascript:location.reload()" style="color:#38bdf8; text-decoration:underline; font-weight:600;">muat ulang halaman</a> lalu coba upload kembali.</span>');
+                    return;
+                }
+                if (result.status === 413) {
+                    showMcuStatus('error', '<span>❌ Ukuran file terlalu besar untuk diproses server.</span>');
+                    return;
+                }
+                var errMsg = (result.data && result.data.message) ? result.data.message : ('Terjadi kesalahan pada server (HTTP ' + result.status + ').');
+                showMcuStatus('error', '<span>❌ ' + escapeHtml(errMsg) + '</span>');
+                return;
+            }
+
+            if (!result.data) {
+                showMcuStatus('error', '<span>❌ Respon server tidak valid. Silakan coba kembali atau muat ulang halaman.</span>');
+                return;
+            }
+
+            dismissMcuStatus();
+
+            var resp = result.data;
+            var pasien = resp.pasien || [];
+
+            if (pasien.length === 0) {
+                showMcuStatus('error', '<span>❌ File Excel tidak berisi data pasien.</span>');
+                return;
+            }
+
+            stagingRows = pasien;
+            stagingFileName = file.name;
+            stagingCurrentPage = 1;
+            stagingStatusFilter = 'all';
+            stagingSearchQuery = '';
+
+            document.getElementById('stagingFileName').textContent = file.name;
+
+            // Alihkan tampilan modal dari manual form ke Staging Table
+            var modalContent = document.getElementById('modalOrderContent');
+            if (modalContent) modalContent.classList.add('modal-content-wide');
+
+            var manualWrap = document.getElementById('manualOrderFormWrap');
+            if (manualWrap) manualWrap.style.display = 'none';
+
+            var stagingWrap = document.getElementById('stagingExcelWrap');
+            if (stagingWrap) stagingWrap.style.display = 'flex';
+
+            validateAllStagingRows();
+            renderStagingTable();
+        })
+        .catch(function(err) {
+            showMcuStatus('error', '<span>❌ Gagal membaca file: ' + escapeHtml(err.message || 'Kesalahan jaringan') + '</span>');
+        })
+        .finally(function() {
+            if (uploadBtn) { uploadBtn.disabled = false; uploadBtn.style.opacity = '1'; }
+            input.value = '';
+        });
+    }
+
+    /* ─── Client-side Validation (Tahap 2 & Bagian 5 Aturan 1–6) ─── */
+    function normalizeModality(mod) {
+        if (!mod) return '';
+        var lower = mod.trim().toLowerCase();
+        for (var i = 0; i < ALLOWED_MODALITIES.length; i++) {
+            if (ALLOWED_MODALITIES[i].toLowerCase() === lower) {
+                return ALLOWED_MODALITIES[i];
+            }
+        }
+        return mod.trim();
+    }
+
+    function validateRow(row, allRows) {
+        var errors = {};
+
+        // 1. Nama wajib, minimal 2 karakter
+        var nama = (row.nama || '').trim();
+        if (!nama || nama.length < 2) {
+            errors.nama = 'Nama lengkap wajib diisi (minimal 2 karakter).';
+        }
+
+        // 2. NIK diisi tetapi bukan 16 digit angka
+        var nik = (row.nik || '').toString().trim();
+        if (nik !== '') {
+            if (!/^[0-9]{16}$/.test(nik)) {
+                errors.nik = 'NIK harus 16 digit angka.';
+            }
+        }
+
+        // 3. Usia wajib, angka antara 0 - 120
+        var usia = row.usia;
+        if (usia === null || usia === undefined || usia === '' || isNaN(Number(usia))) {
+            errors.usia = 'Usia wajib diisi angka antara 0 dan 120 tahun.';
+        } else {
+            var usiaNum = Number(usia);
+            if (usiaNum < 0 || usiaNum > 120) {
+                errors.usia = 'Usia harus antara 0 dan 120 tahun.';
+            }
+        }
+
+        // 4. Jenis kelamin wajib L / P
+        var jk = (row.jenis_kelamin || '').toString().trim().toUpperCase();
+        if (jk === 'LAKI-LAKI' || jk === 'MALE' || jk === 'M') jk = 'L';
+        if (jk === 'PEREMPUAN' || jk === 'FEMALE' || jk === 'F') jk = 'P';
+        if (jk !== 'L' && jk !== 'P') {
+            errors.jenis_kelamin = 'Jenis kelamin tidak dikenali. Pilih Laki-laki atau Perempuan.';
+        } else {
+            row.jenis_kelamin = jk;
+        }
+
+        // 5. Modalitas wajib terdaftar di protokol
+        var mod = normalizeModality(row.modalitas);
+        if (!mod) {
+            errors.modalitas = 'Modalitas pemeriksaan wajib dipilih.';
+        } else if (ALLOWED_MODALITIES.indexOf(mod) === -1) {
+            errors.modalitas = 'Modalitas "' + mod + '" tidak dikenali dalam daftar protokol.';
+        } else {
+            row.modalitas = mod;
+        }
+
+        // 6. Duplikat di dalam file: NIK sama dan modalitas sama dengan baris lain
+        if (nik !== '' && row.modalitas) {
+            var key = nik + '|' + row.modalitas.toLowerCase();
+            var count = 0;
+            for (var i = 0; i < allRows.length; i++) {
+                var otherNik = (allRows[i].nik || '').toString().trim();
+                var otherMod = (allRows[i].modalitas || '').toString().trim().toLowerCase();
+                if (otherNik !== '' && otherMod !== '') {
+                    if (otherNik + '|' + otherMod === key) {
+                        count++;
+                    }
+                }
+            }
+            if (count > 1) {
+                var dupMsg = 'Duplikat NIK dan modalitas di file.';
+                errors.nik = errors.nik || dupMsg;
+                errors.modalitas = errors.modalitas || dupMsg;
+            }
+        }
+
+        var isReady = Object.keys(errors).length === 0;
+        row.status = isReady ? 'Siap' : 'Perlu dicek';
+        row.errors = errors;
+        return isReady;
+    }
+
+    function validateAllStagingRows() {
+        var total = stagingRows.length;
+        var ready = 0;
+        var invalid = 0;
+        var selected = 0;
+        var hasInvalidSelected = false;
+
+        for (var i = 0; i < stagingRows.length; i++) {
+            var isReady = validateRow(stagingRows[i], stagingRows);
+            if (isReady) ready++; else invalid++;
+            if (stagingRows[i].dipilih) {
+                selected++;
+                if (!isReady) hasInvalidSelected = true;
+            }
+        }
+
+        // Update header summary text
+        var summaryTextEl = document.getElementById('stagingSummaryText');
+        if (summaryTextEl) {
+            summaryTextEl.innerHTML = 'Ditemukan <strong>' + total + ' pasien</strong> (<span style="color: #34d399; font-weight: 700;">' + ready + ' siap</span>, <span style="color: #fbbf24; font-weight: 700;">' + invalid + ' perlu dicek</span>)';
+        }
+
+        // Update tab counters
+        var elTabAll = document.getElementById('countTabAll');
+        var elTabReady = document.getElementById('countTabReady');
+        var elTabInvalid = document.getElementById('countTabInvalid');
+        if (elTabAll) elTabAll.textContent = total;
+        if (elTabReady) elTabReady.textContent = ready;
+        if (elTabInvalid) elTabInvalid.textContent = invalid;
+
+        // Update selected info in footer
+        var selectedInfoEl = document.getElementById('stagingSelectedCountInfo');
+        if (selectedInfoEl) {
+            selectedInfoEl.textContent = selected + ' dipilih dari ' + total + ' pasien';
+        }
+
+        // Update Kirim button state
+        var submitBtn = document.getElementById('btnSubmitStaging');
+        if (submitBtn) {
+            submitBtn.textContent = 'Kirim ' + selected + ' Pasien ke Worklist';
+            submitBtn.disabled = (selected === 0 || hasInvalidSelected);
+        }
+
+        // Update delete selected button state
+        var btnDelSelected = document.getElementById('btnDeleteSelected');
+        if (btnDelSelected) {
+            btnDelSelected.disabled = (selected === 0);
+            btnDelSelected.style.opacity = selected === 0 ? '0.5' : '1';
+            btnDelSelected.style.cursor = selected === 0 ? 'not-allowed' : 'pointer';
+        }
+    }
+
+    /* ─── Filtering & Search (Tahap 3) ─── */
+    function setStagingStatusFilter(filter) {
+        stagingStatusFilter = filter;
+        stagingCurrentPage = 1;
+
+        var tabs = document.querySelectorAll('.staging-tab');
+        tabs.forEach(function(t) {
+            t.classList.toggle('active', t.getAttribute('data-filter') === filter);
+        });
+
+        renderStagingTable();
+    }
+
+    function handleStagingSearch(query) {
+        stagingSearchQuery = (query || '').toLowerCase().trim();
+        stagingCurrentPage = 1;
+        renderStagingTable();
+    }
+
+    function getFilteredStagingRows() {
+        return stagingRows.filter(function(r) {
+            // Filter status tab
+            if (stagingStatusFilter === 'ready' && r.status !== 'Siap') return false;
+            if (stagingStatusFilter === 'invalid' && r.status !== 'Perlu dicek') return false;
+
+            // Filter search query
+            if (stagingSearchQuery) {
+                var searchTarget = (
+                    (r.nama || '') + ' ' +
+                    (r.nik || '') + ' ' +
+                    (r.modalitas || '') + ' ' +
+                    (r.indikasi || '') + ' ' +
+                    (r.catatan || '')
+                ).toLowerCase();
+
+                if (searchTarget.indexOf(stagingSearchQuery) === -1) return false;
+            }
+
+            return true;
+        });
+    }
+
+    /* ─── Render Table & Pagination (Tahap 3 & 4) ─── */
+    function renderStagingTable() {
+        var tbody = document.getElementById('stagingTableBody');
+        if (!tbody) return;
+
+        var filtered = getFilteredStagingRows();
+        var totalPages = Math.max(1, Math.ceil(filtered.length / stagingRowsPerPage));
+
+        if (stagingCurrentPage > totalPages) stagingCurrentPage = totalPages;
+        if (stagingCurrentPage < 1) stagingCurrentPage = 1;
+
+        var startIdx = (stagingCurrentPage - 1) * stagingRowsPerPage;
+        var endIdx = Math.min(startIdx + stagingRowsPerPage, filtered.length);
+        var pageRows = filtered.slice(startIdx, endIdx);
+
+        tbody.innerHTML = '';
+
+        if (pageRows.length === 0) {
+            var emptyTr = document.createElement('tr');
+            emptyTr.innerHTML = '<td colspan="11" style="text-align: center; padding: 2.5rem 1rem; color: #94a3b8; font-size: 0.85rem;">' +
+                'Tidak ada data pasien yang sesuai kriteria pencarian / filter.</td>';
+            tbody.appendChild(emptyTr);
+        } else {
+            pageRows.forEach(function(row, idx) {
+                var globalNum = startIdx + idx + 1;
+                var tr = document.createElement('tr');
+                if (row.status === 'Perlu dicek') {
+                    tr.classList.add('staging-row-invalid');
+                }
+
+                // Checkbox
+                var tdCheck = document.createElement('td');
+                tdCheck.style.textAlign = 'center';
+                var chk = document.createElement('input');
+                chk.type = 'checkbox';
+                chk.checked = !!row.dipilih;
+                chk.title = row.status === 'Perlu dicek' ? 'Baris ini masih Perlu Dicek' : 'Centang untuk dikirim';
+                chk.addEventListener('change', function(e) {
+                    toggleRowSelection(row.id, e.target.checked);
+                });
+                tdCheck.appendChild(chk);
+                tr.appendChild(tdCheck);
+
+                // No
+                var tdNo = document.createElement('td');
+                tdNo.style.textAlign = 'center';
+                tdNo.style.color = '#94a3b8';
+                tdNo.textContent = globalNum;
+                tr.appendChild(tdNo);
+
+                // Status Badge
+                var tdStatus = document.createElement('td');
+                var statusBadge = document.createElement('span');
+                statusBadge.className = 'staging-status-badge ' + (row.status === 'Siap' ? 'staging-status-ready' : 'staging-status-invalid');
+                if (row.status === 'Siap') {
+                    statusBadge.innerHTML = '● Siap';
+                } else {
+                    var errList = Object.values(row.errors || {}).join(' | ');
+                    statusBadge.innerHTML = '⚠️ Perlu dicek';
+                    statusBadge.title = errList;
+                }
+                tdStatus.appendChild(statusBadge);
+                tr.appendChild(tdStatus);
+
+                // Nama Lengkap *
+                tr.appendChild(createCell(row, 'nama', row.nama, true));
+
+                // No. RM / NIK
+                tr.appendChild(createCell(row, 'nik', row.nik, false, true));
+
+                // Usia *
+                tr.appendChild(createCell(row, 'usia', row.usia !== null ? row.usia : '', true));
+
+                // Jenis Kelamin *
+                tr.appendChild(createCell(row, 'jenis_kelamin', row.jenis_kelamin, true));
+
+                // Modalitas *
+                tr.appendChild(createCell(row, 'modalitas', row.modalitas, true));
+
+                // Indikasi Klinis
+                tr.appendChild(createCell(row, 'indikasi', row.indikasi, false));
+
+                // Catatan
+                tr.appendChild(createCell(row, 'catatan', row.catatan, false));
+
+                // Aksi (Edit & Delete)
+                var tdAksi = document.createElement('td');
+                tdAksi.style.textAlign = 'center';
+                tdAksi.style.whiteSpace = 'nowrap';
+
+                var btnEdit = document.createElement('button');
+                btnEdit.type = 'button';
+                btnEdit.className = 'btn-action-icon btn-action-edit';
+                btnEdit.title = 'Ubah data pasien lengkap';
+                btnEdit.innerHTML = '✏️';
+                btnEdit.onclick = function() { openEditStagingModal(row.id); };
+
+                var btnDel = document.createElement('button');
+                btnDel.type = 'button';
+                btnDel.className = 'btn-action-icon btn-action-delete';
+                btnDel.title = 'Hapus dari staging';
+                btnDel.innerHTML = '🗑️';
+                btnDel.onclick = function() { deleteStagingRow(row.id); };
+
+                tdAksi.appendChild(btnEdit);
+                tdAksi.appendChild(btnDel);
+                tr.appendChild(tdAksi);
+
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Update master checkbox
+        updateMasterCheckboxState(pageRows);
+
+        // Update Pagination Info & Links
+        renderPagination(filtered.length, totalPages, startIdx, endIdx);
+    }
+
+    function createCell(row, field, value, required, isCode) {
+        var td = document.createElement('td');
+        var err = row.errors && row.errors[field];
+
+        var cellWrap = document.createElement('div');
+        cellWrap.className = 'staging-cell' + (err ? ' staging-cell-error' : '');
+        cellWrap.setAttribute('data-row-id', row.id);
+        cellWrap.setAttribute('data-field', field);
+        if (err) cellWrap.title = err;
+
+        var valSpan = document.createElement('span');
+        valSpan.style.overflow = 'hidden';
+        valSpan.style.textOverflow = 'ellipsis';
+        valSpan.style.whiteSpace = 'nowrap';
+        if (isCode) {
+            valSpan.style.fontFamily = "'JetBrains Mono', monospace";
+            valSpan.style.fontSize = "0.74rem";
+        }
+
+        if (value !== null && value !== undefined && value !== '') {
+            valSpan.textContent = value;
+        } else if (required) {
+            valSpan.innerHTML = '<span style="color: #f87171; font-style: italic;">[Kosong]</span>';
+        } else {
+            valSpan.textContent = '—';
+        }
+        cellWrap.appendChild(valSpan);
+
+        if (err) {
+            var errIcon = document.createElement('span');
+            errIcon.className = 'staging-error-badge';
+            errIcon.textContent = '⚠';
+            cellWrap.appendChild(errIcon);
+        }
+
+        cellWrap.addEventListener('click', function(e) {
+            if (activeInlineEdit && activeInlineEdit.rowId === row.id && activeInlineEdit.field === field) return;
+            startInlineEdit(cellWrap, row.id, field);
+        });
+
+        td.appendChild(cellWrap);
+        return td;
+    }
+
+    /* ─── Inline Cell Editing (Tahap 3 & 4) ─── */
+    function startInlineEdit(cellEl, rowId, field) {
+        var row = stagingRows.find(function(r) { return r.id === rowId; });
+        if (!row) return;
+
+        activeInlineEdit = { rowId: rowId, field: field };
+        cellEl.innerHTML = '';
+
+        var currentVal = row[field];
+        if (currentVal === null || currentVal === undefined) currentVal = '';
+
+        var inputEl;
+
+        if (field === 'jenis_kelamin') {
+            inputEl = document.createElement('select');
+            inputEl.className = 'staging-search-input';
+            inputEl.style.fontSize = '0.75rem';
+            inputEl.style.padding = '0.2rem 0.35rem';
+            inputEl.style.height = '26px';
+
+            var optL = document.createElement('option');
+            optL.value = 'L'; optL.textContent = 'Laki-laki (L)';
+            var optP = document.createElement('option');
+            optP.value = 'P'; optP.textContent = 'Perempuan (P)';
+            inputEl.appendChild(optL);
+            inputEl.appendChild(optP);
+            inputEl.value = (row.jenis_kelamin === 'P') ? 'P' : 'L';
+        } else if (field === 'modalitas') {
+            inputEl = document.createElement('select');
+            inputEl.className = 'staging-search-input';
+            inputEl.style.fontSize = '0.75rem';
+            inputEl.style.padding = '0.2rem 0.35rem';
+            inputEl.style.height = '26px';
+
+            ALLOWED_MODALITIES.forEach(function(m) {
+                var opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = m;
+                inputEl.appendChild(opt);
+            });
+            inputEl.value = normalizeModality(row.modalitas) || ALLOWED_MODALITIES[0];
+        } else if (field === 'usia') {
+            inputEl = document.createElement('input');
+            inputEl.type = 'number';
+            inputEl.min = '0';
+            inputEl.max = '120';
+            inputEl.className = 'staging-search-input';
+            inputEl.style.fontSize = '0.75rem';
+            inputEl.style.padding = '0.2rem 0.4rem';
+            inputEl.style.height = '26px';
+            inputEl.value = currentVal;
+        } else {
+            inputEl = document.createElement('input');
+            inputEl.type = 'text';
+            inputEl.className = 'staging-search-input';
+            inputEl.style.fontSize = '0.75rem';
+            inputEl.style.padding = '0.2rem 0.4rem';
+            inputEl.style.height = '26px';
+            inputEl.value = currentVal;
+        }
+
+        cellEl.appendChild(inputEl);
+        inputEl.focus();
+        if (inputEl.select && typeof inputEl.select === 'function') inputEl.select();
+
+        var committed = false;
+        function commitValue() {
+            if (committed) return;
+            committed = true;
+            activeInlineEdit = null;
+
+            var newVal = inputEl.value;
+            if (field === 'usia') {
+                row.usia = (newVal !== '' && !isNaN(Number(newVal))) ? parseInt(newVal, 10) : null;
+            } else if (field === 'nik' || field === 'nama' || field === 'indikasi' || field === 'catatan') {
+                row[field] = newVal.trim();
+            } else {
+                row[field] = newVal;
+            }
+
+            validateAllStagingRows();
+            renderStagingTable();
+        }
+
+        function cancelEdit() {
+            if (committed) return;
+            committed = true;
+            activeInlineEdit = null;
+            renderStagingTable();
+        }
+
+        inputEl.addEventListener('blur', function() {
+            commitValue();
+        });
+
+        inputEl.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                commitValue();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancelEdit();
+            }
+        });
+    }
+
+    /* ─── Checkbox Selections (Tahap 3) ─── */
+    function toggleRowSelection(rowId, checked) {
+        var row = stagingRows.find(function(r) { return r.id === rowId; });
+        if (row) {
+            row.dipilih = checked;
+            validateAllStagingRows();
+            var filtered = getFilteredStagingRows();
+            var startIdx = (stagingCurrentPage - 1) * stagingRowsPerPage;
+            var endIdx = Math.min(startIdx + stagingRowsPerPage, filtered.length);
+            updateMasterCheckboxState(filtered.slice(startIdx, endIdx));
+        }
+    }
+
+    function toggleSelectAllStaging(masterChecked) {
+        var filtered = getFilteredStagingRows();
+        filtered.forEach(function(r) {
+            if (masterChecked) {
+                // Sesuai Tahap 3: hanya mencentang baris Siap
+                if (r.status === 'Siap') {
+                    r.dipilih = true;
+                }
+            } else {
+                r.dipilih = false;
+            }
+        });
+
+        validateAllStagingRows();
+        renderStagingTable();
+    }
+
+    function updateMasterCheckboxState(pageRows) {
+        var masterChk = document.getElementById('stagingMasterCheckbox');
+        if (!masterChk) return;
+
+        var readyRows = pageRows.filter(function(r) { return r.status === 'Siap'; });
+        if (readyRows.length === 0) {
+            masterChk.checked = false;
+            masterChk.indeterminate = false;
+            return;
+        }
+
+        var selectedCount = readyRows.filter(function(r) { return r.dipilih; }).length;
+        if (selectedCount === readyRows.length) {
+            masterChk.checked = true;
+            masterChk.indeterminate = false;
+        } else if (selectedCount > 0) {
+            masterChk.checked = false;
+            masterChk.indeterminate = true;
+        } else {
+            masterChk.checked = false;
+            masterChk.indeterminate = false;
+        }
+    }
+
+    /* ─── Pagination Renderer (Tahap 3) ─── */
+    function renderPagination(totalFiltered, totalPages, startIdx, endIdx) {
+        var infoEl = document.getElementById('stagingPaginationInfo');
+        var linksEl = document.getElementById('stagingPaginationLinks');
+        if (!infoEl || !linksEl) return;
+
+        var showingText = totalFiltered === 0
+            ? 'Menampilkan 0 dari 0 pasien'
+            : ('Menampilkan ' + (startIdx + 1) + '–' + endIdx + ' dari ' + totalFiltered + ' pasien' +
+               (totalFiltered !== stagingRows.length ? ' (difilter dari ' + stagingRows.length + ' total)' : ''));
+        infoEl.textContent = showingText;
+
+        linksEl.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        // Button: Previous
+        var prevBtn = document.createElement(stagingCurrentPage > 1 ? 'a' : 'span');
+        prevBtn.innerHTML = '‹';
+        if (stagingCurrentPage > 1) {
+            prevBtn.href = 'javascript:void(0)';
+            prevBtn.onclick = function() { stagingCurrentPage--; renderStagingTable(); };
+        } else {
+            prevBtn.className = 'disabled';
+        }
+        linksEl.appendChild(prevBtn);
+
+        // Page numbers (windowing)
+        var startPage = Math.max(1, stagingCurrentPage - 2);
+        var endPage = Math.min(totalPages, startPage + 4);
+        if (endPage - startPage < 4) {
+            startPage = Math.max(1, endPage - 4);
+        }
+
+        for (var p = startPage; p <= endPage; p++) {
+            (function(pageNum) {
+                if (pageNum === stagingCurrentPage) {
+                    var cur = document.createElement('span');
+                    cur.className = 'current';
+                    cur.textContent = pageNum;
+                    linksEl.appendChild(cur);
+                } else {
+                    var a = document.createElement('a');
+                    a.href = 'javascript:void(0)';
+                    a.textContent = pageNum;
+                    a.onclick = function() { stagingCurrentPage = pageNum; renderStagingTable(); };
+                    linksEl.appendChild(a);
+                }
+            })(p);
+        }
+
+        // Button: Next
+        var nextBtn = document.createElement(stagingCurrentPage < totalPages ? 'a' : 'span');
+        nextBtn.innerHTML = '›';
+        if (stagingCurrentPage < totalPages) {
+            nextBtn.href = 'javascript:void(0)';
+            nextBtn.onclick = function() { stagingCurrentPage++; renderStagingTable(); };
+        } else {
+            nextBtn.className = 'disabled';
+        }
+        linksEl.appendChild(nextBtn);
+    }
+
+    /* ─── CRUD: Create, Edit Submodal, Delete & Undo (Tahap 4) ─── */
+    function addStagingRow() {
+        var newId = 'row-new-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        var newRow = {
+            id: newId,
+            nama: '',
+            nik: '',
+            usia: null,
+            jenis_kelamin: 'L',
+            modalitas: '',
+            indikasi: '',
+            catatan: '',
+            tanggal_pemeriksaan: new Date().toISOString().slice(0, 10),
+            dipilih: false,
+            status: 'Perlu dicek',
+            errors: {
+                nama: 'Nama lengkap wajib diisi (minimal 2 karakter).',
+                modalitas: 'Modalitas pemeriksaan wajib dipilih.'
+            }
+        };
+
+        // Tambah di baris paling atas halaman 1 (Tahap 4)
+        stagingRows.unshift(newRow);
+        stagingCurrentPage = 1;
+        stagingStatusFilter = 'all';
+
+        validateAllStagingRows();
+        renderStagingTable();
+
+        // Masuk mode edit pada kolom nama
+        setTimeout(function() {
+            var cell = document.querySelector('[data-row-id="' + newId + '"][data-field="nama"]');
+            if (cell) startInlineEdit(cell, newId, 'nama');
+        }, 60);
+    }
+
+    function openEditStagingModal(rowId) {
+        var row = stagingRows.find(function(r) { return r.id === rowId; });
+        if (!row) return;
+
+        document.getElementById('editStagingRowId').value = row.id;
+        document.getElementById('editStagingNama').value = row.nama || '';
+        document.getElementById('editStagingNik').value = row.nik || '';
+        document.getElementById('editStagingUsia').value = (row.usia !== null && row.usia !== undefined) ? row.usia : '';
+        document.getElementById('editStagingGender').value = (row.jenis_kelamin === 'P') ? 'P' : 'L';
+        document.getElementById('editStagingModality').value = normalizeModality(row.modalitas) || ALLOWED_MODALITIES[0];
+        document.getElementById('editStagingIndikasi').value = row.indikasi || '';
+        document.getElementById('editStagingCatatan').value = row.catatan || '';
+
+        document.getElementById('modalEditStagingPatient').style.display = 'flex';
+    }
+
+    function closeEditStagingModal() {
+        document.getElementById('modalEditStagingPatient').style.display = 'none';
+    }
+
+    function saveEditStagingModal() {
+        var rowId = document.getElementById('editStagingRowId').value;
+        var row = stagingRows.find(function(r) { return r.id === rowId; });
+        if (!row) return;
+
+        var nama = document.getElementById('editStagingNama').value.trim();
+        var nik = document.getElementById('editStagingNik').value.trim();
+        var usiaStr = document.getElementById('editStagingUsia').value;
+        var jk = document.getElementById('editStagingGender').value;
+        var mod = document.getElementById('editStagingModality').value;
+        var indikasi = document.getElementById('editStagingIndikasi').value.trim();
+        var catatan = document.getElementById('editStagingCatatan').value.trim();
+
+        row.nama = nama;
+        row.nik = nik;
+        row.usia = (usiaStr !== '' && !isNaN(Number(usiaStr))) ? parseInt(usiaStr, 10) : null;
+        row.jenis_kelamin = jk;
+        row.modalitas = mod;
+        row.indikasi = indikasi;
+        row.catatan = catatan;
+
+        closeEditStagingModal();
+        validateAllStagingRows();
+        renderStagingTable();
+    }
+
+    function deleteStagingRow(rowId) {
+        var idx = stagingRows.findIndex(function(r) { return r.id === rowId; });
+        if (idx === -1) return;
+
+        var deleted = stagingRows.splice(idx, 1)[0];
+        recentlyDeletedRows = [deleted];
+
+        showStagingUndo('🗑️ 1 pasien dihapus dari staging.');
+        validateAllStagingRows();
+        renderStagingTable();
+    }
+
+    function deleteSelectedStagingRows() {
+        var selected = stagingRows.filter(function(r) { return r.dipilih; });
+        if (selected.length === 0) return;
+
+        if (!confirm('Hapus ' + selected.length + ' pasien yang dicentang dari tabel staging? (Data di database tidak terpengaruh)')) {
+            return;
+        }
+
+        recentlyDeletedRows = selected;
+        stagingRows = stagingRows.filter(function(r) { return !r.dipilih; });
+
+        showStagingUndo('🗑️ ' + selected.length + ' pasien dihapus dari staging.');
+        validateAllStagingRows();
+        renderStagingTable();
+    }
+
+    function showStagingUndo(message) {
+        var toast = document.getElementById('stagingUndoToast');
+        var msgEl = document.getElementById('stagingUndoMessage');
+        if (!toast || !msgEl) return;
+
+        msgEl.textContent = message;
+        toast.style.display = 'flex';
+
+        if (stagingUndoTimeout) clearTimeout(stagingUndoTimeout);
+        stagingUndoTimeout = setTimeout(function() {
+            dismissStagingUndo();
+        }, 5000); // 5 detik sesuai aturan Tahap 4
+    }
+
+    function dismissStagingUndo() {
+        var toast = document.getElementById('stagingUndoToast');
+        if (toast) toast.style.display = 'none';
+        if (stagingUndoTimeout) {
+            clearTimeout(stagingUndoTimeout);
+            stagingUndoTimeout = null;
+        }
+    }
+
+    function undoStagingDelete() {
+        if (!recentlyDeletedRows || recentlyDeletedRows.length === 0) return;
+
+        recentlyDeletedRows.forEach(function(r) {
+            stagingRows.unshift(r);
+        });
+
+        recentlyDeletedRows = [];
+        dismissStagingUndo();
+
+        validateAllStagingRows();
+        renderStagingTable();
+    }
+
+    /* ─── Submit Batch to Worklist (Tahap 5 & 6) ─── */
+    function submitStagingToWorklist() {
+        var selectedRows = stagingRows.filter(function(r) { return r.dipilih; });
+        if (selectedRows.length === 0) {
+            alert('Tidak ada pasien yang dipilih untuk dikirim.');
+            return;
+        }
+
+        var invalidSelected = selectedRows.filter(function(r) { return r.status === 'Perlu dicek'; });
+        if (invalidSelected.length > 0) {
+            alert('Ada ' + invalidSelected.length + ' pasien yang dicentang masih berstatus "Perlu dicek". Perbaiki atau hilangkan centang terlebih dahulu.');
+            return;
+        }
+
+        var submitBtn = document.getElementById('btnSubmitStaging');
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Mengirim ' + selectedRows.length + ' Pasien ke Worklist...';
+        }
+
+        var payload = selectedRows.map(function(r) {
+            return {
+                id: r.id,
+                nama: r.nama,
+                nik: r.nik ? r.nik : null,
+                usia: r.usia,
+                jenis_kelamin: r.jenis_kelamin,
+                modalitas: r.modalitas,
+                indikasi: r.indikasi ? r.indikasi : null,
+                catatan: r.catatan ? r.catatan : null,
+                tanggal_pemeriksaan: r.tanggal_pemeriksaan || new Date().toISOString().slice(0, 10)
+            };
+        });
+
+        fetch("<?php echo e(route('worklist.import')); ?>", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': getCsrfToken()
+            },
+            body: JSON.stringify({
+                _token: getCsrfToken(),
+                pasien: payload
+            })
+        })
+        .then(function(res) {
+            return res.text().then(function(rawText) {
+                var data = null;
+                try {
+                    data = JSON.parse(rawText);
+                } catch (e) {
+                    data = null;
+                }
+                return { ok: res.ok, status: res.status, data: data };
+            });
+        })
+        .then(function(result) {
+            if (result.ok && result.data) {
+                // Sukses HTTP 200
+                alert(result.data.message || (selectedRows.length + ' pasien berhasil dikirim ke worklist.'));
+                closeOrderModal();
+                refreshMainWorklist();
+            } else if (result.status === 419) {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Kirim ' + selectedRows.length + ' Pasien ke Worklist';
+                }
+                alert('⚠️ Sesi Anda telah kedaluwarsa. Data Anda tetap aman di browser. Silakan muat ulang halaman atau coba kirim kembali.');
+            } else if (result.status === 422 && result.data) {
+                // Gagal validasi HTTP 422: Petakan kembali ke baris yang bersangkutan
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Kirim ' + selectedRows.length + ' Pasien ke Worklist';
+                }
+
+                var errs = result.data.errors || {};
+                var firstErrorRowId = null;
+
+                for (var key in errs) {
+                    var match = key.match(/^pasien\.(\d+)\.(.+)$/);
+                    if (match) {
+                        var pIdx = parseInt(match[1], 10);
+                        var pField = match[2];
+                        if (selectedRows[pIdx]) {
+                            var targetRow = selectedRows[pIdx];
+                            targetRow.status = 'Perlu dicek';
+                            targetRow.errors = targetRow.errors || {};
+                            targetRow.errors[pField] = errs[key][0];
+                            if (!firstErrorRowId) firstErrorRowId = targetRow.id;
+                        }
+                    }
+                }
+
+                validateAllStagingRows();
+
+                // Bawa user ke halaman tabel yang berisi baris bermasalah pertama
+                if (firstErrorRowId) {
+                    var filtered = getFilteredStagingRows();
+                    var foundIdx = filtered.findIndex(function(r) { return r.id === firstErrorRowId; });
+                    if (foundIdx !== -1) {
+                        stagingCurrentPage = Math.floor(foundIdx / stagingRowsPerPage) + 1;
+                    }
+                }
+
+                renderStagingTable();
+                alert('⚠️ Ada data yang ditolak oleh server:\n' + (result.data.message || 'Silakan cek baris bertanda kuning di tabel staging.'));
+            } else {
+                // Gagal server 500 / respon tak terduga
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Kirim ' + selectedRows.length + ' Pasien ke Worklist';
+                }
+                var serverMsg = (result.data && result.data.message) ? ('\nPesan: ' + result.data.message) : (' (HTTP ' + result.status + ')');
+                alert('❌ Gagal mengirim data ke worklist' + serverMsg + '. Data Anda masih aman di tabel. Silakan coba lagi.');
+            }
+        })
+        .catch(function(err) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Kirim ' + selectedRows.length + ' Pasien ke Worklist';
+            }
+            alert('❌ Gagal menghubungi server: ' + (err.message || 'Kesalahan jaringan') + '. Data Anda masih aman di tabel.');
+        });
+    }
+
+    /* ─── Refresh Main Worklist Table & KPI Stats (Tahap 6) ─── */
+    function refreshMainWorklist() {
+        fetch(window.location.href)
+        .then(function(res) { return res.text(); })
+        .then(function(html) {
+            var parser = new DOMParser();
+            var doc = parser.parseFromString(html, 'text/html');
+
+            var newStats = doc.getElementById('statsGridWrap');
+            var oldStats = document.getElementById('statsGridWrap');
+            if (newStats && oldStats) oldStats.innerHTML = newStats.innerHTML;
+
+            var newTable = doc.getElementById('worklistTableWrap');
+            var oldTable = document.getElementById('worklistTableWrap');
+            if (newTable && oldTable) oldTable.innerHTML = newTable.innerHTML;
+
+            var newTabs = doc.querySelector('.filter-tabs');
+            var oldTabs = document.querySelector('.filter-tabs');
+            if (newTabs && oldTabs) oldTabs.innerHTML = newTabs.innerHTML;
+        })
+        .catch(function() {
+            window.location.reload();
+        });
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    /* ─── Warning Sebelum Keluar Tab Jika Ada Data Staging (Tahap 7) ─── */
+    window.addEventListener('beforeunload', function(e) {
+        if (stagingRows && stagingRows.length > 0) {
+            e.preventDefault();
+            e.returnValue = 'Data pasien di tabel staging yang belum dikirim akan hilang.';
+        }
+    });
+
+    function openDicomModal() {
+        document.getElementById('modalDicomConfig').style.display = 'flex';
+    }
+
+    function closeDicomModal() {
+        document.getElementById('modalDicomConfig').style.display = 'none';
+    }
+
+    function closeCstoreModal() {
+        document.getElementById('modalCstoreResult').style.display = 'none';
+    }
+
+    function refreshAfterCstore() {
+        closeCstoreModal();
+        window.location.reload();
+    }
+
+    function openDeleteModal(deleteUrl, patientName, patientId, accessionNo) {
+        document.getElementById('formConfirmDelete').action = deleteUrl;
+        document.getElementById('delModalPatientName').textContent = patientName || '-';
+        document.getElementById('delModalPatientId').textContent = patientId || '-';
+        document.getElementById('delModalAccession').textContent = accessionNo || '-';
+        document.getElementById('modalConfirmDelete').style.display = 'flex';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('modalConfirmDelete').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modalProtocol = document.getElementById('modalProtocolPicker');
+        const modalOrder = document.getElementById('modalOrder');
+        const modalDicom = document.getElementById('modalDicomConfig');
+        const modalCstore = document.getElementById('modalCstoreResult');
+        const modalDelete = document.getElementById('modalConfirmDelete');
+        const modalEditStaging = document.getElementById('modalEditStagingPatient');
+        if (event.target === modalProtocol) closeProtocolPickerModal();
+        if (event.target === modalOrder) confirmCloseOrderModal();
+        if (event.target === modalDicom) closeDicomModal();
+        if (event.target === modalCstore) closeCstoreModal();
+        if (event.target === modalDelete) closeDeleteModal();
+        if (event.target === modalEditStaging) closeEditStagingModal();
+    };
+
+    window.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            const modalProtocol = document.getElementById('modalProtocolPicker');
+            if (modalProtocol && modalProtocol.style.display === 'flex') {
+                closeProtocolPickerModal();
+                return;
+            }
+            const modalEditStaging = document.getElementById('modalEditStagingPatient');
+            if (modalEditStaging && modalEditStaging.style.display === 'flex') {
+                closeEditStagingModal();
+                return;
+            }
+            confirmCloseOrderModal();
+            closeDicomModal();
+            closeCstoreModal();
+            closeDeleteModal();
+        }
+    });
+
+    function showCstoreModal(info) {
+        const modal = document.getElementById('modalCstoreResult');
+        const iconEl = document.getElementById('cstoreModalHeaderIcon');
+        const titleEl = document.getElementById('cstoreModalHeaderTitle');
+        const badgeEl = document.getElementById('cstoreStatusBadge');
+        const statusTextEl = document.getElementById('cstoreStatusText');
+        const msgEl = document.getElementById('cstoreMessageText');
+        const detailsBox = document.getElementById('cstoreDetailsBox');
+        const actionBtn = document.getElementById('btnCstoreAction');
+
+        titleEl.textContent = info.title;
+        msgEl.textContent = info.message;
+
+        if (info.success) {
+            iconEl.textContent = '📡';
+            badgeEl.style.background = 'rgba(16, 185, 129, 0.15)';
+            badgeEl.style.border = '1px solid rgba(16, 185, 129, 0.45)';
+            badgeEl.style.color = '#34d399';
+            statusTextEl.textContent = info.statusCode || 'STATUS 0x0000 (SUCCESS)';
+
+            detailsBox.style.display = 'block';
+            document.getElementById('cstoreDetailPatient').textContent = info.patientName || '-';
+            document.getElementById('cstoreDetailAccession').textContent = info.accessionNumber || '-';
+            document.getElementById('cstoreDetailStation').textContent = info.station || 'FUJIFILM_FDR_D-EVO';
+            document.getElementById('cstoreDetailSop').textContent = info.sopClass || 'Digital X-Ray (PS 3.4)';
+
+            actionBtn.style.display = 'inline-flex';
+            actionBtn.textContent = '🔄 Buka Daftar & Sesi Pasien';
+        } else {
+            iconEl.textContent = '⚠️';
+            badgeEl.style.background = 'rgba(239, 68, 68, 0.15)';
+            badgeEl.style.border = '1px solid rgba(239, 68, 68, 0.45)';
+            badgeEl.style.color = '#f87171';
+            statusTextEl.textContent = info.statusCode || 'STATUS 0x0110 (FAILURE)';
+
+            detailsBox.style.display = 'none';
+            actionBtn.style.display = 'none';
+        }
+
+        modal.style.display = 'flex';
+    }
+
+    function saveDicomConfig(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSaveDicomCfg');
+        const origText = btn.innerHTML;
+        btn.innerHTML = '⏳ Menyimpan...';
+        btn.disabled = true;
+
+        const ae = document.getElementById('cfgAeTitle').value.trim();
+        const port = document.getElementById('cfgPort').value.trim();
+        const modality = document.getElementById('cfgModality').value.trim();
+
+        fetch("<?php echo e(route('settings.dicom-node')); ?>", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+            },
+            body: JSON.stringify({
+                ae_title: ae,
+                port: port,
+                modality_source: modality
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.getElementById('lblIdxAeTitle').innerText = data.ae_title;
+                document.getElementById('lblIdxPort').innerText = data.port;
+                document.getElementById('lblIdxTarget').innerText = data.modality_source;
+                closeDicomModal();
+                showCstoreModal({
+                    success: true,
+                    title: 'KONFIGURASI DICOM NODE TERSIMPAN',
+                    message: data.message || 'Parameter jaringan DICOM SCP berhasil diperbarui.',
+                    patientName: 'Application Entity: ' + data.ae_title,
+                    accessionNumber: 'Port Listener: ' + data.port,
+                    station: data.modality_source || 'FUJIFILM / MINDRAY',
+                    sopClass: 'NEMA PS 3.4 DICOM SCP Service',
+                    statusCode: 'STATUS 0x0000 (CONFIG SAVED)'
+                });
+            } else {
+                showCstoreModal({
+                    success: false,
+                    title: 'GAGAL MENYIMPAN KONFIGURASI',
+                    message: 'Parameter konfigurasi DICOM tidak valid atau gagal disimpan.',
+                    statusCode: 'STATUS 0x0110 (CONFIG ERROR)'
+                });
+            }
+        })
+        .catch(err => {
+            showCstoreModal({
+                success: false,
+                title: 'TERJADI KESALAHAN JARINGAN',
+                message: err.message || 'Gagal berkomunikasi dengan server.',
+                statusCode: 'STATUS 0x0110 (NETWORK ERROR)'
+            });
+        })
+        .finally(() => {
+            btn.innerHTML = origText;
+            btn.disabled = false;
+        });
+    }
+
+    function triggerSimulateFuji() {
+        const btn = document.querySelector('.btn-fuji');
+        const origText = btn.innerHTML;
+        btn.innerHTML = '⏳ Mentransmisikan DICOM via C-STORE...';
+        btn.disabled = true;
+
+        fetch("<?php echo e(route('scans.simulate-fuji')); ?>", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+            }
+        })
+        .then(async res => {
+            const data = await res.json().catch(() => ({}));
+            if (!res.ok && data.status !== 'success') {
+                throw new Error(data.message || 'Gagal simulasi transmisi C-STORE dari stasiun modalitas.');
+            }
+            return data;
+        })
+        .then(data => {
+            showCstoreModal({
+                success: true,
+                title: data.title || 'TRANSMISI DICOM C-STORE BERHASIL',
+                message: data.message || 'Citra rontgen dari mesin Fujifilm FDR D-EVO berhasil diterima dan diarsipkan oleh Hyu PACS SCP.',
+                patientName: data.patient_name ? `${data.patient_name} (${data.patient_id || '-'})` : 'Pasien MCU Terkini',
+                accessionNumber: data.accession_number || '-',
+                station: data.station || 'FUJIFILM_FDR_D-EVO',
+                sopClass: data.sop_class || 'Digital X-Ray (1.2.840.10008.5.1.4.1.1.1)',
+                statusCode: data.status_code || 'STATUS 0x0000 (SUCCESS)'
+            });
+        })
+        .catch(err => {
+            showCstoreModal({
+                success: false,
+                title: 'GAGAL TRANSMISI DICOM C-STORE',
+                message: err.message || 'Terjadi kesalahan saat memproses transmisi C-STORE.',
+                statusCode: 'STATUS 0x0110 (FAILURE)'
+            });
+        })
+        .finally(() => {
+            btn.innerHTML = origText;
+            btn.disabled = false;
+        });
+    }
+
+    // Periksa status server DICOM secara asinkron
+    async function checkLiveDicomStatus() {
+        try {
+            const res = await fetch("<?php echo e(route('system.status')); ?>");
+            const data = await res.json();
+            const badge = document.getElementById('lblLiveDicomBadge');
+            if (badge && data && data.dicom) {
+                if (data.dicom.running) {
+                    badge.style.color = '#10b981';
+                    badge.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#10b981; margin-right:4px; box-shadow: 0 0 8px #10b981;"></span>● Server DICOM Aktif (Port ${data.dicom.port})`;
+                } else {
+                    badge.style.color = '#f87171';
+                    badge.innerHTML = `<span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#f87171; margin-right:4px;"></span>○ Server DICOM Offline`;
+                }
+            }
+        } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', checkLiveDicomStatus);
+
+    // ==========================================================================
+    // WORKSTATION PROTOCOL PICKER DATASET & CONTROLLER (180 PROTOKOL LENGKAP)
+    // ==========================================================================
+    const WORKSTATION_PROTOCOLS = {
+        often_used: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Skull PA Axial',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Right Hip LAT', 'Right Hip Axial',
+            'Right Clavicle AP', 'Right Ankle OBL', 'Right Ankle LAT', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Clavicle AP', 'Left Ankle OBL', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,left', 'Chest AP', 'Abdomen LAT,left', 'Abdomen AP,erect'
+        ],
+        head: [
+            'Zygomatic Arche', 'Stenvers view', 'Skull Townes', 'Skull PA Axial', 'Skull PA', 'Skull LAT,right',
+            'Skull LAT,left', 'Skull AP Axial', 'Skull AP', 'Sinuses, Waters', 'Sella Turcica', 'Petrous Bone',
+            'Orbit PA', 'Nasal Bone LAT,right', 'Nasal Bone LAT,left', 'Nasal Bone Axial', 'Mastoid',
+            'Mandible,jaw open', 'Mandible,jaw close'
+        ],
+        thorax: [
+            'Sternum OBL,right anterior', 'Sternum OBL,left anterior', 'Sternum LAT,right', 'Sternum LAT,left',
+            'Right Clavicle AP Axial', 'Right Clavicle AP', 'Ribs OBL,right anterior', 'Ribs OBL,left anterior',
+            'Rib PA', 'Left Clavicle AP Axial', 'Left Clavicle AP', 'Chest PA', 'Chest OBL,right anterior',
+            'Chest OBL,left anterior', 'Chest LAT,right', 'Chest LAT,left', 'Chest AP'
+        ],
+        spine: [
+            'T-spine LAT,right', 'T-spine LAT,left', 'T-spine AP', 'Sacrum LAT,right', 'Sacrum LAT,left',
+            'Sacrum AP', 'L-spine OBL,right', 'L-spine OBL,left', 'L-spine LAT,right', 'L-spine LAT,left',
+            'L-spine AP', 'Coccyx LAT,right', 'Coccyx LAT,left', 'Coccyx AP', 'C-spine OBL,right',
+            'C-spine OBL,left', 'C-spine LAT,right', 'C-spine LAT,left', 'C-spine AP'
+        ],
+        right_arm: [
+            'Right Wrist PA', 'Right Wrist LAT', 'Right Shoulder Transaxillary', 'Right Shoulder AP',
+            'Right Scapula LAT', 'Right Scapula AP', 'Right Humerus LAT', 'Right Humerus AP', 'Right Hand PA',
+            'Right Hand OBL', 'Right Hand LAT', 'Right Forearm LAT', 'Right Forearm AP', 'Right Finger PA',
+            'Right Finger LAT', 'Right Elbow LAT', 'Right Elbow AP'
+        ],
+        left_arm: [
+            'Left Wrist PA', 'Left Wrist LAT', 'Left Shoulder Transaxillary', 'Left Shoulder AP',
+            'Left Scapula LAT', 'Left Scapula AP', 'Left Humerus LAT', 'Left Humerus AP', 'Left Hand PA',
+            'Left Hand OBL', 'Left Hand LAT', 'Left Forearm LAT', 'Left Forearm AP', 'Left Finger PA',
+            'Left Finger LAT', 'Left Elbow LAT', 'Left Elbow AP'
+        ],
+        pelvis: [
+            'Pelvis LAT,right', 'Pelvis LAT,left', 'Pelvis AP', 'IVP9', 'IVP8', 'IVP7', 'IVP6', 'IVP5',
+            'IVP4', 'IVP3', 'IVP2', 'IVP10', 'IVP1', 'Abdomen LAT,right', 'Abdomen LAT,left',
+            'Abdomen AP,supine', 'Abdomen AP,erect'
+        ],
+        right_leg: [
+            'Right Toe OBL', 'Right Toe LAT', 'Right Toe AP', 'Right Tibia LAT', 'Right Tibia AP',
+            'Right Patella Tangential', 'Right Patella AP', 'Right Knee LAT', 'Right Knee AP', 'Right Hip LAT',
+            'Right Hip Axial', 'Right Foot OBL', 'Right Foot LAT,standing', 'Right Foot LAT', 'Right Foot AP',
+            'Right Femur LAT', 'Right Femur AP', 'Right Calcaneus LAT', 'Right Calcaneus Axial', 'Right Ankle OBL',
+            'Right Ankle LAT', 'Hip AP'
+        ],
+        left_leg: [
+            'Left Toe OBL', 'Left Toe LAT', 'Left Toe AP', 'Left Tibia LAT', 'Left Tibia AP',
+            'Left Patella Tangential', 'Left Patella AP', 'Left Knee LAT', 'Left Knee AP', 'Left Hip LAT',
+            'Left Hip Axial', 'Left Foot OBL', 'Left Foot LAT,standing', 'Left Foot LAT', 'Left Foot AP',
+            'Left Femur LAT', 'Left Femur AP', 'Left Calcaneus LAT', 'Left Calcaneus Axial', 'Left Ankle OBL',
+            'Left Ankle LAT', 'Hip AP'
+        ],
+        advanced: [
+            'IVP Series (1-10)', 'Whole Spine AP Standing', 'Whole Spine LAT Standing', 'Scoliosis Series AP/LAT',
+            'Scanogram (Leg Length Discrepancy)', 'Barium Swallow / Meal', 'Barium Enema Double Contrast',
+            'HSG (Hysterosalpingography)', 'Urethrocystography', 'Fistulography', 'T-Tube Cholangiography',
+            'Arthrography', 'Stress View Knee Valgus/Varus', 'Stress View Ankle Inversion', 'Mandible Panorex View'
+        ],
+        ultrasound: [
+            'USG Abdomen Complete',
+            'USG Abdomen Upper',
+            'USG Abdomen Lower',
+            'USG Hepar & Kandung Empedu',
+            'USG Ginjal & Saluran Kemih',
+            'USG Pelvic / Ginekologi',
+            'USG Obstetri (Kehamilan)',
+            'USG Tiroid & Leher',
+            'USG Mammae (Payudara)',
+            'USG Scrotum / Testis',
+            'USG Thorax / Pleura',
+            'USG Muskuloskeletal (MSK)',
+            'USG Prostat Transabdominal',
+            'USG Appendix (Apendisitis)',
+            'USG FAST (Trauma Akut)'
+        ]
+    };
+
+    const PROTOCOL_CATEGORY_INFO = {
+        often_used: { en: 'Often Used', id: 'Often Used', icon: '⚡' },
+        ultrasound: { en: 'Ultrasound (USG)', id: 'Ultrasound (USG)', icon: '📡' },
+        head: { en: 'Head / Skull', id: 'Head / Skull', icon: '🧠' },
+        spine: { en: 'Spine', id: 'Spine', icon: '🦴' },
+        thorax: { en: 'Thorax', id: 'Thorax', icon: '🫁' },
+        right_arm: { en: 'Right Upper Limb', id: 'Right Upper Limb', icon: '💪' },
+        left_arm: { en: 'Left Upper Limb', id: 'Left Upper Limb', icon: '💪' },
+        pelvis: { en: 'Pelvis & Abdomen', id: 'Pelvis & Abdomen', icon: '🩻' },
+        right_leg: { en: 'Right Lower Limb', id: 'Right Lower Limb', icon: '🦵' },
+        left_leg: { en: 'Left Lower Limb', id: 'Left Lower Limb', icon: '🦵' },
+        advanced: { en: 'Advanced', id: 'Advanced', icon: '🔬' }
+    };
+
+    let currentPickerCategory = 'often_used';
+    let currentPickerSort = 'default';
+    let currentPickerSearch = '';
+    let tempSelectedProtocol = 'Chest PA';
+
+    function openProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (!modal) return;
+        modal.style.display = 'flex';
+
+        // Set initial temp selection from hidden input
+        const currentVal = document.getElementById('selectedModalityInput')?.value || 'Chest PA';
+        tempSelectedProtocol = currentVal;
+        updatePickerTraySelection(tempSelectedProtocol);
+
+        // Find initial category for currentVal
+        const foundCat = findCategoryForProtocol(tempSelectedProtocol);
+        selectProtocolCategory(foundCat || 'often_used', false);
+    }
+
+    function closeProtocolPickerModal() {
+        const modal = document.getElementById('modalProtocolPicker');
+        if (modal) modal.style.display = 'none';
+        clearProtocolSearch();
+    }
+
+    function selectProtocolCategory(categoryKey, clearSearch = true) {
+        if (clearSearch && currentPickerSearch) {
+            clearProtocolSearch(false);
+        }
+
+        currentPickerCategory = categoryKey;
+
+        // Reset skeleton and glowing layers
+        document.querySelectorAll('.skel-region').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-glow-layer').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.skel-tab-btn').forEach(el => el.classList.remove('active'));
+
+        const hudEl = document.getElementById('skelRegionHud');
+        const info = PROTOCOL_CATEGORY_INFO[categoryKey] || { en: 'Select Anatomical Region' };
+
+        if (categoryKey === 'often_used') {
+            document.getElementById('tabOftenUsed')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Often Used (Frequently Performed)';
+        } else if (categoryKey === 'advanced') {
+            document.getElementById('tabAdvanced')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Advanced (Specialized Protocols)';
+        } else if (categoryKey === 'ultrasound') {
+            document.getElementById('tabUltrasound')?.classList.add('active');
+            if (hudEl) hudEl.textContent = 'Ultrasound (USG Mindray DP-10)';
+        } else {
+            const skelEl = document.getElementById('skel-' + categoryKey.replace('_', '-'));
+            if (skelEl) skelEl.classList.add('active');
+            const glowEl = document.getElementById('glow-' + categoryKey);
+            if (glowEl) glowEl.classList.add('active');
+            if (hudEl) hudEl.textContent = info.en;
+        }
+
+        renderProtocolGrid();
+    }
+
+    function renderProtocolGrid() {
+        const container = document.getElementById('protocolGridContainer');
+        const titleEl = document.getElementById('protocolGridTitle');
+        const countEl = document.getElementById('protocolGridCount');
+        if (!container) return;
+
+        let list = [];
+        let isSearching = Boolean(currentPickerSearch.trim());
+
+        if (isSearching) {
+            const q = currentPickerSearch.toLowerCase().trim();
+            const seen = new Set();
+            for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+                for (const item of items) {
+                    if (item.toLowerCase().includes(q) && !seen.has(item)) {
+                        seen.add(item);
+                        list.push({ name: item, category: catKey });
+                    }
+                }
+            }
+            if (titleEl) titleEl.textContent = 'Hasil Pencarian: "' + currentPickerSearch + '"';
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        } else {
+            const items = WORKSTATION_PROTOCOLS[currentPickerCategory] || [];
+            list = items.map(name => ({ name: name, category: currentPickerCategory }));
+            const info = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+            if (titleEl) titleEl.textContent = info ? info.en : currentPickerCategory;
+            if (countEl) countEl.textContent = list.length + ' Pemeriksaan';
+        }
+
+        // Apply sort
+        if (currentPickerSort === 'az') {
+            list.sort((a, b) => a.name.localeCompare(b.name));
+        }
+
+        container.innerHTML = '';
+
+        if (list.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; padding: 3rem 1rem; text-align: center; color: #64748b;">
+                    <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">🔍</div>
+                    <div style="font-weight: 600; color: #94a3b8; font-size: 0.92rem;">Tidak ada pemeriksaan yang cocok</div>
+                    <div style="font-size: 0.78rem; margin-top: 0.25rem;">Coba gunakan kata kunci organ atau proyeksi lain.</div>
+                </div>
+            `;
+            return;
+        }
+
+        list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'protocol-card' + (item.name === tempSelectedProtocol ? ' selected' : '');
+            
+            const catInfo = PROTOCOL_CATEGORY_INFO[item.category] || { en: item.category };
+            
+            card.innerHTML = `
+                ${isSearching ? `<span class="protocol-card-tag">${escapeHtml(catInfo.en)}</span>` : ''}
+                <span>${escapeHtml(item.name)}</span>
+            `;
+
+            // Single click selects
+            card.onclick = function() {
+                tempSelectedProtocol = item.name;
+                updatePickerTraySelection(item.name, item.category);
+                container.querySelectorAll('.protocol-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+            };
+
+            // Double click selects and confirms immediately
+            card.ondblclick = function() {
+                tempSelectedProtocol = item.name;
+                confirmProtocolSelection();
+            };
+
+            container.appendChild(card);
+        });
+    }
+
+    function setProtocolSort(mode) {
+        currentPickerSort = mode;
+        const btnFreq = document.getElementById('btnSortFreq');
+        const btnAz = document.getElementById('btnSortAz');
+        if (mode === 'az') {
+            btnFreq?.classList.remove('active');
+            btnAz?.classList.add('active');
+        } else {
+            btnFreq?.classList.add('active');
+            btnAz?.classList.remove('active');
+        }
+        renderProtocolGrid();
+    }
+
+    function handleProtocolSearch(query) {
+        currentPickerSearch = query || '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = currentPickerSearch ? 'block' : 'none';
+        renderProtocolGrid();
+    }
+
+    function clearProtocolSearch(reRender = true) {
+        currentPickerSearch = '';
+        const input = document.getElementById('protocolSearchInput');
+        if (input) input.value = '';
+        const clearBtn = document.getElementById('protocolSearchClear');
+        if (clearBtn) clearBtn.style.display = 'none';
+        if (reRender) renderProtocolGrid();
+    }
+
+    function updatePickerTraySelection(protocolName, categoryKey = null) {
+        const nameEl = document.getElementById('pickerSelectedName');
+        const catBadge = document.getElementById('pickerSelectedCategoryBadge');
+        if (nameEl) nameEl.textContent = protocolName;
+
+        const cat = categoryKey || findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat];
+        if (catBadge) {
+            catBadge.textContent = info ? info.en : 'General';
+        }
+    }
+
+    function confirmProtocolSelection() {
+        if (!tempSelectedProtocol) return;
+        const input = document.getElementById('selectedModalityInput');
+        if (input) {
+            input.value = tempSelectedProtocol;
+            updateSelectedModalityBadge(tempSelectedProtocol);
+        }
+        closeProtocolPickerModal();
+    }
+
+    function updateSelectedModalityBadge(protocolName) {
+        const textEl = document.getElementById('selectedModalityText');
+        const badgeEl = document.getElementById('selectedModalityCategoryBadge');
+        const iconEl = document.getElementById('selectedModalityIcon');
+        const inputEl = document.getElementById('selectedModalityInput');
+
+        if (inputEl) inputEl.value = protocolName;
+        if (textEl) textEl.textContent = protocolName;
+
+        const cat = findCategoryForProtocol(protocolName);
+        const info = PROTOCOL_CATEGORY_INFO[cat] || { en: 'Rontgen / CR', icon: '🩻' };
+
+        if (badgeEl) badgeEl.textContent = info.en;
+        if (iconEl) iconEl.textContent = info.icon || '🩻';
+    }
+
+    function findCategoryForProtocol(protocolName) {
+        if (!protocolName) return 'often_used';
+        for (const [catKey, items] of Object.entries(WORKSTATION_PROTOCOLS)) {
+            if (catKey === 'often_used') continue; // Prioritaskan anatomi spesifik
+            if (items.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+                return catKey;
+            }
+        }
+        // Cek often_used jika tidak ditemukan di anatomi spesifik
+        if (WORKSTATION_PROTOCOLS.often_used.some(p => p.toLowerCase() === protocolName.toLowerCase())) {
+            return 'often_used';
+        }
+        // Fallback berdasarkan kata kunci
+        const lower = protocolName.toLowerCase();
+        if (lower.includes('usg') || lower.includes('ultrasound') || lower.includes('sonografi') || lower.includes('echo')) return 'ultrasound';
+        if (lower.includes('chest') || lower.includes('sternum') || lower.includes('rib')) return 'thorax';
+        if (lower.includes('skull') || lower.includes('nasal') || lower.includes('mandible') || lower.includes('sinus')) return 'head';
+        if (lower.includes('spine') || lower.includes('sacrum') || lower.includes('coccyx')) return 'spine';
+        if (lower.includes('arm') || lower.includes('wrist') || lower.includes('hand') || lower.includes('elbow') || lower.includes('finger') || lower.includes('shoulder')) return 'right_arm';
+        if (lower.includes('leg') || lower.includes('ankle') || lower.includes('knee') || lower.includes('femur') || lower.includes('foot') || lower.includes('toe')) return 'right_leg';
+        if (lower.includes('pelvis') || lower.includes('abdomen') || lower.includes('ivp')) return 'pelvis';
+        return 'often_used';
+    }
+
+    // Attach Skeleton Region Hover and Click Events
+    document.addEventListener('DOMContentLoaded', function() {
+        const regions = document.querySelectorAll('.skel-region');
+        const hudEl = document.getElementById('skelRegionHud');
+
+        regions.forEach(region => {
+            const cat = region.getAttribute('data-category');
+            const label = region.getAttribute('data-label');
+
+            region.addEventListener('mouseenter', function() {
+                if (hudEl) hudEl.textContent = label;
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl && cat !== currentPickerCategory) {
+                    glowEl.classList.add('hovered');
+                }
+            });
+
+            region.addEventListener('mouseleave', function() {
+                const glowEl = document.getElementById('glow-' + cat);
+                if (glowEl) glowEl.classList.remove('hovered');
+                if (hudEl) {
+                    const activeInfo = PROTOCOL_CATEGORY_INFO[currentPickerCategory];
+                    hudEl.textContent = activeInfo ? activeInfo.en : 'Select Anatomical Region';
+                }
+            });
+
+            region.addEventListener('click', function() {
+                selectProtocolCategory(cat);
+            });
+        });
+    });
+
+</script>
+
+</body>
+</html>
+<?php /**PATH D:\laragon\www\belajar-laravel\resources\views/scans/index.blade.php ENDPATH**/ ?>

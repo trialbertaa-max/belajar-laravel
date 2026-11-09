@@ -57,15 +57,15 @@ class BoneSuppressionEngine:
     ENGINES_REGISTRY = {
         "commercial": {
             "id": "commercial",
-            "name": "In-House Commercial Bone Suppression Engine",
-            "short_label": "In-House Commercial AI",
+            "name": "ALBA-Net (Bone Suppression)",
+            "short_label": "ALBA-Net In-House",
             "paper": "Hyu PACS In-House Distilled Neural Network (CDC Clinic Proprietary)",
             "organization": "CDC Clinic / Hyu PACS Engineering",
-            "license": "Proprietary Commercial (CDC Clinic) / 100% Commercial Cleared",
-            "legal_status": "Commercial Ready (Royalty-Free)",
+            "license": "In-House Proprietary",
+            "legal_status": "Ready",
             "format": "TorchScript (.ts)",
             "input_grid": "1024 x 1024 (Single Channel Grayscale)",
-            "device_supported": "PyTorch CUDA / CPU (ResNet34-UNet Commercial Engine)",
+            "device_supported": "PyTorch CUDA / CPU (ResNet34-UNet Engine)",
             "weights_file": "bone_suppression_commercial.ts",
             "is_commercial_cleared": True
         },
