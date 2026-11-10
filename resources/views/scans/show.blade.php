@@ -3219,10 +3219,10 @@
                                                 </button>
                                             </span>
                                         </td>
-                                        <td>44.62 dB</td>
-                                        <td>0.9779</td>
-                                        <td>+5.24 dB</td>
-                                        <td>59.9 ms</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
                                     </tr>
                                     <tr>
                                         <td style="color: #c084fc;">
@@ -3234,10 +3234,10 @@
                                                 </button>
                                             </span>
                                         </td>
-                                        <td>46.06 dB</td>
-                                        <td>0.9799</td>
-                                        <td>+3.92 dB</td>
-                                        <td>254.3 ms</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
                                     </tr>
                                     <tr>
                                         <td style="color: #34d399; font-weight: 700;">
@@ -3249,10 +3249,10 @@
                                                 </button>
                                             </span>
                                         </td>
-                                        <td style="color: #34d399; font-weight: 700;">45.12 dB</td>
-                                        <td style="color: #34d399; font-weight: 700;">0.9797</td>
-                                        <td style="color: #34d399; font-weight: 700;">+3.48 dB</td>
-                                        <td style="color: #34d399; font-weight: 700;">19.4 ms</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -4784,12 +4784,11 @@
         // EXPORT OPTIONS: PDF, EXCEL, AND CSV
         // ==========================================
         function getBenchmarkExportData() {
-            const rows = currentBenchmarkRows || [
-                { id: 'raw', name: 'Citra Asli (Raw Baseline)', psnr: '-', ssim: 1.0000, snr_gain: '0.00 dB', latency: '0.0 ms', noise_red: '0.0%' },
-                { id: 'bilateral', name: 'Bilateral Filter (Tomasi 1998)', psnr: '44.62 dB', ssim: 0.9779, snr_gain: '+5.24 dB', latency: '59.9 ms', noise_red: '45.2%' },
-                { id: 'nlm', name: 'Non-Local Means (NLM 2005)', psnr: '46.06 dB', ssim: 0.9799, snr_gain: '+3.92 dB', latency: '254.3 ms', noise_red: '36.8%' },
-                { id: 'dl_dncnn', name: 'Deep Residual CNN (DnCNN 2017)', psnr: '45.12 dB', ssim: 0.9797, snr_gain: '+3.48 dB', latency: '19.4 ms', noise_red: '33.5%' }
-            ];
+            if (!currentBenchmarkRows) {
+                alert('Silakan klik tombol "⚡ Uji Komparasi" terlebih dahulu untuk menghitung dan menampilkan matriks evaluasi riil citra ini.');
+                return null;
+            }
+            const rows = currentBenchmarkRows;
 
             const patientName = "{{ addslashes($scan->patient_name) }}";
             const patientId = "{{ $scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT) }}";
@@ -4810,7 +4809,9 @@
         }
 
         function exportBenchmarkCsv() {
-            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
 
             let csv = '\uFEFF'; // UTF-8 BOM for universal spreadsheet compatibility
             csv += `# ====================================================================\n`;
@@ -4843,7 +4844,9 @@
         }
 
         function exportBenchmarkExcel() {
-            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
 
             let xml = '<' + '?xml version="1.0" encoding="UTF-8"?>\n' +
                 '<' + '?mso-application progid="Excel.Sheet"?>\n' +
@@ -5034,7 +5037,9 @@
         }
 
         function exportBenchmarkPdf() {
-            const { rows, patientName, patientId, modality, dateStr } = getBenchmarkExportData();
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
 
             // A4 dimensions: 595.28 x 841.89 points
             const pageWidth = 595.28;
