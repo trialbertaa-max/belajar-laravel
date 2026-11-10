@@ -7,6 +7,7 @@ Bobot awal  : model grayscale non-blind sigma = 15, 25, 50 dari repositori KAIR 
               https://github.com/cszn/KAIR/releases/tag/v1.0 . Batch Normalization pada bobot
               rilis ini sudah digabung (merged) ke lapisan konvolusi, sehingga secara matematis
               setara dengan arsitektur Conv + BN + ReLU pada saat inferensi.
+Versi       : 1.1 (10 Nov 2026) - pemanasan GPU sebelum pengukuran infer_ms (kolom baru "warmup_ms").
 Status      : PRETRAINED pada citra natural, BELUM di-fine-tune pada radiografi toraks.
               Tampilkan sebagai "DnCNN (pretrained)" sampai bobot hasil fine-tuning VinDr-CXR tersedia.
 
@@ -23,6 +24,7 @@ Baris terakhir stdout selalu satu objek JSON, misalnya:
     {"ok": true, "method": "DnCNN (pretrained, sigma=25)", "level": 25, "sigma_est": 4.1,
      "device": "cuda", "load_ms": 35.2, "infer_ms": 812.4, "shape": [2999, 2999]}
 "infer_ms" (dengan sinkronisasi GPU) dapat dicatat sebagai latensi inferensi (Subbab 3.13).
+Inisialisasi cuDNN/kernel GPU satu kali per proses dicatat terpisah sebagai "warmup_ms".
 
 Dapat juga diimpor dari pipeline.py:
     from medical_engine.dncnn import denoise
@@ -118,6 +120,7 @@ def load_model(path, device):
 
 
 _CACHE = {}
+_WARM = set()
 
 
 def get_model(level, device, weights_dir=WEIGHTS_DIR):
@@ -228,6 +231,20 @@ def denoise(image, level='auto', weights_dir=WEIGHTS_DIR, device='auto', tile=No
             t = torch.from_numpy(np.ascontiguousarray(patch))[None, None].to(dev)
             return net(t)[0, 0].float().cpu().numpy()
 
+    # Pemanasan: inisialisasi cuDNN dan pemuatan kernel GPU terjadi pada forward pass pertama di setiap
+    # proses. Biaya satu kali ini dicatat sebagai warmup_ms dan tidak dihitung sebagai latensi inferensi.
+    warmup_ms = 0.0
+    wkey = (lvl, str(dev), weights_dir, tile)
+    if wkey not in _WARM:
+        tw = time.perf_counter()
+        wh = x.shape[0] if not tile or tile <= 0 else min(tile, x.shape[0])
+        ww = x.shape[1] if not tile or tile <= 0 else min(tile, x.shape[1])
+        fn(np.zeros((wh, ww), dtype=np.float32))
+        if dev.type == 'cuda':
+            torch.cuda.synchronize()
+        warmup_ms = (time.perf_counter() - tw) * 1000.0
+        _WARM.add(wkey)
+
     if dev.type == 'cuda':
         torch.cuda.synchronize()
     t1 = time.perf_counter()
@@ -245,6 +262,7 @@ def denoise(image, level='auto', weights_dir=WEIGHTS_DIR, device='auto', tile=No
         'device': dev.type,
         'gpu': torch.cuda.get_device_name(dev) if dev.type == 'cuda' else None,
         'load_ms': round(load_ms, 1),
+        'warmup_ms': round(warmup_ms, 1),
         'infer_ms': round(infer_ms, 1),
         'shape': list(x.shape),
         'tile': tile,
