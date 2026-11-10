@@ -3014,7 +3014,7 @@
                             <optgroup label="── 1. Restorasi Citra (Denoising) ──">
                                 <option value="bilateral" selected>Bilateral Filter (Tomasi 1998)</option>
                                 <option value="nlm">Non-Local Means (NLM - Buades 2005)</option>
-                                <option value="dl_dncnn">Deep Residual CNN (DnCNN - Zhang 2017)</option>
+                                <option value="dl_dncnn">DnCNN (pretrained)</option>
                                 <option value="gaussian">Adaptive Gaussian Smoothing</option>
                             </optgroup>
                             <optgroup label="── 2. Image Enhancement (Konvensional) ──">
@@ -3037,41 +3037,69 @@
 
                         <!-- KONTROL KHUSUS 1: RESTORASI DENOISING -->
                         <div id="boxDenoiseControls">
-                            <!-- Parameter Sliders -->
-                            <div class="slider-group">
-                                <div class="slider-label-row">
-                                    <span>Radius Spasial (Kernel &sigma;<sub>s</sub>):</span>
-                                    <span class="slider-val-badge" id="lblSigmaSpace">20</span>
+                            <!-- Kontrol Tingkat Noise DnCNN (Pretrained Model) -->
+                            <div id="boxDncnnLevelGroup" style="display: none; margin-bottom: 0.65rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.55rem;">
+                                <div class="slider-label-row" style="margin-bottom: 0.35rem;">
+                                    <span style="font-size: 0.73rem; color: #34d399; font-weight: 700;">Tingkat Noise DnCNN (&sigma;):</span>
+                                    <span class="slider-val-badge" id="lblDncnnLevel" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border-color: rgba(16, 185, 129, 0.45);">Auto</span>
                                 </div>
-                                <input type="range" min="5" max="80" value="20" class="pacs-range-slider" id="rngSigmaSpace" oninput="document.getElementById('lblSigmaSpace').innerText = this.value">
+                                <select id="selDncnnLevel" class="form-select-pacs" onchange="document.getElementById('lblDncnnLevel').innerText = this.options[this.selectedIndex].text.split(' ')[0];" style="font-size: 0.72rem; padding: 0.35rem 0.5rem;">
+                                    <option value="auto" selected>Auto (Estimasi Derau Immerkaer)</option>
+                                    <option value="15">15 (Derau Rendah / Fine Grain)</option>
+                                    <option value="25">25 (Derau Sedang / Standar)</option>
+                                    <option value="50">50 (Derau Tinggi / Heavy Quantum Noise)</option>
+                                </select>
+                                <div style="font-size: 0.64rem; color: #94a3b8; margin-top: 0.3rem; line-height: 1.3;">
+                                    Arsitektur: DnCNN 17-Layer (Zhang et al. 2017). Bobot resmi KAIR, inferensi tiled GPU/CUDA.
+                                </div>
                             </div>
 
-                            <div class="slider-group">
-                                <div class="slider-label-row">
-                                    <span>Sensitivitas Tepi (Fotometrik &sigma;<sub>r</sub>):</span>
-                                    <span class="slider-val-badge" id="lblSigmaColor">25</span>
+                            <!-- Parameter Sliders (Bilateral / Gaussian / NLM) -->
+                            <div id="boxSpatialSliders">
+                                <div class="slider-group">
+                                    <div class="slider-label-row">
+                                        <span>Radius Spasial (Kernel &sigma;<sub>s</sub>):</span>
+                                        <span class="slider-val-badge" id="lblSigmaSpace">20</span>
+                                    </div>
+                                    <input type="range" min="5" max="80" value="20" class="pacs-range-slider" id="rngSigmaSpace" oninput="document.getElementById('lblSigmaSpace').innerText = this.value">
                                 </div>
-                                <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
+
+                                <div class="slider-group">
+                                    <div class="slider-label-row">
+                                        <span>Sensitivitas Tepi (Fotometrik &sigma;<sub>r</sub>):</span>
+                                        <span class="slider-val-badge" id="lblSigmaColor">25</span>
+                                    </div>
+                                    <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
+                                </div>
                             </div>
 
                             <!-- Telemetry Grid -->
                             <div class="telemetry-grid">
                                 <div class="telemetry-item">
-                                    <span class="telemetry-label">PSNR Metric:</span>
+                                    <span class="telemetry-label">PSNR vs citra masukan:</span>
                                     <span class="telemetry-val" id="telPsnr">-</span>
                                 </div>
                                 <div class="telemetry-item">
-                                    <span class="telemetry-label">SNR Gain:</span>
+                                    <span class="telemetry-label">SNR Gain (estimasi tanpa acuan):</span>
                                     <span class="telemetry-val" id="telSnrGain">-</span>
                                 </div>
                                 <div class="telemetry-item">
-                                    <span class="telemetry-label">Noise Reduction:</span>
+                                    <span class="telemetry-label">Estimasi Penurunan Derau:</span>
                                     <span class="telemetry-val" id="telNoiseRed">-</span>
                                 </div>
                                 <div class="telemetry-item">
-                                    <span class="telemetry-label">Inference Time:</span>
+                                    <span class="telemetry-label">Waktu Inferensi:</span>
                                     <span class="telemetry-val" id="telLatency">-</span>
                                 </div>
+                                <div class="telemetry-item" style="grid-column: span 2;">
+                                    <span class="telemetry-label">Total Proses:</span>
+                                    <span class="telemetry-val" id="telTotalProc">-</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.63rem; color: #94a3b8; margin-top: 0.35rem; line-height: 1.35; padding: 0.3rem 0.5rem; background: rgba(15, 23, 42, 0.6); border-radius: 4px; border-left: 2px solid #38bdf8;">
+                                ℹ️ <strong>Keterangan Metrik:</strong><br>
+                                • <em>PSNR vs citra masukan</em>: Dihitung terhadap citra masukan tanpa citra acuan bersih (ground truth), sehingga mengukur <strong>besarnya perubahan citra</strong>, bukan kualitas restorasi absolut.<br>
+                                • <em>SNR Gain (estimasi tanpa acuan) &amp; Estimasi Penurunan Derau</em>: Dihitung dengan estimator Immerkaer (1996) tanpa acuan bersih. Nilai ini <strong>juga naik bila citra terlalu dihaluskan (over-smoothing/blur)</strong>, sehingga bukan ukuran kualitas restorasi tunggal.
                             </div>
                         </div>
 
@@ -3157,7 +3185,7 @@
                                         <th>Metode</th>
                                         <th>
                                             <span class="term-hint">
-                                                PSNR
+                                                PSNR vs Citra Masukan
                                                 <button class="term-hint-btn" aria-label="Penjelasan PSNR"
                                                     onclick="openGlossaryModal('psnr', this); event.stopPropagation();"
                                                     onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('psnr',this);event.stopPropagation();}">?
@@ -3166,7 +3194,7 @@
                                         </th>
                                         <th>
                                             <span class="term-hint">
-                                                SSIM
+                                                SSIM vs Citra Masukan
                                                 <button class="term-hint-btn" aria-label="Penjelasan SSIM"
                                                     onclick="openGlossaryModal('ssim', this); event.stopPropagation();"
                                                     onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('ssim',this);event.stopPropagation();}">?
@@ -3175,7 +3203,7 @@
                                         </th>
                                         <th>
                                             <span class="term-hint">
-                                                SNR Gain
+                                                SNR Gain (estimasi tanpa acuan)
                                                 <button class="term-hint-btn" aria-label="Penjelasan SNR Gain"
                                                     onclick="openGlossaryModal('snr-gain', this); event.stopPropagation();"
                                                     onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('snr-gain',this);event.stopPropagation();}">?
@@ -3184,8 +3212,17 @@
                                         </th>
                                         <th>
                                             <span class="term-hint">
-                                                Latency
-                                                <button class="term-hint-btn" aria-label="Penjelasan Latency"
+                                                Waktu Inferensi
+                                                <button class="term-hint-btn" aria-label="Penjelasan Waktu Inferensi"
+                                                    onclick="openGlossaryModal('latency', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('latency',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                Total Proses
+                                                <button class="term-hint-btn" aria-label="Penjelasan Total Proses"
                                                     onclick="openGlossaryModal('latency', this); event.stopPropagation();"
                                                     onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('latency',this);event.stopPropagation();}">?
                                                 </button>
@@ -3208,6 +3245,7 @@
                                         <td>1.0000</td>
                                         <td>0.00 dB</td>
                                         <td>0.0 ms</td>
+                                        <td>0.0 ms</td>
                                     </tr>
                                     <tr>
                                         <td style="color: #38bdf8;">
@@ -3219,6 +3257,7 @@
                                                 </button>
                                             </span>
                                         </td>
+                                        <td>-</td>
                                         <td>-</td>
                                         <td>-</td>
                                         <td>-</td>
@@ -3238,11 +3277,12 @@
                                         <td>-</td>
                                         <td>-</td>
                                         <td>-</td>
+                                        <td>-</td>
                                     </tr>
                                     <tr>
                                         <td style="color: #34d399; font-weight: 700;">
                                             <span class="term-hint">
-                                                DnCNN (Deep AI)
+                                                DnCNN (pretrained)
                                                 <button class="term-hint-btn" aria-label="Penjelasan DnCNN"
                                                     onclick="openGlossaryModal('dncnn', this); event.stopPropagation();"
                                                     onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('dncnn',this);event.stopPropagation();}">?
@@ -3253,9 +3293,13 @@
                                         <td style="color: #34d399; font-weight: 700;">-</td>
                                         <td style="color: #34d399; font-weight: 700;">-</td>
                                         <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
                                     </tr>
                                 </tbody>
                             </table>
+                            <div style="font-size: 0.62rem; color: #94a3b8; margin-top: 0.35rem; line-height: 1.35; padding: 0.35rem 0.5rem; background: rgba(15, 23, 42, 0.5); border-radius: 4px; border-left: 2px solid #34d399;">
+                                * <strong>Keterangan Metrik:</strong> Nilai <em>PSNR vs Citra Masukan</em> &amp; <em>SSIM vs Citra Masukan</em> dihitung terhadap citra masukan tanpa acuan bersih (ground truth), sehingga mengukur <strong>besarnya perubahan/kemiripan struktur terhadap masukan</strong>, bukan kualitas restorasi absolut. Nilai <em>SNR Gain (estimasi tanpa acuan)</em> menggunakan estimator Immerkaer (1996) dan <strong>juga naik bila citra terlalu dihaluskan (over-smoothing)</strong>, sehingga bukan ukuran kualitas restorasi tunggal. <em>Waktu Inferensi</em> mengukur murni komputasi filter/model (DnCNN via <code>infer_ms</code> GPU, Bilateral via <code>cv2.bilateralFilter</code>). <em>Total Proses</em> mencakup seluruh siklus termasuk pemanggilan subprocess, muat model, dan I/O citra.
+                            </div>
                         </div>
 
                     </div>
@@ -4342,15 +4386,34 @@
         function updateTelemetryForViewport(id) {
             const st = vpState[id];
             if (st && st.metrics) {
-                if (st.metrics.psnr_db) document.getElementById('telPsnr').innerText = st.metrics.psnr_db + ' dB';
-                if (st.metrics.snr_gain_db) document.getElementById('telSnrGain').innerText = st.metrics.snr_gain_db;
-                if (st.metrics.noise_reduction_pct) document.getElementById('telNoiseRed').innerText = st.metrics.noise_reduction_pct;
-                if (st.metrics.processing_time_ms) document.getElementById('telLatency').innerText = st.metrics.processing_time_ms + ' ms';
+                if (st.metrics.psnr_db !== undefined && st.metrics.psnr_db !== null) {
+                    document.getElementById('telPsnr').innerText = st.metrics.psnr_db + ' dB';
+                }
+                if (st.metrics.snr_gain_db !== undefined && st.metrics.snr_gain_db !== null) {
+                    document.getElementById('telSnrGain').innerText = st.metrics.snr_gain_db;
+                }
+                if (st.metrics.noise_reduction_pct !== undefined && st.metrics.noise_reduction_pct !== null) {
+                    document.getElementById('telNoiseRed').innerText = st.metrics.noise_reduction_pct;
+                }
+                const inferVal = (st.metrics.infer_ms !== undefined && st.metrics.infer_ms !== null)
+                    ? st.metrics.infer_ms + ' ms'
+                    : (st.metrics.inference_time_ms ? st.metrics.inference_time_ms + ' ms' : (st.metrics.processing_time_ms ? st.metrics.processing_time_ms + ' ms' : '-'));
+                document.getElementById('telLatency').innerText = inferVal;
+
+                const telTotal = document.getElementById('telTotalProc');
+                if (telTotal) {
+                    const totalVal = (st.metrics.total_ms !== undefined && st.metrics.total_ms !== null)
+                        ? st.metrics.total_ms + ' ms'
+                        : (st.metrics.total_process_ms ? st.metrics.total_process_ms + ' ms' : '-');
+                    telTotal.innerText = totalVal;
+                }
             } else {
                 document.getElementById('telPsnr').innerText = '-';
                 document.getElementById('telSnrGain').innerText = '-';
                 document.getElementById('telNoiseRed').innerText = '-';
                 document.getElementById('telLatency').innerText = '-';
+                const telTotal = document.getElementById('telTotalProc');
+                if (telTotal) telTotal.innerText = '-';
             }
         }
 
@@ -4573,19 +4636,28 @@
                 if (cardBench) cardBench.style.display = 'block';
                 if (btnResidual) btnResidual.style.display = 'inline-block';
 
+                const boxDncnn = document.getElementById('boxDncnnLevelGroup');
+                const boxSliders = document.getElementById('boxSpatialSliders');
                 const lblLat = document.getElementById('telLatency');
+
                 if (engine === 'dl_dncnn') {
-                    if (lblLat) lblLat.innerText = '18.5 ms';
-                    if (btn) btn.innerHTML = '<span>▶ Jalankan DnCNN Denoising</span>';
-                } else if (engine === 'nlm') {
-                    if (lblLat) lblLat.innerText = '64.0 ms';
-                    if (btn) btn.innerHTML = '<span>▶ Jalankan NLM Denoising</span>';
-                } else if (engine === 'gaussian') {
-                    if (lblLat) lblLat.innerText = '8.0 ms';
-                    if (btn) btn.innerHTML = '<span>▶ Jalankan Gaussian Smoothing</span>';
+                    if (boxDncnn) boxDncnn.style.display = 'block';
+                    if (boxSliders) boxSliders.style.display = 'none';
+                    if (lblLat) lblLat.innerText = '-';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan DnCNN (pretrained)</span>';
                 } else {
-                    if (lblLat) lblLat.innerText = '32.0 ms';
-                    if (btn) btn.innerHTML = '<span>▶ Jalankan Bilateral Denoising</span>';
+                    if (boxDncnn) boxDncnn.style.display = 'none';
+                    if (boxSliders) boxSliders.style.display = 'block';
+                    if (engine === 'nlm') {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan NLM Denoising</span>';
+                    } else if (engine === 'gaussian') {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan Gaussian Smoothing</span>';
+                    } else {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan Bilateral Denoising</span>';
+                    }
                 }
             }
         }
@@ -4602,6 +4674,7 @@
             const engine = document.getElementById('selFilterEngine').value;
             const sigmaColor = document.getElementById('rngSigmaColor').value;
             const sigmaSpace = document.getElementById('rngSigmaSpace').value;
+            const dncnnLevel = document.getElementById('selDncnnLevel') ? document.getElementById('selDncnnLevel').value : 'auto';
             const targetImgSrc = vpState[targetVp].rawSrc;
 
             fetch("{{ route('scans.denoise', $scan->id) }}", {
@@ -4612,6 +4685,7 @@
                 },
                 body: JSON.stringify({
                     engine: engine,
+                    level: dncnnLevel,
                     sigma_color: sigmaColor,
                     sigma_space: sigmaSpace,
                     viewport: targetVp,
@@ -4620,7 +4694,10 @@
             })
             .then(async res => {
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Gagal memproses gambar");
+                if (!res.ok || (data && data.ok === false)) {
+                    const errMsg = (data && (data.error || data.message)) || "Gagal memproses restorasi citra";
+                    throw new Error(errMsg);
+                }
                 return data;
             })
             .then(data => {
@@ -4633,7 +4710,10 @@
 
                 vpState[targetVp].denoisedSrc = data.image_url;
                 vpState[targetVp].residualSrc = data.residual_url;
-                vpState[targetVp].metrics = data.metrics;
+                vpState[targetVp].metrics = Object.assign({}, data.metrics || {}, {
+                    infer_ms: (data.infer_ms !== undefined) ? data.infer_ms : (data.metrics ? data.metrics.inference_time_ms : null),
+                    total_ms: (data.total_ms !== undefined) ? data.total_ms : (data.metrics ? data.metrics.total_process_ms : null)
+                });
                 vpState[targetVp].engine = data.engine;
 
                 // Update label dinamis pada Tirai A/B sisi kanan
@@ -4730,7 +4810,10 @@
             })
             .then(async res => {
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.message || "Gagal memproses benchmark");
+                if (!res.ok || (data && data.ok === false)) {
+                    const errMsg = (data && (data.error || data.message)) || "Gagal memproses benchmark";
+                    throw new Error(errMsg);
+                }
                 return data;
             })
             .then(data => {
@@ -4761,11 +4844,14 @@
                 const isBilat = (r.id === 'bilateral');
                 const isNlm = (r.id === 'nlm');
                 
-                let colorStyle = '#f1f5f9';
+                let colorStyle = '#f1f5f9;';
                 if (isRaw) colorStyle = '#94a3b8;';
                 else if (isBilat) colorStyle = '#38bdf8;';
                 else if (isNlm) colorStyle = '#c084fc;';
                 else if (isDncnn) colorStyle = '#34d399; font-weight: 700;';
+
+                const infTime = r.infer_time || r.latency || '-';
+                const totTime = r.total_time || '-';
 
                 html += `
                     <tr>
@@ -4773,7 +4859,8 @@
                         <td style="color: ${colorStyle}">${r.psnr}</td>
                         <td style="color: ${colorStyle}">${r.ssim}</td>
                         <td style="color: ${colorStyle}">${r.snr_gain}</td>
-                        <td style="color: ${colorStyle}">${r.latency}</td>
+                        <td style="color: ${colorStyle}">${infTime}</td>
+                        <td style="color: ${colorStyle}">${totTime}</td>
                     </tr>
                 `;
             });
@@ -4818,15 +4905,17 @@
             csv += `# HYU PACS - MATRIKS KOMPARASI EVALUASI RESTORASI CITRA MEDIS\n`;
             csv += `# Pasien: ${patientName} | MRN: ${patientId} | Modalitas: ${modality}\n`;
             csv += `# Waktu Pengujian: ${dateStr} | Standar Metrik: Wang et al. (2004) & Immerkaer (1996)\n`;
+            csv += `# Catatan Metrik: PSNR & SSIM diukur vs citra masukan tanpa acuan bersih (mengukur deviasi/perubahan spasial). SNR Gain & Estimasi Penurunan Derau (Immerkaer 1996) juga naik bila citra terlalu dihaluskan (bukan ukuran kualitas restorasi tunggal).\n`;
             csv += `# ====================================================================\n\n`;
-            csv += `Metode Algoritma,PSNR (dB),SSIM Index,Laplacian SNR Gain (dB),Noise Reduction (%),Inference Latency (ms)\n`;
+            csv += `Metode Algoritma,PSNR vs Citra Masukan (dB),SSIM vs citra masukan,SNR Gain (estimasi tanpa acuan) (dB),Estimasi Penurunan Derau (%),Waktu Inferensi (ms),Total Proses (ms)\n`;
 
             rows.forEach(r => {
                 const cleanPsnr = (r.psnr || '-').replace(' dB', '');
                 const cleanSnrGain = (r.snr_gain || '0').replace(' dB', '');
                 const cleanNoise = (r.noise_red || '-').replace('%', '');
-                const cleanLatency = (r.latency || '0').replace(' ms', '');
-                csv += `"${r.name}",${cleanPsnr},${r.ssim},${cleanSnrGain},${cleanNoise},${cleanLatency}\n`;
+                const cleanInfer = (r.infer_time || r.latency || '0').replace(' ms', '');
+                const cleanTotal = (r.total_time || '-').replace(' ms', '');
+                csv += `"${r.name}",${cleanPsnr},${r.ssim},${cleanSnrGain},${cleanNoise},${cleanInfer},${cleanTotal}\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -4950,29 +5039,30 @@
  <Worksheet ss:Name="Matriks Evaluasi">
   <Table ss:DefaultRowHeight="20">
    <Column ss:Width="200"/>
-   <Column ss:Width="90"/>
-   <Column ss:Width="80"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="150"/>
+   <Column ss:Width="140"/>
+   <Column ss:Width="105"/>
    <Column ss:Width="100"/>
-   <Column ss:Width="100"/>
-   <Column ss:Width="95"/>
 
    <Row ss:Height="26">
-    <Cell ss:MergeAcross="5" ss:StyleID="TitleHeader"><Data ss:Type="String">CAHAYA DIAGNOSTIC CENTRE (CDC) - HYU PACS WORKSTATION</Data></Cell>
+    <Cell ss:MergeAcross="6" ss:StyleID="TitleHeader"><Data ss:Type="String">CAHAYA DIAGNOSTIC CENTRE (CDC) - HYU PACS WORKSTATION</Data></Cell>
    </Row>
    <Row ss:Height="18">
-    <Cell ss:MergeAcross="5" ss:StyleID="SubHeader"><Data ss:Type="String">Laporan Hasil Matriks Komparasi Evaluasi Restorasi &amp; Denoising Citra Medis</Data></Cell>
+    <Cell ss:MergeAcross="6" ss:StyleID="SubHeader"><Data ss:Type="String">Laporan Hasil Matriks Komparasi Evaluasi Restorasi &amp; Denoising Citra Medis</Data></Cell>
    </Row>
    <Row ss:Height="10"></Row>
 
    <Row>
     <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Nama Pasien</Data></Cell>
-    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientName)}</Data></Cell>
+    <Cell ss:MergeAcross="2" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientName)}</Data></Cell>
     <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Modalitas</Data></Cell>
     <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(modality)}</Data></Cell>
    </Row>
    <Row>
     <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">No. Rekam Medis (MRN)</Data></Cell>
-    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientId)}</Data></Cell>
+    <Cell ss:MergeAcross="2" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientId)}</Data></Cell>
     <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Waktu Pengujian</Data></Cell>
     <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(dateStr)}</Data></Cell>
    </Row>
@@ -4980,11 +5070,12 @@
 
    <Row ss:Height="24">
     <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Metode Algoritma</Data></Cell>
-    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">PSNR (dB)</Data></Cell>
-    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SSIM Index</Data></Cell>
-    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SNR Gain (dB)</Data></Cell>
-    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Reduksi Noise (%)</Data></Cell>
-    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Latensi (ms)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">PSNR vs Masukan (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SSIM vs Citra Masukan</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SNR Gain (estimasi tanpa acuan) (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Estimasi Penurunan Derau (%)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Waktu Inferensi (ms)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Total Proses (ms)</Data></Cell>
    </Row>`;
 
             rows.forEach(r => {
@@ -4995,7 +5086,8 @@
                 const cleanPsnr = (r.psnr || '-').replace(' dB', '');
                 const cleanSnr = (r.snr_gain || '0').replace(' dB', '');
                 const cleanNoise = (r.noise_red || '-').replace('%', '');
-                const cleanLatency = (r.latency || '0').replace(' ms', '');
+                const cleanInfer = (r.infer_time || r.latency || '0').replace(' ms', '');
+                const cleanTotal = (r.total_time || '-').replace(' ms', '');
 
                 xml += `\n   <Row ss:Height="21">
     <Cell ss:StyleID="${styleL}"><Data ss:Type="String">${escapeXml(r.name)}</Data></Cell>
@@ -5003,16 +5095,17 @@
     <Cell ss:StyleID="${styleC}"><Data ss:Type="Number">${r.ssim}</Data></Cell>
     <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanSnr)}</Data></Cell>
     <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanNoise)}</Data></Cell>
-    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanLatency)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanInfer)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanTotal)}</Data></Cell>
    </Row>`;
             });
 
             xml += `\n   <Row ss:Height="12"></Row>
    <Row>
-    <Cell ss:MergeAcross="5"><Data ss:Type="String">Formula &amp; Standar: Wang et al. (2004) SSIM, Immerkaer (1996) Laplacian Noise Estimation.</Data></Cell>
+    <Cell ss:MergeAcross="6"><Data ss:Type="String">Catatan Metrik: PSNR &amp; SSIM dihitung vs citra masukan tanpa acuan bersih. SNR Gain &amp; Penurunan Derau (Immerkaer 1996) juga naik bila citra terlalu dihaluskan (bukan ukuran kualitas restorasi tunggal).</Data></Cell>
    </Row>
    <Row>
-    <Cell ss:MergeAcross="5"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil Radiologi</Data></Cell>
+    <Cell ss:MergeAcross="6"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil Radiologi</Data></Cell>
    </Row>
   </Table>
   <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
@@ -5102,12 +5195,13 @@
             // Table Header
             let tableY = 665;
             addRect(40, tableY - 5, 515, 22, 0.1, 0.15, 0.25);
-            addText("Metode Algoritma", 48, tableY + 2, 9, true, 1, 1, 1);
-            addText("PSNR", 230, tableY + 2, 9, true, 1, 1, 1);
-            addText("SSIM", 300, tableY + 2, 9, true, 1, 1, 1);
-            addText("SNR Gain", 370, tableY + 2, 9, true, 1, 1, 1);
-            addText("Reduksi Noise", 440, tableY + 2, 9, true, 1, 1, 1);
-            addText("Latensi", 510, tableY + 2, 9, true, 1, 1, 1);
+            addText("Metode Algoritma", 44, tableY + 2, 8, true, 1, 1, 1);
+            addText("PSNR (In)", 180, tableY + 2, 8, true, 1, 1, 1);
+            addText("SSIM vs In", 235, tableY + 2, 8, true, 1, 1, 1);
+            addText("SNR Gain (Est)", 295, tableY + 2, 8, true, 1, 1, 1);
+            addText("Est. Penurunan", 365, tableY + 2, 8, true, 1, 1, 1);
+            addText("Inferensi", 435, tableY + 2, 8, true, 1, 1, 1);
+            addText("Total Proc", 495, tableY + 2, 8, true, 1, 1, 1);
 
             // Table Rows
             let currentY = tableY - 26;
@@ -5122,12 +5216,15 @@
                 addLine(40, currentY - 5, 555, currentY - 5, 0.85, 0.85, 0.88, 0.5);
 
                 const textColor = isAi ? [0.05, 0.5, 0.3] : [0.15, 0.15, 0.15];
-                addText(r.name, 48, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
-                addText(r.psnr || '-', 230, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
-                addText(String(r.ssim), 300, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
-                addText(r.snr_gain || '0 dB', 370, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
-                addText(r.noise_red || '-', 440, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
-                addText(r.latency || '-', 510, currentY + 1, 8.5, isAi, textColor[0], textColor[1], textColor[2]);
+                const infTime = r.infer_time || r.latency || '-';
+                const totTime = r.total_time || '-';
+                addText(r.name, 44, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.psnr || '-', 180, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(String(r.ssim), 235, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.snr_gain || '0 dB', 295, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.noise_red || '-', 365, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(infTime, 435, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(totTime, 495, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
 
                 currentY -= 21;
             });
@@ -5140,11 +5237,11 @@
             currentY -= 20;
             addText("Catatan Metodologi Ilmiah Evaluasi Citra Medis:", 40, currentY, 9, true, 0.2, 0.3, 0.45);
             currentY -= 14;
-            addText("1. PSNR (Peak Signal-to-Noise Ratio): Preservasi sinyal relatif terhadap MSE citra asli.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+            addText("1. PSNR vs Citra Masukan & SSIM vs Citra Masukan: Diukur terhadap citra input tanpa ground truth bersih.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
             currentY -= 12;
-            addText("2. SSIM (Structural Similarity Index): Standar Wang et al. (2004) untuk kemiripan struktur anatomi organ.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+            addText("2. SNR Gain (estimasi tanpa acuan) & Est. Penurunan Derau: Estimator Immerkaer (1996); juga naik bila citra terlalu dihaluskan.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
             currentY -= 12;
-            addText("3. SNR Gain (Laplacian Filtered): Standar Immerkaer (1996) untuk kuantifikasi reduksi noise tanpa blur.", 40, currentY, 8, false, 0.35, 0.4, 0.45);
+            addText("3. Waktu Inferensi: Waktu eksekusi komputasi filter/model murni. Total Proses: Keseluruhan siklus request-to-disk.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
 
             // Footer / Digital Signature Stamp
             currentY -= 45;

@@ -1446,17 +1446,18 @@
     <!-- Filter & Search Bar -->
     <div class="filter-bar">
         <div class="filter-tabs">
-            <a href="<?php echo e(route('scans.index', array_filter(['date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(!request('status') ? 'active' : ''); ?>">Semua Pos (<?php echo e($stats['total']); ?>)</a>
-            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'siap_rontgen' ? 'active' : ''); ?>">Antrian Rontgen (<?php echo e($stats['siap_rontgen']); ?>)</a>
-            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'rontgen_selesai' ? 'active' : ''); ?>">Siap Baca (<?php echo e($stats['rontgen_selesai']); ?>)</a>
-            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => request('date'), 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'selesai_diagnosa' ? 'active' : ''); ?>">Selesai (<?php echo e($stats['selesai_diagnosa']); ?>)</a>
+            <?php $activeDateParam = $filterDate ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)request('date')) ? request('date') : null); ?>
+            <a href="<?php echo e(route('scans.index', array_filter(['date' => $activeDateParam, 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(!request('status') ? 'active' : ''); ?>">Semua Pos (<?php echo e($stats['total']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => $activeDateParam, 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'siap_rontgen' ? 'active' : ''); ?>">Antrian Rontgen (<?php echo e($stats['siap_rontgen']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => $activeDateParam, 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'rontgen_selesai' ? 'active' : ''); ?>">Siap Baca (<?php echo e($stats['rontgen_selesai']); ?>)</a>
+            <a href="<?php echo e(route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => $activeDateParam, 'search' => request('search')]))); ?>" class="filter-tab <?php echo e(request('status') == 'selesai_diagnosa' ? 'active' : ''); ?>">Selesai (<?php echo e($stats['selesai_diagnosa']); ?>)</a>
         </div>
 
-        <form action="<?php echo e(route('scans.index')); ?>" method="GET" class="search-box" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+        <form action="<?php echo e(route('scans.index')); ?>" method="GET" class="search-box" id="formFilterWorklist" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
             <?php if(request('status')): ?>
                 <input type="hidden" name="status" value="<?php echo e(request('status')); ?>">
             <?php endif; ?>
-            <input type="date" name="date" value="<?php echo e(request('date')); ?>" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan">
+            <input type="date" name="date" id="inputFilterDate" value="<?php echo e($filterDate ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)request('date')) ? request('date') : '')); ?>" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan (YYYY-MM-DD)">
             <input type="text" name="search" value="<?php echo e(request('search')); ?>" class="search-input" placeholder="Cari nama, No. RM, Accession No...">
             <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.85rem;">🔍 Filter</button>
             <?php if(request('search') || request('date')): ?>
@@ -2204,6 +2205,25 @@
         if (input && input.value) return input.value;
         return '<?php echo e(csrf_token()); ?>';
     }
+
+    /* Pastikan date picker di UI selalu mengirim nilai ke server dalam format YYYY-MM-DD */
+    document.addEventListener('DOMContentLoaded', function() {
+        var formFilter = document.getElementById('formFilterWorklist');
+        if (formFilter) {
+            formFilter.addEventListener('submit', function() {
+                var dInput = document.getElementById('inputFilterDate');
+                if (dInput && dInput.value) {
+                    var val = dInput.value.trim();
+                    var matchSlash = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                    if (matchSlash) {
+                        var mm = matchSlash[1].padStart(2, '0');
+                        var dd = matchSlash[2].padStart(2, '0');
+                        dInput.value = matchSlash[3] + '-' + mm + '-' + dd;
+                    }
+                }
+            });
+        }
+    });
 
     /* ═══════════════════════════════════════════════════════════════════════
        STATE MANAGEMENT: STAGING EXCEL TABLE (CRUD)
