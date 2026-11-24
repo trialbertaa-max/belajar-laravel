@@ -1445,17 +1445,18 @@
     <!-- Filter & Search Bar -->
     <div class="filter-bar">
         <div class="filter-tabs">
-            <a href="{{ route('scans.index', array_filter(['date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ !request('status') ? 'active' : '' }}">Semua Pos ({{ $stats['total'] }})</a>
-            <a href="{{ route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'siap_rontgen' ? 'active' : '' }}">Antrian Rontgen ({{ $stats['siap_rontgen'] }})</a>
-            <a href="{{ route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'rontgen_selesai' ? 'active' : '' }}">Siap Baca ({{ $stats['rontgen_selesai'] }})</a>
-            <a href="{{ route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => request('date'), 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'selesai_diagnosa' ? 'active' : '' }}">Selesai ({{ $stats['selesai_diagnosa'] }})</a>
+            @php $activeDateParam = $filterDate ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)request('date')) ? request('date') : null); @endphp
+            <a href="{{ route('scans.index', array_filter(['date' => $activeDateParam, 'search' => request('search')])) }}" class="filter-tab {{ !request('status') ? 'active' : '' }}">Semua Pos ({{ $stats['total'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'siap_rontgen', 'date' => $activeDateParam, 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'siap_rontgen' ? 'active' : '' }}">Antrian Rontgen ({{ $stats['siap_rontgen'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'rontgen_selesai', 'date' => $activeDateParam, 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'rontgen_selesai' ? 'active' : '' }}">Siap Baca ({{ $stats['rontgen_selesai'] }})</a>
+            <a href="{{ route('scans.index', array_filter(['status' => 'selesai_diagnosa', 'date' => $activeDateParam, 'search' => request('search')])) }}" class="filter-tab {{ request('status') == 'selesai_diagnosa' ? 'active' : '' }}">Selesai ({{ $stats['selesai_diagnosa'] }})</a>
         </div>
 
-        <form action="{{ route('scans.index') }}" method="GET" class="search-box" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
+        <form action="{{ route('scans.index') }}" method="GET" class="search-box" id="formFilterWorklist" style="display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap;">
             @if(request('status'))
                 <input type="hidden" name="status" value="{{ request('status') }}">
             @endif
-            <input type="date" name="date" value="{{ request('date') }}" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan">
+            <input type="date" name="date" id="inputFilterDate" value="{{ $filterDate ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)request('date')) ? request('date') : '') }}" class="search-input" style="min-width: 135px; color-scheme: dark; font-size: 0.8rem; padding: 0.45rem 0.65rem;" title="Filter Tanggal Pemeriksaan (YYYY-MM-DD)">
             <input type="text" name="search" value="{{ request('search') }}" class="search-input" placeholder="Cari nama, No. RM, Accession No...">
             <button type="submit" class="btn btn-secondary" style="padding: 0.45rem 0.85rem;">🔍 Filter</button>
             @if(request('search') || request('date'))
@@ -2195,6 +2196,25 @@
         if (input && input.value) return input.value;
         return '{{ csrf_token() }}';
     }
+
+    /* Pastikan date picker di UI selalu mengirim nilai ke server dalam format YYYY-MM-DD */
+    document.addEventListener('DOMContentLoaded', function() {
+        var formFilter = document.getElementById('formFilterWorklist');
+        if (formFilter) {
+            formFilter.addEventListener('submit', function() {
+                var dInput = document.getElementById('inputFilterDate');
+                if (dInput && dInput.value) {
+                    var val = dInput.value.trim();
+                    var matchSlash = val.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                    if (matchSlash) {
+                        var mm = matchSlash[1].padStart(2, '0');
+                        var dd = matchSlash[2].padStart(2, '0');
+                        dInput.value = matchSlash[3] + '-' + mm + '-' + dd;
+                    }
+                }
+            });
+        }
+    });
 
     /* ═══════════════════════════════════════════════════════════════════════
        STATE MANAGEMENT: STAGING EXCEL TABLE (CRUD)

@@ -5,6 +5,7 @@ import json
 import pydicom
 import cv2
 import numpy as np
+from medical_engine.noise_metrics import estimate_sigma
 
 def calculate_metrics(raw_img, denoised_img):
     """
@@ -43,20 +44,22 @@ def calculate_metrics(raw_img, denoised_img):
     ssim_map = ((2 * mu1_mu2 + C1) * (2 * sigma12 + C2)) / ((mu1_sq + mu2_sq + C1) * (sigma1_sq + sigma2_sq + C2) + 1e-6)
     ssim_val = float(np.mean(ssim_map))
 
-    # 3. Estimasi Noise via Laplacian Operator (Immerkaer 1996)
-    raw_lap = cv2.Laplacian(raw_img, cv2.CV_64F)
-    den_lap = cv2.Laplacian(denoised_img, cv2.CV_64F)
-    raw_sigma = np.std(raw_lap)
-    den_sigma = np.std(den_lap)
+    # 3. Estimasi Simpangan Baku Derau (Immerkaer, 1996) via estimate_sigma() dari medical_engine/noise_metrics.py
+    # Masukan citra [0, 1], keluaran skala 0-255
+    raw_01 = (raw_img if raw_img.ndim == 2 else cv2.cvtColor(raw_img, cv2.COLOR_BGR2GRAY)).astype(np.float64) / 255.0
+    den_01 = (denoised_img if denoised_img.ndim == 2 else cv2.cvtColor(denoised_img, cv2.COLOR_BGR2GRAY)).astype(np.float64) / 255.0
 
-    raw_mean = np.mean(raw_f)
-    den_mean = np.mean(den_f)
+    raw_sigma = estimate_sigma(raw_01)
+    den_sigma = estimate_sigma(den_01)
 
-    raw_snr = 20 * np.log10(raw_mean / (raw_sigma + 1e-6)) if raw_mean > 0 else 0
-    den_snr = 20 * np.log10(den_mean / (den_sigma + 1e-6)) if den_mean > 0 else 0
+    raw_mean = float(np.mean(raw_f))
+    den_mean = float(np.mean(den_f))
+
+    raw_snr = 20 * np.log10(raw_mean / (raw_sigma + 1e-6)) if raw_mean > 0 else 0.0
+    den_snr = 20 * np.log10(den_mean / (den_sigma + 1e-6)) if den_mean > 0 else 0.0
     snr_gain = den_snr - raw_snr
 
-    noise_red_pct = max(0.0, min(99.0, (1.0 - (den_sigma / (raw_sigma + 1e-6))) * 100))
+    noise_red_pct = max(0.0, min(99.0, (1.0 - (den_sigma / (raw_sigma + 1e-6))) * 100.0))
 
     # 4. CNR (Contrast to Noise Ratio)
     cnr = (np.max(denoised_img) - np.min(denoised_img)) / (den_sigma + 1e-6)
@@ -70,7 +73,7 @@ def calculate_metrics(raw_img, denoised_img):
         "cnr": round(float(cnr), 2)
     }
 
-def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, sigma_space=75, residual_path=None):
+def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, sigma_space=75, residual_path=None, dncnn_level="auto"):
     start_time = time.time()
     if not os.path.exists(dicom_path):
         print(json.dumps({"status": "error", "message": f"File tidak ditemukan: {dicom_path}"}))
@@ -138,14 +141,18 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
             "ssim": 1.0000,
             "snr_gain": "0.00 dB",
             "noise_red": "0.0%",
-            "latency": "0.0 ms"
+            "latency": "0.0 ms",
+            "infer_time": "0.0 ms",
+            "total_time": "0.0 ms"
         }
 
         # 2. Bilateral Filter
-        t0 = time.time()
+        t0_bilat = time.time()
         d_val = 5 if sig_s <= 35 else 7
+        t_b_start = time.perf_counter()
         bilat_img = cv2.bilateralFilter(img_uint8, d=d_val, sigmaColor=sig_c, sigmaSpace=sig_s)
-        t_bilat = round((time.time() - t0) * 1000, 1)
+        t_bilat_inf = round((time.perf_counter() - t_b_start) * 1000, 1)
+        t_bilat_total = round((time.time() - t0_bilat) * 1000, 1)
         m_bilat = calculate_metrics(img_uint8, bilat_img)
         bilat_row = {
             "id": "bilateral",
@@ -154,14 +161,20 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
             "ssim": m_bilat['ssim'],
             "snr_gain": m_bilat['snr_gain_db'],
             "noise_red": m_bilat['noise_reduction_pct'],
-            "latency": f"{t_bilat} ms"
+            "latency": f"{t_bilat_inf} ms",
+            "infer_time": f"{t_bilat_inf} ms",
+            "total_time": f"{t_bilat_total} ms",
+            "infer_ms": t_bilat_inf,
+            "total_ms": t_bilat_total
         }
 
         # 3. Non-Local Means (NLM)
-        t0 = time.time()
+        t0_nlm = time.time()
         h_p = max(2.0, sig_c / 10.0)
+        t_nlm_start = time.perf_counter()
         nlm_img = cv2.fastNlMeansDenoising(img_uint8, None, h=h_p, templateWindowSize=5, searchWindowSize=15)
-        t_nlm = round((time.time() - t0) * 1000, 1)
+        t_nlm_inf = round((time.perf_counter() - t_nlm_start) * 1000, 1)
+        t_nlm_total = round((time.time() - t0_nlm) * 1000, 1)
         m_nlm = calculate_metrics(img_uint8, nlm_img)
         nlm_row = {
             "id": "nlm",
@@ -170,26 +183,52 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
             "ssim": m_nlm['ssim'],
             "snr_gain": m_nlm['snr_gain_db'],
             "noise_red": m_nlm['noise_reduction_pct'],
-            "latency": f"{t_nlm} ms"
+            "latency": f"{t_nlm_inf} ms",
+            "infer_time": f"{t_nlm_inf} ms",
+            "total_time": f"{t_nlm_total} ms",
+            "infer_ms": t_nlm_inf,
+            "total_ms": t_nlm_total
         }
 
-        # 4. Deep Residual CNN (DnCNN)
-        t0 = time.time()
-        dn_base = cv2.bilateralFilter(img_uint8, d=5, sigmaColor=min(sig_c, 35.0), sigmaSpace=min(sig_s, 25.0))
-        g_blur = cv2.GaussianBlur(dn_base, (0, 0), 1.5)
-        unsharp = cv2.addWeighted(dn_base, 1.35, g_blur, -0.35, 0)
-        dncnn_img = np.clip(unsharp, 0, 255).astype(np.uint8)
-        t_dncnn = round((time.time() - t0) * 1000, 1)
-        m_dncnn = calculate_metrics(img_uint8, dncnn_img)
-        dncnn_row = {
-            "id": "dl_dncnn",
-            "name": "Deep Residual CNN (DnCNN 2017)",
-            "psnr": f"{m_dncnn['psnr_db']} dB",
-            "ssim": m_dncnn['ssim'],
-            "snr_gain": m_dncnn['snr_gain_db'],
-            "noise_red": m_dncnn['noise_reduction_pct'],
-            "latency": f"{t_dncnn} ms"
-        }
+        # 4. Deep Residual CNN (DnCNN - Pretrained)
+        t0_dn = time.time()
+        try:
+            from medical_engine.dncnn import denoise as dncnn_denoise
+            dncnn_img, dncnn_info = dncnn_denoise(img_uint8, level="auto")
+            t_dn_inf = float(dncnn_info.get("infer_ms", 0.0))
+            t_dn_total = round((time.time() - t0_dn) * 1000, 1)
+            m_dncnn = calculate_metrics(img_uint8, dncnn_img)
+            dncnn_row = {
+                "id": "dl_dncnn",
+                "name": dncnn_info.get("method", "DnCNN (pretrained)"),
+                "psnr": f"{m_dncnn['psnr_db']} dB",
+                "ssim": m_dncnn['ssim'],
+                "snr_gain": m_dncnn['snr_gain_db'],
+                "noise_red": m_dncnn['noise_reduction_pct'],
+                "latency": f"{t_dn_inf} ms",
+                "infer_time": f"{t_dn_inf} ms",
+                "total_time": f"{t_dn_total} ms",
+                "level": dncnn_info.get("level"),
+                "device": dncnn_info.get("device"),
+                "infer_ms": t_dn_inf,
+                "total_ms": t_dn_total,
+                "ok": True
+            }
+        except Exception as e:
+            dncnn_img = img_uint8
+            dncnn_row = {
+                "id": "dl_dncnn",
+                "name": "DnCNN (pretrained)",
+                "psnr": "-",
+                "ssim": "-",
+                "snr_gain": "-",
+                "noise_red": "-",
+                "latency": "-",
+                "infer_time": "-",
+                "total_time": "-",
+                "ok": False,
+                "error": f"{type(e).__name__}: {str(e)}"
+            }
 
         # Simpan output default (DnCNN)
         dir_name = os.path.dirname(output_path)
@@ -198,10 +237,14 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
         cv2.imwrite(output_path, dncnn_img)
 
         result = {
+            "ok": True,
             "status": "success",
             "mode": "benchmark",
             "benchmark_rows": [raw_row, bilat_row, nlm_row, dncnn_row],
-            "recommended_engine": "dl_dncnn"
+            "recommended_engine": "dl_dncnn",
+            "level": dncnn_row.get("level"),
+            "device": dncnn_row.get("device"),
+            "infer_ms": dncnn_row.get("infer_ms")
         }
         print(json.dumps(result))
         return
@@ -213,30 +256,48 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
     if engine == "nlm" or engine == "non_local_means":
         # Non-Local Means (Buades 2005) - h parameter dikalibrasi agar detail paru tidak hilang
         h_param = max(2.0, sig_c / 10.0)
+        t_inf_start = time.perf_counter()
         denoised_img = cv2.fastNlMeansDenoising(img_uint8, None, h=h_param, templateWindowSize=5, searchWindowSize=15)
+        infer_time_ms = round((time.perf_counter() - t_inf_start) * 1000, 1)
         engine_label = "Non-Local Means (NLM - Buades 2005)"
     elif engine == "gaussian":
         # Gaussian Filter
         k_size = int(max(3, min(15, (int(sig_s) // 10) * 2 + 1)))
+        t_inf_start = time.perf_counter()
         denoised_img = cv2.GaussianBlur(img_uint8, (k_size, k_size), sig_s / 25.0)
+        infer_time_ms = round((time.perf_counter() - t_inf_start) * 1000, 1)
         engine_label = "Adaptive Gaussian Filter"
     elif engine == "median":
+        t_inf_start = time.perf_counter()
         denoised_img = cv2.medianBlur(img_uint8, 3)
+        infer_time_ms = round((time.perf_counter() - t_inf_start) * 1000, 1)
         engine_label = "Median Rank Filter"
-    elif engine == "dl_dncnn" or engine == "deep_learning":
-        # Deep Residual CNN (DnCNN) - Edge-Preserving Denoising + Crisp Contour Enhancement
-        d_val = 5
-        base_denoised = cv2.bilateralFilter(img_uint8, d=d_val, sigmaColor=min(sig_c, 35.0), sigmaSpace=min(sig_s, 25.0))
-        # High-frequency unsharp mask untuk mempertajam trabekula tulang & batas mediastinum
-        gaussian_blur = cv2.GaussianBlur(base_denoised, (0, 0), 1.5)
-        unsharp = cv2.addWeighted(base_denoised, 1.35, gaussian_blur, -0.35, 0)
-        denoised_img = np.clip(unsharp, 0, 255).astype(np.uint8)
-        engine_label = "Deep Residual CNN (DnCNN - Zhang 2017)"
+    elif engine == "dl_dncnn" or engine == "dncnn" or engine == "deep_learning":
+        # DnCNN (Zhang et al. 2017) via medical_engine/dncnn.py
+        from medical_engine.dncnn import denoise as dncnn_denoise
+        lvl = dncnn_level or "auto"
+        if ":" in engine:
+            lvl = engine.split(":", 1)[1]
+        try:
+            denoised_img, dncnn_info = dncnn_denoise(img_uint8, level=lvl)
+            engine_label = dncnn_info.get("method", "DnCNN (pretrained)")
+            infer_time_ms = float(dncnn_info.get("infer_ms", 0.0))
+        except Exception as e:
+            err_res = {
+                "ok": False,
+                "status": "error",
+                "error": f"{type(e).__name__}: {str(e)}",
+                "message": f"DnCNN error: {str(e)}"
+            }
+            print(json.dumps(err_res))
+            sys.exit(1)
     else:
         # Default: Bilateral Filter (Tomasi & Manduchi 1998)
-        # Menggunakan diameter lokal d=5-7 untuk menjaga fine anatomical boundaries
+        # Mengukur murni pemanggilan cv2.bilateralFilter
         d_val = 5 if sig_s <= 35 else 7
+        t_inf_start = time.perf_counter()
         denoised_img = cv2.bilateralFilter(img_uint8, d=d_val, sigmaColor=sig_c, sigmaSpace=sig_s)
+        infer_time_ms = round((time.perf_counter() - t_inf_start) * 1000, 1)
         engine_label = "Bilateral Filter (Tomasi & Manduchi 1998)"
 
     # 3. Hitung Peta Residu (Difference Map: |Raw - Denoised|)
@@ -257,15 +318,31 @@ def run_denoising(dicom_path, output_path, engine="bilateral", sigma_color=75, s
     # 5. Hitung Metrik & Waktu Proses
     proc_time_ms = round((time.time() - start_time) * 1000, 1)
     metrics = calculate_metrics(img_uint8, denoised_img)
-    metrics["processing_time_ms"] = proc_time_ms
+    metrics["inference_time_ms"] = infer_time_ms
+    metrics["total_process_ms"] = proc_time_ms
+    metrics["infer_ms"] = infer_time_ms
+    metrics["total_ms"] = proc_time_ms
+    metrics["processing_time_ms"] = infer_time_ms
 
     result = {
+        "ok": True,
         "status": "success",
         "engine": engine_label,
+        "method_name": engine_label,
+        "level": dncnn_info.get("level") if "dncnn_info" in locals() else None,
+        "level_mode": dncnn_info.get("level_mode") if "dncnn_info" in locals() else None,
+        "device": dncnn_info.get("device") if "dncnn_info" in locals() else "cpu",
+        "gpu": dncnn_info.get("gpu") if "dncnn_info" in locals() else None,
+        "infer_ms": infer_time_ms,
+        "total_ms": proc_time_ms,
+        "load_ms": dncnn_info.get("load_ms") if "dncnn_info" in locals() else None,
+        "sigma_est": dncnn_info.get("sigma_est") if "dncnn_info" in locals() else None,
+        "shape": dncnn_info.get("shape") if "dncnn_info" in locals() else list(img_uint8.shape),
         "parameters": {
             "sigma_color": int(sigma_color),
             "sigma_space": int(sigma_space),
-            "engine_id": engine
+            "engine_id": engine,
+            "level": dncnn_info.get("level") if "dncnn_info" in locals() else None
         },
         "metrics": metrics
     }
@@ -279,5 +356,6 @@ if __name__ == "__main__":
     sigma_col = float(sys.argv[4]) if len(sys.argv) > 4 else 75.0
     sigma_sp = float(sys.argv[5]) if len(sys.argv) > 5 else 75.0
     res_file = sys.argv[6] if len(sys.argv) > 6 else None
+    level_arg = sys.argv[7] if len(sys.argv) > 7 else "auto"
 
-    run_denoising(input_file, output_file, engine_arg, sigma_col, sigma_sp, res_file)
+    run_denoising(input_file, output_file, engine_arg, sigma_col, sigma_sp, res_file, level_arg)

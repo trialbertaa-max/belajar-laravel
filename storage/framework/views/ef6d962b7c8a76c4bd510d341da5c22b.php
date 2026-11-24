@@ -1,0 +1,8131 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyu PACS Workstation - <?php echo e($scan->patient_name); ?> (<?php echo e($scan->modality); ?>)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ws-bg: #060911;
+            --ws-surface: #0c121e;
+            --ws-surface-elevated: #111a2c;
+            --ws-border: #1a2538;
+            --ws-border-focus: #0284c7;
+            --ws-text-primary: #f1f5f9;
+            --ws-text-secondary: #94a3b8;
+            --ws-text-muted: #54657e;
+            
+            --med-blue: #0284c7;
+            --med-blue-hover: #0369a1;
+            --med-blue-light: #38bdf8;
+            --med-cyan: #06b6d4;
+            --med-emerald: #10b981;
+            --med-amber: #f59e0b;
+            --med-crimson: #ef4444;
+            --med-purple: #a855f7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--ws-bg);
+            color: var(--ws-text-primary);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 1. TOP CLINICAL COMMAND NAVBAR */
+        .pacs-navbar {
+            background-color: var(--ws-surface);
+            border-bottom: 1px solid var(--ws-border);
+            height: 50px;
+            min-height: 50px;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .nav-section-left {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .btn-nav-back {
+            color: var(--ws-text-secondary);
+            text-decoration: none;
+            font-size: 0.775rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.35rem 0.65rem;
+            border-radius: 5px;
+            border: 1px solid var(--ws-border);
+            background: rgba(17, 26, 44, 0.6);
+            transition: all 0.15s;
+        }
+
+        .btn-nav-back:hover {
+            color: var(--ws-text-primary);
+            border-color: #334155;
+            background: #1e293b;
+        }
+
+        .patient-demographics-strip {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: rgba(12, 18, 30, 0.9);
+            border: 1px solid var(--ws-border);
+            padding: 0.3rem 0.75rem;
+            border-radius: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .patient-demographics-strip strong {
+            color: #f8fafc;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .badge-modality-tag {
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            background: rgba(2, 132, 199, 0.2);
+            color: var(--med-blue-light);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            letter-spacing: 0.05em;
+        }
+
+        .nav-section-right {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .server-status-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: rgba(6, 78, 59, 0.25);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            padding: 0.25rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #34d399;
+            font-weight: 600;
+        }
+
+        .server-status-pill .pulse-dot {
+            width: 6px;
+            height: 6px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 6px #10b981;
+        }
+
+        /* 2. RADIOLOGY WORKSTATION TOOLBAR */
+        .pacs-toolbar {
+            background-color: #080d16;
+            border-bottom: 1px solid var(--ws-border);
+            padding: 0.35rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+            z-index: 95;
+            position: relative;
+        }
+
+        .tool-btn {
+            background-color: var(--ws-surface);
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            padding: 0.35rem 0.65rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+        }
+
+        .tool-btn:hover {
+            background-color: var(--ws-surface-elevated);
+            color: var(--ws-text-primary);
+            border-color: #334155;
+        }
+
+        .tool-btn.active {
+            background-color: var(--med-blue);
+            border-color: var(--med-blue);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.35);
+        }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 20px;
+            background-color: var(--ws-border);
+            margin: 0 0.25rem;
+        }
+
+        /* Tool Dropdown */
+        .tool-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            background: #0d1424;
+            border: 1px solid #23334d;
+            border-radius: 6px;
+            min-width: 220px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            z-index: 9999;
+            padding: 0.35rem 0;
+            backdrop-filter: blur(12px);
+        }
+
+        .dropdown-menu.menu-right {
+            right: 0 !important;
+            left: auto !important;
+        }
+
+        .tool-dropdown.open > .dropdown-menu,
+        .tool-dropdown:hover > .dropdown-menu {
+            display: block !important;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0.5rem 0.85rem;
+            color: var(--ws-text-primary);
+            font-size: 0.76rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.12s;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: left;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(2, 132, 199, 0.2);
+            color: var(--med-blue-light);
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--ws-border);
+            margin: 0.3rem 0;
+        }
+
+        /* 3. MAIN WORKSPACE CONTAINER */
+        .pacs-workspace {
+            flex: 1;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        /* 3A. LEFT SERIES & MULTIMODAL DRAWER */
+        .series-drawer {
+            width: 240px;
+            min-width: 240px;
+            background-color: #080d16;
+            border-right: 1px solid var(--ws-border);
+            display: flex;
+            flex-direction: column;
+            transition: width 0.2s ease, min-width 0.2s ease;
+            z-index: 10;
+        }
+
+        .series-drawer.collapsed {
+            width: 0;
+            min-width: 0;
+            overflow: hidden;
+            border-right: none;
+        }
+
+        /* Left Drawer - Patient Demographics Card */
+        .drawer-patient-card {
+            padding: 0.75rem 0.85rem;
+            background: #090f1a;
+            border-bottom: 1px solid var(--ws-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .drawer-patient-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .drawer-patient-badge-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #38bdf8;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .drawer-close-btn {
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .drawer-close-btn:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .drawer-patient-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #f8fafc;
+            letter-spacing: 0.02em;
+            line-height: 1.25;
+            word-break: break-word;
+        }
+
+        .drawer-patient-info-box {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            border-radius: 6px;
+            padding: 0.5rem 0.65rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .drawer-patient-info-line {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .drawer-info-key {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #64748b;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        .drawer-info-val {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #38bdf8;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .drawer-patient-info-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+            width: 100%;
+        }
+
+        .drawer-patient-info-tags {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+        }
+
+        .drawer-tag-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .drawer-demog-tag {
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            background: rgba(148, 163, 184, 0.12);
+            color: #f1f5f9;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            font-family: 'JetBrains Mono', monospace;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+        }
+
+        .drawer-expand-tab {
+            display: none;
+            position: absolute;
+            left: 0;
+            top: 65px;
+            z-index: 15;
+            background: #0b1120;
+            border: 1px solid var(--ws-border);
+            border-left: none;
+            border-radius: 0 6px 6px 0;
+            color: #94a3b8;
+            padding: 0.55rem 0.35rem;
+            cursor: pointer;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+        }
+
+        .drawer-expand-tab:hover {
+            background: #1e293b;
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        .series-drawer.collapsed + .drawer-expand-tab {
+            display: flex;
+        }
+
+        .drawer-header {
+            padding: 0.55rem 0.85rem;
+            border-bottom: 1px solid var(--ws-border);
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--ws-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #080d16;
+        }
+
+        .series-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.6rem 0.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .series-thumb-card {
+            background: var(--ws-surface);
+            border: 1px solid var(--ws-border);
+            border-radius: 6px;
+            padding: 0.5rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .series-thumb-card:hover {
+            border-color: #38bdf8;
+            background: #111b2e;
+        }
+
+        .series-thumb-card.active-vp1 {
+            border-color: var(--med-blue);
+            background: rgba(2, 132, 199, 0.12);
+            box-shadow: inset 0 0 0 1px var(--med-blue);
+        }
+
+        .series-thumb-card.active-vp2 {
+            border-color: #38bdf8;
+            background: rgba(2, 132, 199, 0.12);
+            box-shadow: inset 0 0 0 1px #38bdf8;
+        }
+
+        .thumb-preview-box {
+            width: 100%;
+            height: 105px;
+            background: #000;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.4rem;
+            border: 1px solid #1e293b;
+            position: relative;
+        }
+
+        .thumb-preview-box img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .thumb-badge-float {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 0.12rem 0.45rem;
+            border-radius: 3px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .thumb-meta {
+            font-size: 0.7rem;
+            color: var(--ws-text-secondary);
+            line-height: 1.35;
+        }
+
+        .thumb-meta strong {
+            color: var(--ws-text-primary);
+            display: block;
+            font-size: 0.78rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .thumb-actions-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            margin-top: 0.4rem;
+            padding-top: 0.4rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .btn-load-vp {
+            background: #090e18;
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            font-size: 0.68rem;
+            padding: 0.25rem 0.35rem;
+            border-radius: 3px;
+            cursor: pointer;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+            transition: all 0.12s;
+        }
+
+        .btn-load-vp:hover {
+            color: white;
+            border-color: #38bdf8;
+            background: #0284c7;
+        }
+
+        .btn-load-vp.btn-vp2:hover {
+            border-color: #38bdf8;
+            background: #0284c7;
+        }
+
+        /* 3B. CENTER VIEWPORTS STAGE */
+        .viewports-stage {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 3px;
+            background-color: #000000;
+            position: relative;
+            overflow: hidden;
+            transition: grid-template-columns 0.25s ease;
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+        }
+
+        .viewports-stage.split-1x2 {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .viewport-cell {
+            position: relative;
+            background-color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid #111827;
+            cursor: grab;
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+        }
+
+        .viewport-cell:active {
+            cursor: grabbing;
+        }
+
+        .viewport-cell.active-cell {
+            border: 1px solid var(--med-blue);
+        }
+
+        .viewport-cell.cursor-caliper,
+        .viewport-cell.cursor-polygon {
+            cursor: crosshair !important;
+        }
+
+        .viewport-cell.cursor-zoom {
+            cursor: zoom-in !important;
+        }
+
+        /* Viewport Header Bar */
+        .viewport-header-hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 0.35rem 0.85rem;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.88) 0%, rgba(0, 0, 0, 0) 100%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 8;
+            pointer-events: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+        }
+
+        .viewport-tag-name {
+            color: #38bdf8;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        /* Transformed Medical Image Stage Layer */
+        .vp-stage-layer {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center center;
+            will-change: transform;
+            transition: transform 0.05s ease-out;
+            user-select: none;
+            touch-action: none;
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .medical-image {
+            display: block;
+            max-width: 100%;
+            max-height: calc(100vh - 140px);
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            box-shadow: 0 0 35px rgba(0, 0, 0, 0.95);
+            user-select: none;
+            pointer-events: none;
+            transition: filter 0.1s ease-out;
+        }
+
+        .medical-image-denoised {
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            max-width: none !important;
+            max-height: none !important;
+            object-fit: contain !important;
+            z-index: 3;
+            box-shadow: none;
+            display: none;
+            pointer-events: none;
+            transition: filter 0.1s ease-out;
+        }
+
+        /* DICOM Corner HUD Overlays */
+        .dicom-hud {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.66rem;
+            color: #38bdf8;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.95);
+            pointer-events: none;
+            line-height: 1.3;
+            z-index: 6;
+            max-width: 48%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #vp2 .dicom-hud {
+            color: #38bdf8;
+        }
+
+        .hud-top-left { top: 2.2rem; left: 0.75rem; text-align: left; }
+        .hud-top-right { top: 2.2rem; right: 0.75rem; text-align: right; }
+        .hud-bottom-left { bottom: 0.75rem; left: 0.75rem; text-align: left; }
+        .hud-bottom-right { bottom: 0.75rem; right: 0.75rem; text-align: right; }
+
+        /* Caliper & ROI SVG Measurement Canvas */
+        .measurement-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+            overflow: visible;
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+        }
+
+        /* Interactive SVG Shapes & Quick Delete Badges */
+        .measurement-shape-hit,
+        .measurement-interactive-item {
+            cursor: pointer;
+            pointer-events: all;
+        }
+
+        .annotation-quick-delete-badge {
+            cursor: pointer;
+            pointer-events: all;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .annotation-quick-delete-badge:hover .quick-delete-bg {
+            fill: #dc2626 !important;
+            filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.95)) !important;
+        }
+
+        .annotation-quick-delete-badge:hover text {
+            fill: #ffffff !important;
+        }
+
+        /* Measurement list items in right panel */
+        .measurement-list-item {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--ws-border);
+            padding: 0.45rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .measurement-list-item:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: #334155;
+        }
+
+        .measurement-list-item.is-selected-in-list {
+            background: rgba(2, 132, 199, 0.16) !important;
+            border-color: #38bdf8 !important;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.28) !important;
+        }
+
+        /* A/B Comparison Split-Curtain Slider */
+        .curtain-slider-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 7;
+            display: none;
+            touch-action: none !important;
+            -webkit-user-select: none !important;
+            user-select: none !important;
+        }
+
+        .curtain-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #38bdf8;
+            box-shadow: 0 0 10px #38bdf8;
+            cursor: ew-resize;
+            pointer-events: auto;
+            touch-action: none !important;
+        }
+
+        .curtain-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #0284c7;
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 12px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 11px;
+            cursor: ew-resize;
+        }
+
+        .curtain-label-left, .curtain-label-right {
+            position: absolute;
+            top: 2.5rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.68rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #1e293b;
+        }
+        .curtain-label-left { left: 1rem; color: #94a3b8; }
+        .curtain-label-right { right: 1rem; color: #38bdf8; border-color: rgba(56, 189, 248, 0.4); }
+
+        /* Floating Tool Hint Toast */
+        .tool-hint-toast {
+            position: absolute;
+            bottom: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(11, 18, 32, 0.95);
+            border: 1px solid var(--med-blue);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+            color: var(--ws-text-primary);
+            padding: 0.45rem 1.1rem;
+            border-radius: 30px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            z-index: 30;
+            display: none;
+            align-items: center;
+            gap: 0.5rem;
+            pointer-events: none;
+            backdrop-filter: blur(8px);
+        }
+
+        /* 3C. RIGHT WORKSTATION DOCK PANEL (WORKSTATION) */
+        .dock-panel {
+            width: 380px;
+            min-width: 380px;
+            background-color: var(--ws-surface);
+            border-left: 1px solid var(--ws-border);
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+            transition: width 0.2s ease, min-width 0.2s ease;
+            position: relative;
+        }
+
+        .dock-panel.collapsed {
+            width: 0 !important;
+            min-width: 0 !important;
+            overflow: hidden !important;
+            border-left: none !important;
+            display: none !important;
+        }
+
+        /* Dock Panel Drag Resizer Handle on Left Edge */
+        .dock-resizer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: -5px;
+            width: 10px;
+            cursor: col-resize;
+            z-index: 50;
+            touch-action: none;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dock-resizer-line {
+            width: 2px;
+            height: 100%;
+            background-color: transparent;
+            transition: background-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .dock-resizer:hover .dock-resizer-line,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-line {
+            background-color: #38bdf8;
+            box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+        }
+
+        .dock-resizer-handle {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 8px 3px;
+            border-radius: 4px;
+            background: #090f1a;
+            border: 1px solid var(--ws-border);
+            opacity: 0;
+            transition: opacity 0.15s ease, border-color 0.15s ease;
+            pointer-events: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+        }
+
+        .dock-resizer-handle span {
+            width: 3px;
+            height: 3px;
+            background-color: #64748b;
+            border-radius: 50%;
+        }
+
+        .dock-resizer:hover .dock-resizer-handle,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-handle {
+            opacity: 1;
+            border-color: #38bdf8;
+        }
+
+        .dock-resizer:hover .dock-resizer-handle span,
+        .dock-panel.is-resizing .dock-resizer .dock-resizer-handle span {
+            background-color: #38bdf8;
+        }
+
+        /* Resizing state */
+        body.is-resizing-dock {
+            cursor: col-resize !important;
+            user-select: none !important;
+        }
+
+        body.is-resizing-dock * {
+            user-select: none !important;
+            cursor: col-resize !important;
+        }
+
+        .dock-panel.is-resizing {
+            transition: none !important;
+        }
+
+        /* Visual indicator when dragged into snap-collapse zone */
+        .dock-panel.dock-will-minimize {
+            opacity: 0.55;
+            border-left: 2px dashed #f59e0b !important;
+        }
+
+        .dock-panel.dock-will-minimize .dock-resizer-line {
+            background-color: #f59e0b !important;
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.8) !important;
+        }
+
+        /* Floating Restore Tab on Right Edge when Dock Panel is Collapsed */
+        .dock-expand-tab {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 65px;
+            z-index: 15;
+            background: #0b1120;
+            border: 1px solid var(--ws-border);
+            border-right: none;
+            border-radius: 6px 0 0 6px;
+            color: #94a3b8;
+            padding: 0.55rem 0.35rem;
+            cursor: pointer;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.5);
+            transition: all 0.15s ease;
+            user-select: none;
+            touch-action: none;
+        }
+
+        .dock-expand-tab:hover {
+            background: #1e293b;
+            color: #38bdf8;
+            border-color: #38bdf8;
+        }
+
+        .dock-panel.collapsed ~ .dock-expand-tab {
+            display: flex;
+        }
+
+        /* Clean Dock Header — now with minimize and close action buttons */
+        .dock-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 0.5rem 0 0.85rem;
+            background-color: #060911;
+            border-bottom: 1px solid var(--ws-border);
+            min-height: 32px;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+
+        .dock-header-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            min-width: 0;
+        }
+
+        .dock-header-icon {
+            font-size: 0.8rem;
+            display: none; /* hidden — tabs replace title */
+        }
+
+        .dock-header-title {
+            font-size: 0.68rem;
+            font-weight: 600;
+            color: #64748b;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .dock-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .dock-action-btn {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 0.2rem 0.35rem;
+            border-radius: 4px;
+            line-height: 1;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .dock-action-btn:hover {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .dock-minimize-btn:hover {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.12);
+        }
+
+        .dock-close-btn:hover {
+            color: #f43f5e;
+            background: rgba(244, 63, 94, 0.12);
+        }
+
+        /* ── VS Code-style Tab Bar ── */
+        .dock-tabbar {
+            display: flex;
+            align-items: stretch;
+            background: #060911;
+            border-bottom: 1px solid var(--ws-border);
+            flex-shrink: 0;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+        .dock-tabbar::-webkit-scrollbar { display: none; }
+
+        .dock-tab {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0 0.75rem;
+            height: 35px;
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #64748b;
+            border-right: 1px solid var(--ws-border);
+            border-top: 2px solid transparent;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+            transition: color 0.15s, background 0.15s;
+            background: transparent;
+            user-select: none;
+            position: relative;
+        }
+
+        .dock-tab:hover {
+            color: #94a3b8;
+            background: rgba(255,255,255,0.03);
+        }
+
+        .dock-tab.active {
+            color: #f1f5f9;
+            background: var(--ws-surface);
+            border-top-color: #0284c7; /* blue accent like VS Code */
+        }
+
+        .dock-tab-icon {
+            font-size: 0.82rem;
+            flex-shrink: 0;
+        }
+
+        .dock-tab-close {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            color: #475569;
+            opacity: 0;
+            transition: opacity 0.15s, background 0.15s, color 0.15s;
+            flex-shrink: 0;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .dock-tab:hover .dock-tab-close,
+        .dock-tab.active .dock-tab-close {
+            opacity: 1;
+        }
+
+        .dock-tab-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        /* Undo & Redo Tab Icons */
+        .dock-history-nav-group {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 0 4px;
+            margin: auto 2px;
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .dock-undo-redo-btn {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.22);
+            color: #cbd5e1;
+            width: 25px;
+            height: 25px;
+            padding: 0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+        }
+
+        .dock-undo-redo-btn:hover:not(:disabled) {
+            background: rgba(2, 132, 199, 0.25);
+            color: #38bdf8;
+            border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .dock-undo-redo-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .dock-undo-redo-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+            border-color: rgba(255, 255, 255, 0.05);
+            color: #64748b;
+        }
+
+        /* Trash can delete button for single measurement item */
+        .btn-delete-item {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            color: #f87171;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border-radius: 4px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-delete-item:hover {
+            background: rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            border-color: #ef4444;
+            transform: scale(1.08);
+        }
+
+        .btn-delete-item:active {
+            transform: scale(0.95);
+        }
+
+        .dock-content {
+            padding: 1rem;
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .tab-pane {
+            display: none;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .tab-pane.active-pane {
+            display: flex;
+        }
+
+        /* Module Cards inside Right Dock */
+        .dock-card {
+            background: rgba(17, 26, 44, 0.65);
+            border: 1px solid var(--ws-border);
+            border-radius: 6px;
+            padding: 0.85rem;
+        }
+
+        .dock-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--ws-border);
+        }
+
+        .dock-card-title {
+            font-size: 0.76rem;
+            font-weight: 700;
+            color: var(--ws-text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Interactive Denoising Suite Controls */
+        .form-select-pacs {
+            width: 100%;
+            background-color: #080d16;
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-primary);
+            padding: 0.45rem 0.6rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            outline: none;
+            margin-bottom: 0.65rem;
+        }
+
+        .form-select-pacs:focus {
+            border-color: var(--med-blue);
+        }
+
+        .slider-group {
+            margin-bottom: 0.6rem;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--ws-text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .slider-val-badge {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--med-blue-light);
+            font-weight: 700;
+        }
+
+        .pacs-range-slider {
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .pacs-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--med-blue-light);
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(56, 189, 248, 0.6);
+        }
+
+        /* Scientific Telemetry Grid */
+        .telemetry-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            background: #080d16;
+            border: 1px solid var(--ws-border);
+            border-radius: 5px;
+            padding: 0.55rem;
+            margin: 0.5rem 0;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+        }
+
+        .telemetry-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+        }
+
+        .telemetry-label {
+            color: var(--ws-text-muted);
+            font-size: 0.64rem;
+        }
+
+        .telemetry-val {
+            color: #38bdf8;
+            font-weight: 700;
+        }
+
+        .btn-action-primary {
+            width: 100%;
+            background: #0284c7;
+            color: white;
+            border: 1px solid #0369a1;
+            padding: 0.55rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .btn-action-primary:hover {
+            background: #0369a1;
+        }
+
+        .btn-action-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .comparison-modes-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+        }
+
+        .btn-toggle-mode {
+            background: #080d16;
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            font-size: 0.68rem;
+            padding: 0.35rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .btn-toggle-mode:hover {
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+
+        .btn-toggle-mode.active-mode {
+            background: rgba(2, 132, 199, 0.2);
+            border-color: var(--med-blue);
+            color: var(--med-blue-light);
+        }
+
+        /* Quick Templates & Diagnosis Form */
+        .quick-templates-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin: 0.4rem 0;
+        }
+
+        .btn-template-pill {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            font-size: 0.68rem;
+            padding: 0.2rem 0.45rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-template-pill:hover {
+            border-color: var(--med-blue);
+            color: var(--med-blue-light);
+            background: rgba(2, 132, 199, 0.1);
+        }
+
+        /* Measurement Sub-Pills Bar in Right Dock */
+        .measure-sub-pill {
+            background: #080d16;
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            font-size: 0.68rem;
+            padding: 0.38rem 0.25rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .measure-sub-pill:hover {
+            border-color: #facc15;
+            color: #fef08a;
+            background: rgba(250, 204, 21, 0.1);
+        }
+
+        .measure-sub-pill.active-pill {
+            background: rgba(250, 204, 21, 0.18);
+            border-color: #facc15;
+            color: #facc15;
+            font-weight: 700;
+            box-shadow: 0 0 8px rgba(250, 204, 21, 0.25);
+        }
+
+        .form-diagnosis-area {
+            width: 100%;
+            background-color: #080d16;
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-primary);
+            padding: 0.55rem;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            outline: none;
+            resize: vertical;
+            line-height: 1.4;
+        }
+
+        .form-diagnosis-area:focus {
+            border-color: var(--med-blue);
+        }
+
+        .btn-save-emr {
+            width: 100%;
+            background: #059669;
+            border: 1px solid #047857;
+            color: white;
+            padding: 0.55rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.45rem;
+            transition: all 0.15s;
+        }
+
+        .btn-save-emr:hover {
+            background: #047857;
+        }
+
+        /* 4. BOTTOM DIAGNOSTIC TELEMETRY BAR */
+        .pacs-status-footer {
+            background-color: #060911;
+            border-top: 1px solid var(--ws-border);
+            height: 26px;
+            min-height: 26px;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem;
+            color: var(--ws-text-muted);
+            z-index: 100;
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* 5. MOBILE & TABLET RESPONSIVE LAYOUT */
+        @media (max-width: 768px) {
+            body {
+                overflow-y: auto !important;
+                height: auto !important;
+                min-height: 100vh;
+            }
+            .pacs-navbar {
+                height: auto !important;
+                min-height: auto !important;
+                padding: 0.4rem 0.6rem !important;
+                display: flex !important;
+                flex-direction: column !important;
+                gap: 0.35rem !important;
+            }
+            .nav-section-left, .nav-section-right {
+                width: 100% !important;
+                justify-content: space-between !important;
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                padding-bottom: 2px !important;
+                scrollbar-width: none !important;
+            }
+            .nav-section-left::-webkit-scrollbar, .nav-section-right::-webkit-scrollbar {
+                display: none;
+            }
+            .patient-demographics-strip {
+                font-size: 0.68rem !important;
+                padding: 0.2rem 0.45rem !important;
+                flex-shrink: 0 !important;
+            }
+            .pacs-toolbar {
+                overflow-x: auto !important;
+                white-space: nowrap !important;
+                flex-wrap: nowrap !important;
+                padding: 0.35rem 0.5rem !important;
+                scrollbar-width: none !important;
+                gap: 0.3rem !important;
+            }
+            .pacs-toolbar::-webkit-scrollbar {
+                display: none;
+            }
+            .pacs-workspace {
+                flex-direction: column !important;
+                overflow: visible !important;
+                height: auto !important;
+                flex: none !important;
+            }
+            .viewports-stage {
+                min-height: 52vh !important;
+                height: 52vh !important;
+                width: 100% !important;
+                flex: none !important;
+            }
+            .dock-panel {
+                width: 100% !important;
+                min-width: 100% !important;
+                border-left: none !important;
+                border-top: 1px solid var(--ws-border) !important;
+                flex: none !important;
+                height: auto !important;
+            }
+            .dock-panel.collapsed {
+                display: none !important;
+                height: 0 !important;
+                min-height: 0 !important;
+            }
+            .series-drawer {
+                position: fixed !important;
+                top: 0 !important;
+                bottom: 0 !important;
+                left: 0 !important;
+                height: 100vh !important;
+                width: 280px !important;
+                max-width: 85vw !important;
+                z-index: 9999 !important;
+                box-shadow: 15px 0 35px rgba(0, 0, 0, 0.95) !important;
+                transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                transform: translateX(0) !important;
+            }
+            .series-drawer.collapsed {
+                transform: translateX(-100%) !important;
+                width: 280px !important;
+            }
+            .pacs-status-footer {
+                display: none !important;
+            }
+        }
+
+        /* Modal DICOM Tags */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(3, 7, 18, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #0b1120;
+            border: 1px solid #1e293b;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9);
+            border-radius: 8px;
+            width: 90%;
+            max-width: 860px;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            padding: 0.85rem 1.25rem;
+            background: #0f172a;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-body {
+            padding: 1rem 1.25rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .tag-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .tag-table th {
+            text-align: left;
+            background: #1e293b;
+            color: #94a3b8;
+            padding: 0.45rem 0.75rem;
+            font-weight: 600;
+            border: 1px solid #334155;
+            position: sticky;
+            top: 0;
+        }
+
+        .tag-table td {
+            padding: 0.4rem 0.75rem;
+            border: 1px solid #1e293b;
+            color: #e2e8f0;
+        }
+
+        .tag-table tr:nth-child(even) {
+            background: rgba(15, 23, 42, 0.4);
+        }
+
+        .tag-table tr:hover {
+            background: rgba(2, 132, 199, 0.15);
+        }
+
+        /* ── TermHint — "?" Icon & Tooltip Trigger ─────────────────── */
+        .term-hint {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            position: relative;
+        }
+
+        /* The "?" button — hidden by default, shown on hover/focus */
+        .term-hint-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: rgba(2, 132, 199, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            color: #38bdf8;
+            font-size: 0.6rem;
+            font-weight: 800;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            /* hidden by default on pointer devices */
+            opacity: 0;
+            transform: scale(0.8);
+            transition: opacity 0.15s ease, transform 0.15s ease, background 0.15s;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        /* Always visible on touch / coarse-pointer devices (mobile) */
+        @media (hover: none) {
+            .term-hint-btn { opacity: 1 !important; transform: scale(1) !important; }
+        }
+
+        .term-hint-btn:hover,
+        .term-hint-btn:focus-visible {
+            background: rgba(2, 132, 199, 0.45);
+            border-color: #38bdf8;
+            outline: none;
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* Show on parent hover OR parent focus-within */
+        .term-hint:hover .term-hint-btn,
+        .term-hint:focus-within .term-hint-btn {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        /* ── GlossaryModal ──────────────────────────────────────────── */
+        .gl-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 1rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s ease;
+        }
+
+        .gl-modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .gl-modal-card {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+            transform: translateY(12px) scale(0.97);
+            transition: transform 0.2s ease;
+            outline: none;
+        }
+
+        .gl-modal-overlay.open .gl-modal-card {
+            transform: translateY(0) scale(1);
+        }
+
+        .gl-modal-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1.25rem 1.4rem 0.9rem;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .gl-modal-title {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #38bdf8;
+            line-height: 1.3;
+        }
+
+        .gl-modal-subtitle {
+            font-size: 0.78rem;
+            color: #64748b;
+            margin-top: 0.15rem;
+            font-style: italic;
+        }
+
+        .gl-modal-close {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.35rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0.15rem;
+            border-radius: 4px;
+            transition: color 0.15s;
+            flex-shrink: 0;
+            margin-left: 0.5rem;
+        }
+
+        .gl-modal-close:hover { color: #f1f5f9; }
+        .gl-modal-close:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        .gl-modal-body {
+            padding: 1.1rem 1.4rem;
+            font-size: 0.84rem;
+            line-height: 1.65;
+            color: #94a3b8;
+        }
+
+        .gl-modal-formula {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 6px;
+            padding: 0.45rem 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.77rem;
+            color: #a5f3fc;
+            margin: 0.5rem 0;
+            display: block;
+        }
+
+        .gl-modal-how {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.35rem;
+            font-size: 0.8rem;
+            color: #34d399;
+            margin-top: 0.4rem;
+        }
+
+        .gl-modal-disclaimer {
+            font-size: 0.72rem;
+            color: #475569;
+            margin-top: 0.75rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid #1e293b;
+            line-height: 1.5;
+        }
+
+        .gl-modal-foot {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            padding: 0.9rem 1.4rem 1.2rem;
+            border-top: 1px solid #1e293b;
+        }
+
+        .gl-btn-secondary {
+            padding: 0.45rem 1rem;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #334155;
+            background: rgba(30, 41, 59, 0.8);
+            color: #94a3b8;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .gl-btn-secondary:hover { background: #1e293b; color: #f1f5f9; }
+        .gl-btn-secondary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        .gl-btn-primary {
+            padding: 0.45rem 1rem;
+            border-radius: 7px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid #38bdf8;
+            background: linear-gradient(135deg, #0284c7, #0ea5e9);
+            color: white;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: opacity 0.15s;
+            font-family: inherit;
+        }
+
+        .gl-btn-primary:hover { opacity: 0.9; }
+        .gl-btn-primary:focus-visible { outline: 2px solid #38bdf8; outline-offset: 2px; }
+
+        /* =========================================
+           CONTRAST PROCESSING PANEL (cp-*)
+           ========================================= */
+        .cp-section-title {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: #64748b;
+            text-transform: uppercase;
+            margin: 0.6rem 0 0.4rem;
+        }
+        .cp-preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.35rem;
+            margin-bottom: 0.65rem;
+        }
+        .cp-preset-btn {
+            background: rgba(17,26,44,0.8);
+            border: 1px solid #1e2d42;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.35rem 0.4rem;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.15s;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: inherit;
+        }
+        .cp-preset-btn:hover {
+            border-color: #334155;
+            color: #e2e8f0;
+        }
+        .cp-preset-btn.cp-preset-active {
+            background: rgba(2,132,199,0.2);
+            border-color: rgba(56,189,248,0.6);
+            color: #38bdf8;
+        }
+        .cp-curve-wrap {
+            position: relative;
+            background: #0a1020;
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 0.65rem;
+        }
+        #cpCurveCanvas {
+            display: block;
+            width: 100%;
+            height: 150px;
+            cursor: crosshair;
+            touch-action: none;
+        }
+        .cp-curve-label {
+            position: absolute;
+            bottom: 3px;
+            right: 5px;
+            font-size: 0.58rem;
+            color: #334155;
+            pointer-events: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .cp-slider-row {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin-bottom: 0.45rem;
+        }
+        .cp-slider-label {
+            font-size: 0.68rem;
+            color: #94a3b8;
+            min-width: 68px;
+        }
+        .cp-step-btn {
+            width: 22px;
+            height: 22px;
+            border: 1px solid #1e2d42;
+            background: rgba(17,26,44,0.9);
+            color: #94a3b8;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.12s;
+            font-family: inherit;
+        }
+        .cp-step-btn:hover { border-color: #334155; color: #e2e8f0; }
+        .cp-range {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 4px;
+            border-radius: 2px;
+            background: linear-gradient(to right, #0284c7 0%, #0284c7 50%, #1e293b 50%, #1e293b 100%);
+            outline: none;
+            cursor: pointer;
+        }
+        .cp-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            border: 2px solid #0c121e;
+            box-shadow: 0 0 6px rgba(56,189,248,0.5);
+        }
+        .cp-val-badge {
+            font-size: 0.68rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: #38bdf8;
+            min-width: 28px;
+            text-align: right;
+        }
+        .cp-reset-btn {
+            width: 100%;
+            padding: 0.45rem;
+            background: rgba(17,26,44,0.6);
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+        .cp-reset-btn:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #38bdf8;
+        }
+
+        /* Advance button (opens advanced panel) */
+        .cp-advance-btn {
+            width: 100%;
+            padding: 0.42rem;
+            background: rgba(2,132,199,0.12);
+            border: 1px solid rgba(56,189,248,0.35);
+            border-radius: 6px;
+            color: #38bdf8;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.45rem;
+            transition: all 0.15s;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            letter-spacing: 0.04em;
+        }
+        .cp-advance-btn:hover {
+            background: rgba(2,132,199,0.25);
+            border-color: rgba(56,189,248,0.7);
+            box-shadow: 0 0 8px rgba(56,189,248,0.2);
+        }
+
+        /* =========================================
+           ADVANCED ADJUSTMENT PANEL (cp-adv-*)
+           ========================================= */
+        .cp-basic-view,
+        .cp-adv-view {
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .cp-adv-view {
+            display: none;
+        }
+        .cp-adv-view.cp-adv-visible {
+            display: block;
+            animation: cpSlideIn 0.2s ease;
+        }
+        .cp-basic-view.cp-basic-hidden {
+            display: none;
+        }
+        @keyframes cpSlideIn {
+            from { opacity: 0; transform: translateX(8px); }
+            to   { opacity: 1; transform: translateX(0); }
+        }
+
+        .cp-adv-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #f1f5f9;
+            letter-spacing: 0.05em;
+            text-align: center;
+            padding: 0.35rem 0 0.5rem;
+            border-bottom: 1px solid rgba(56,189,248,0.25);
+            margin-bottom: 0.6rem;
+        }
+
+        /* Fujifilm Console style sliders */
+        .cp-fuji-group {
+            margin-bottom: 0.3rem;
+        }
+        .cp-fuji-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1px;
+        }
+        .cp-fuji-title {
+            font-size: 0.72rem;
+            font-weight: 500;
+            color: #e2e8f0;
+            letter-spacing: 0.02em;
+        }
+        .cp-fuji-stepper {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid #1e293b;
+            border-radius: 4px;
+            padding: 0 1px;
+        }
+        .cp-fuji-step-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            font-size: 0.74rem;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 1px 7px;
+            line-height: 1.1;
+            transition: color 0.12s;
+        }
+        .cp-fuji-step-btn:hover {
+            color: #38bdf8;
+        }
+        .cp-fuji-sep {
+            color: #334155;
+            font-size: 0.62rem;
+            user-select: none;
+        }
+        .cp-fuji-track-box {
+            position: relative;
+            width: 100%;
+            height: 25px;
+            display: flex;
+            align-items: flex-end;
+            padding-bottom: 2px;
+        }
+        .cp-fuji-bubble {
+            position: absolute;
+            top: -1px;
+            transform: translateX(-50%);
+            font-size: 0.62rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            color: #38bdf8;
+            background: #090f1d;
+            border: 1px solid rgba(56,189,248,0.7);
+            border-radius: 3px;
+            padding: 0px 5px;
+            line-height: 1.25;
+            pointer-events: none;
+            box-shadow: 0 0 6px rgba(56,189,248,0.3);
+            white-space: nowrap;
+        }
+        .cp-fuji-range {
+            width: 100%;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: linear-gradient(to right, #38bdf8 0%, #38bdf8 var(--pct, 50%), #1e293b var(--pct, 50%), #1e293b 100%);
+            outline: none;
+            cursor: pointer;
+            margin: 0;
+        }
+        .cp-fuji-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #e0f2fe;
+            border: 2px solid #0284c7;
+            cursor: pointer;
+            box-shadow: 0 0 8px rgba(56,189,248,0.85);
+        }
+        .cp-adv-range-hint {
+            font-size: 0.6rem;
+            color: #64748b;
+            text-align: right;
+            margin-top: 1px;
+            margin-bottom: 0.35rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Dropdown rows */
+        .cp-adv-dropdown-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.45rem;
+        }
+        .cp-adv-dropdown-label {
+            font-size: 0.72rem;
+            color: #cbd5e1;
+            min-width: 65px;
+        }
+        .cp-adv-select {
+            flex: 1;
+            background: rgba(15,23,42,0.9);
+            border: 1px solid #1e2d42;
+            border-radius: 5px;
+            color: #38bdf8;
+            font-size: 0.72rem;
+            padding: 0.3rem 0.5rem;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+            -webkit-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2338bdf8'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            padding-right: 22px;
+            transition: border-color 0.12s;
+        }
+        .cp-adv-select:hover, .cp-adv-select:focus {
+            border-color: rgba(56,189,248,0.5);
+        }
+        .cp-adv-select option {
+            background: #0f172a;
+            color: #e2e8f0;
+        }
+
+        /* Bottom action buttons of advanced panel */
+        .cp-adv-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+            margin-top: 0.65rem;
+        }
+        .cp-adv-return-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.45rem;
+            margin-top: 0.4rem;
+        }
+        .cp-adv-action-btn {
+            padding: 0.42rem 0.3rem;
+            background: rgba(15,23,42,0.85);
+            border: 1px solid #1e2d42;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 0.7rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+            text-align: center;
+        }
+        .cp-adv-action-btn:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #38bdf8;
+        }
+        .cp-adv-action-btn.cp-adv-save {
+            background: rgba(2,132,199,0.15);
+            border-color: rgba(56,189,248,0.3);
+            color: #38bdf8;
+        }
+        .cp-adv-action-btn.cp-adv-save:hover {
+            background: rgba(2,132,199,0.3);
+            box-shadow: 0 0 6px rgba(56,189,248,0.25);
+        }
+        .cp-adv-action-btn.cp-adv-return {
+            background: rgba(17,26,44,0.6);
+            border-color: #1e2d42;
+            color: #94a3b8;
+        }
+        .cp-adv-action-btn.cp-adv-return:hover {
+            border-color: rgba(56,189,248,0.4);
+            color: #e2e8f0;
+        }
+
+        /* Saved param indicator */
+        .cp-adv-saved-flash {
+            display: none;
+            font-size: 0.64rem;
+            color: #22d3ee;
+            text-align: center;
+            margin-top: 0.3rem;
+            animation: cpFadeFlash 1.5s forwards;
+        }
+        @keyframes cpFadeFlash {
+            0%   { opacity: 1; }
+            70%  { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        /* =========================================
+           VIEW MENU (VS Code-style cascading menu)
+           ========================================= */
+        .view-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        #viewMenuToggle {
+            background-color: var(--ws-surface);
+            border: 1px solid var(--ws-border);
+            color: var(--ws-text-secondary);
+            padding: 0.35rem 0.65rem;
+            border-radius: 5px;
+            font-size: 0.76rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        #viewMenuToggle:hover,
+        #viewMenuToggle.vm-open {
+            background-color: var(--ws-surface-elevated);
+            color: var(--ws-text-primary);
+            border-color: #334155;
+        }
+
+        /* Level-1 Panel */
+        .view-menu__panel {
+            position: absolute;
+            top: calc(100% + 4px);
+            left: 0;
+            width: 260px;
+            background: #0d1424;
+            border: 1px solid #23334d;
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+            z-index: 9999;
+            padding: 0.3rem 0;
+            backdrop-filter: blur(12px);
+            animation: vmSlideIn 0.12s ease;
+        }
+
+        @keyframes vmSlideIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-menu__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.3rem 0.75rem 0.3rem 0.85rem;
+            border-bottom: 1px solid #1a2538;
+            margin-bottom: 0.2rem;
+        }
+
+        .view-menu__header span {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        #viewMenuClose {
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0;
+            width: 22px;
+            height: 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: color 0.12s, background 0.12s;
+            line-height: 1;
+        }
+
+        #viewMenuClose:hover {
+            color: #f1f5f9;
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Group row (Level 1 item with submenu) */
+        .vm-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 0 0.6rem 0 0.85rem;
+            height: 34px;
+            cursor: pointer;
+            transition: background 0.1s;
+            user-select: none;
+        }
+
+        .vm-group:hover {
+            background: #1a47a8;
+        }
+
+        .vm-check-col {
+            width: 18px;
+            flex-shrink: 0;
+            font-size: 0.78rem;
+            color: #38bdf8;
+            text-align: center;
+        }
+
+        .vm-label {
+            flex: 1;
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--ws-text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .vm-value {
+            font-size: 0.68rem;
+            color: #64748b;
+            margin-right: 0.4rem;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+        .vm-arrow {
+            font-size: 0.65rem;
+            color: #64748b;
+            flex-shrink: 0;
+        }
+
+        /* Submenu (Level 2) */
+        .vm-submenu {
+            display: none;
+            position: absolute;
+            top: -1px;
+            left: calc(100% - 2px);
+            min-width: 220px;
+            background: #0d1424;
+            border: 1px solid #23334d;
+            border-radius: 6px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.85), 0 0 0 1px rgba(255,255,255,0.04);
+            z-index: 10000;
+            padding: 0.3rem 0;
+            animation: vmSlideIn 0.1s ease;
+        }
+
+        /* Open submenu on hover (with delay handled by JS) */
+        .vm-group.vm-sub-open > .vm-submenu {
+            display: block;
+        }
+
+        /* Submenu item */
+        .vm-item {
+            display: flex;
+            align-items: center;
+            padding: 0 0.6rem 0 0.85rem;
+            height: 34px;
+            cursor: pointer;
+            transition: background 0.1s;
+            background: none;
+            border: none;
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+        }
+
+        .vm-item:hover {
+            background: #1a47a8;
+        }
+
+        .vm-item .vm-check-col {
+            color: #38bdf8;
+        }
+
+        .vm-item .vm-label {
+            font-weight: 500;
+        }
+
+        .vm-item .vm-shortcut {
+            font-size: 0.65rem;
+            color: #64748b;
+            font-family: 'JetBrains Mono', monospace;
+            flex-shrink: 0;
+        }
+
+        .vm-divider {
+            height: 1px;
+            background: #1a2538;
+            margin: 0.25rem 0;
+        }
+
+        /* Submenu: open to left when near right edge */
+        .vm-submenu.vm-sub-left {
+            left: auto;
+            right: calc(100% - 2px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 1. TOP CLINICAL COMMAND NAVBAR -->
+    <header class="pacs-navbar">
+        <div class="nav-section-left">
+            <a href="<?php echo e(route('scans.index')); ?>" class="btn-nav-back">
+                &larr; Sesi Pasien
+            </a>
+
+            <?php if($hasExamined): ?>
+            <!-- VIEW MENU — menggantikan posisi tombol Seri Pasien -->
+            <!-- CATATAN: Logika toggleSeriesDrawer() dipertahankan; tombol Seri Pasien hanya dihilangkan dari UI. Navigasi antar seri tidak lagi punya tombol di UI, perlu keputusan pemilik proyek apakah dipindah ke tempat lain. -->
+            <div class="view-menu" id="viewMenu">
+                <button id="viewMenuToggle" aria-haspopup="true" aria-expanded="false"
+                    onclick="vmToggle(event)">
+                    View <span style="font-size:0.65rem;opacity:0.7;">▾</span>
+                </button>
+
+                <!-- Level-1 Panel -->
+                <div id="viewMenuPanel" class="view-menu__panel" role="menu" hidden>
+                    <div class="view-menu__header">
+                        <span>View</span>
+                        <button id="viewMenuClose" aria-label="Tutup menu" onclick="vmCloseAll()">×</button>
+                    </div>
+
+                    <!-- ── Seri Pasien ── -->
+                    <button class="vm-item" role="menuitem"
+                        onclick="toggleSeriesDrawer(); vmCloseAll();">
+                        <span class="vm-check-col" id="vmChkSeries"></span>
+                        <span class="vm-label">Detail Pasien</span>
+                    </button>
+                    <div class="vm-divider"></div>
+
+                    <!-- ── Kelompok 1: Window ── -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupWindow"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col" id="vmWindowCheckCol"></span>
+                        <span class="vm-label">Window</span>
+                        <span class="vm-value" id="vmWindowValue">Default</span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubWindow"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupWindow'))">
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('default')">
+                                <span class="vm-check-col" id="vmChkDefault">✓</span>
+                                <span class="vm-label">Default</span>
+                                <span class="vm-shortcut">400/40</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('lung')">
+                                <span class="vm-check-col" id="vmChkLung"></span>
+                                <span class="vm-label" style="color:#38bdf8;">Lung</span>
+                                <span class="vm-shortcut" style="color:#38bdf8;">1500/-600</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('bone')">
+                                <span class="vm-check-col" id="vmChkBone"></span>
+                                <span class="vm-label" style="color:#facc15;">Bone</span>
+                                <span class="vm-shortcut" style="color:#facc15;">2500/480</span>
+                            </button>
+                            <button class="vm-item" role="menuitemradio" onclick="vmApplyPreset('soft')">
+                                <span class="vm-check-col" id="vmChkSoft"></span>
+                                <span class="vm-label" style="color:#c084fc;">Soft tissue</span>
+                                <span class="vm-shortcut" style="color:#c084fc;">350/50</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Kelompok 2: Orientasi ── -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupOrientasi"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col"></span>
+                        <span class="vm-label">Orientasi</span>
+                        <span class="vm-value"></span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubOrientasi"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupOrientasi'))">
+                            <button class="vm-item" role="menuitem" onclick="rotateImage()">
+                                <span class="vm-check-col"></span>
+                                <span class="vm-label">Putar 90 clockwise</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemFlipH"
+                                onclick="vmFlipH()">
+                                <span class="vm-check-col" id="vmChkFlipH"></span>
+                                <span class="vm-label">Cermin horizontal</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemFlipV"
+                                onclick="vmFlipV()">
+                                <span class="vm-check-col" id="vmChkFlipV"></span>
+                                <span class="vm-label">Cermin vertikal</span>
+                            </button>
+                            <button class="vm-item" role="menuitemcheckbox" id="vmItemInvert"
+                                onclick="vmInvert()">
+                                <span class="vm-check-col" id="vmChkInvert"></span>
+                                <span class="vm-label">Invert grayscale</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ── Kelompok 3: View ── -->
+                    <!-- CATATAN: Nama kelompok ketiga adalah "View" sesuai daftar yang diberikan pemilik proyek. Sama dengan nama tombol induk — pemilik proyek dapat memutuskan penggantian nama jika dirasa janggal. -->
+                    <div class="vm-group" role="menuitem" aria-haspopup="true"
+                         id="vmGroupView"
+                         onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                         onclick="vmSubOpen(this)">
+                        <span class="vm-check-col"></span>
+                        <span class="vm-label">Tools</span>
+                        <span class="vm-value"></span>
+                        <span class="vm-arrow">▸</span>
+                        <div class="vm-submenu" role="menu" id="vmSubView"
+                             onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupView'))">
+                            <!-- Item yang membuka panel/modal menutup menu otomatis -->
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('denoise'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDenoise"></span>
+                                <span class="vm-label">Restorasi &amp; Denoising</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('contrast'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkContrast"></span>
+                                <span class="vm-label">Image processing</span>
+                            </button>
+                            <div class="vm-divider"></div>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('measure'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkMeasure"></span>
+                                <span class="vm-label">Hasil ukur / CTR</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('diagnosis'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDiagnosis"></span>
+                                <span class="vm-label">Expertise radiology</span>
+                            </button>
+                            <button class="vm-item" role="menuitem"
+                                onclick="switchDockTab('dicom'); vmCloseAll();">
+                                <span class="vm-check-col" id="vmChkDicom"></span>
+                                <span class="vm-label">Tags DICOM</span>
+                            </button>
+                            <div class="vm-divider"></div>
+                            <!-- ── Alat Ukur & ROI (nested group) ── -->
+                            <div class="vm-group" role="menuitem" aria-haspopup="true"
+                                 id="vmGroupAlatUkur"
+                                 onmouseenter="vmSubOpen(this)" onmouseleave="vmSubLeave(this)"
+                                 onclick="vmSubOpen(this)">
+                                <span class="vm-check-col" id="vmChkAlatUkur"></span>
+                                <span class="vm-label" style="color: #facc15;">📐 Alat Ukur</span>
+                                <span class="vm-value"></span>
+                                <span class="vm-arrow">▸</span>
+                                <div class="vm-submenu" role="menu" id="vmSubAlatUkur"
+                                     onmouseenter="vmSubKeep(this)" onmouseleave="vmSubLeave(document.getElementById('vmGroupAlatUkur'))">
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('circle'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCircle"></span>
+                                        <span class="vm-label">⭕ Lingkaran Sempurna</span>
+                                        <span class="vm-shortcut">1:1</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('caliper'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCaliper"></span>
+                                        <span class="vm-label">📏 Linear Caliper</span>
+                                        <span class="vm-shortcut">2-Point</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('ellipse'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolEllipse"></span>
+                                        <span class="vm-label">🥚 Oval / Ellipse</span>
+                                        <span class="vm-shortcut">Major/Minor</span>
+                                    </button>
+                                    <div class="vm-divider"></div>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('ctr'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolCtr"></span>
+                                        <span class="vm-label" style="color: #fb7185;">🫀 CTR (Danzer 1919)</span>
+                                        <span class="vm-shortcut" style="color: #fb7185;">Ratio</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('box'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolBox"></span>
+                                        <span class="vm-label">🔲 Box ROI</span>
+                                        <span class="vm-shortcut">Rectangle</span>
+                                    </button>
+                                    <button class="vm-item" role="menuitem"
+                                        onclick="setTool('polygon'); vmCloseAll();">
+                                        <span class="vm-check-col" id="vmChkToolPolygon"></span>
+                                        <span class="vm-label">📐 Polygon ROI</span>
+                                        <span class="vm-shortcut">Contour</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div><!-- /viewMenuPanel -->
+            </div><!-- /viewMenu -->
+
+
+            <!-- PAN & ZOOM (disebelah View) -->
+            <button class="tool-btn active" id="btnPan" onclick="setTool('pan')" title="Mode Geser & Perbesar (Pan & Zoom) Gambar">PAN & ZOOM</button>
+
+            <!-- Undo & Redo (disebelah PAN & ZOOM) -->
+            <button class="tool-btn" id="btnToolbarUndo" onclick="undoLastMeasurement()" title="Undo Anotasi / Titik Terakhir (Ctrl+Z)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                    <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+                    <path d="M3 3v5h5"/>
+                </svg>
+                Undo
+            </button>
+            <button class="tool-btn" id="btnToolbarRedo" onclick="redoLastMeasurement()" title="Redo Anotasi (Ctrl+Y)">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;">
+                    <path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                </svg>
+                Redo
+            </button>
+
+            <!-- Multimodal Layout Grid Selector (1x1 vs 1x2) -->
+            <div style="display: flex; align-items: center; gap: 0.2rem; background: #080d16; border: 1px solid var(--ws-border); padding: 0.2rem; border-radius: 6px;">
+                <button class="tool-btn active" id="btnLayoutSingle" onclick="setLayoutMode('1x1')" title="Tata Letak 1x1" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center;">1x1</button>
+                <button class="tool-btn" id="btnLayoutDual" onclick="setLayoutMode('1x2')" title="Tata Letak 1x2" style="padding: 0.25rem 0.65rem; font-size: 0.75rem; font-weight: 700; font-family: 'JetBrains Mono', monospace; min-width: 38px; text-align: center; color: #38bdf8;">1x2</button>
+            </div>
+
+            <!-- Reset View (disebelah 1x1 1x2) -->
+            <button class="tool-btn" id="btnResetView" onclick="resetViewer()" title="Reset tampilan citra">Reset View</button>
+
+            <!-- Helper elements (hidden) agar JS tetap bekerja -->
+            <span id="lblMeasureIcon" style="display:none;">📐</span>
+            <span id="lblMeasureTitle" style="display:none;">Alat Ukur</span>
+            <button id="btnInvert" style="display:none;" onclick="toggleInvert()"></button>
+            <span id="lblActivePreset" style="display:none;">Window: Default</span>
+            <?php endif; ?>
+        </div>
+
+        <div class="nav-section-right">
+            <?php if($hasExamined): ?>
+            <!-- DICOM & Export (Pindah dari toolbar bawah ke navbar) -->
+            <div class="tool-dropdown" id="ddDicom">
+                <button class="tool-btn" onclick="toggleDropdown(event, 'ddDicom')" style="background: #111a2c; border-color: #23334d; color: #38bdf8;">
+                    <span>DICOM & Ekspor</span>
+                    <span style="font-size: 0.65rem; opacity: 0.7;">▾</span>
+                </button>
+                <div class="dropdown-menu menu-right">
+                    <button class="dropdown-item" onclick="openDicomTagsModal(); closeAllDropdowns();">
+                        <span style="color: #38bdf8; font-weight: 600;">DICOM Tags Inspector</span>
+                        <span style="font-size: 0.65rem; color: #64748b; font-family: monospace;">PS 3.6</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportAnnotatedReport(); closeAllDropdowns();">
+                        <span style="color: #10b981; font-weight: 600;">Ekspor Laporan Anotasi (PNG)</span>
+                        <span style="font-size: 0.65rem; color: #10b981; font-family: monospace;">SC IOD</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <button class="dropdown-item" onclick="exportBenchmarkPdf(); closeAllDropdowns();">
+                        <span style="color: #f87171; font-weight: 600;">Ekspor Matriks Evaluasi (PDF)</span>
+                        <span style="font-size: 0.65rem; color: #f87171; font-family: monospace;">.pdf</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportBenchmarkExcel(); closeAllDropdowns();">
+                        <span style="color: #34d399; font-weight: 600;">Ekspor Matriks Evaluasi (Excel)</span>
+                        <span style="font-size: 0.65rem; color: #34d399; font-family: monospace;">.xls</span>
+                    </button>
+                    <button class="dropdown-item" onclick="exportBenchmarkCsv(); closeAllDropdowns();">
+                        <span style="color: #38bdf8; font-weight: 600;">Ekspor Matriks Evaluasi (CSV)</span>
+                        <span style="font-size: 0.65rem; color: #38bdf8; font-family: monospace;">.csv</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
+                    <a href="<?php echo e(route('scans.download-dcm', $scan->id)); ?>" class="dropdown-item" onclick="closeAllDropdowns()" style="color: #c084fc; font-weight: 600;">
+                        <span>Unduh File Mentah (.dcm)</span>
+                        <span style="font-size: 0.65rem; color: #c084fc; font-family: monospace;">Part 10</span>
+                    </a>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Glosarium Link -->
+            <a href="<?php echo e(route('glossary.index')); ?>" class="btn-nav-back" style="color: #38bdf8; border-color: rgba(56,189,248,0.3);" title="Buka halaman glosarium istilah teknis">
+                📖 Glosarium
+            </a>
+            <!-- Server Status & Setup Node Button -->
+            <div class="server-status-pill" onclick="openDicomConfigModal()" style="cursor: pointer;" title="Klik untuk Konfigurasi Port, AE Title & Jaringan DICOM">
+                <span class="pulse-dot"></span>
+                <span id="navDicomStatus">DICOM SCP :<strong id="navPortDisplay"><?php echo e($pacsConfig['port'] ?? '4242'); ?></strong></span>
+                <span style="font-size: 0.65rem; color: #38bdf8; margin-left: 3px;">⚙️</span>
+            </div>
+        </div>
+    </header>
+
+    <?php if($hasExamined): ?>
+    <!-- 3. MAIN WORKSPACE -->
+    <div class="pacs-workspace">
+
+        <!-- 3A. LEFT SERIES & MULTIMODAL DRAWER -->
+        <aside class="series-drawer" id="seriesDrawer">
+            <!-- Patient Demographics Header Card (Dipindahkan dari Navbar) -->
+            <div class="drawer-patient-card">
+                <div class="drawer-patient-top">
+                    <div class="drawer-patient-badge-title">
+                        <span class="drawer-patient-icon">👤</span>
+                        <span>Detail Pasien</span>
+                    </div>
+                    <button type="button" class="drawer-close-btn" onclick="toggleSeriesDrawer()" title="Tutup Panel Pasien & Seri (✕)">✕</button>
+                </div>
+
+                <div class="drawer-patient-name" title="<?php echo e($scan->patient_name); ?>">
+                    <?php echo e(strtoupper($scan->patient_name)); ?>
+
+                </div>
+
+                <div class="drawer-patient-info-box">
+                    <div class="drawer-patient-info-line">
+                        <span class="drawer-info-key">MRN</span>
+                        <span class="drawer-info-val font-mono"><?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?></span>
+                    </div>
+                    <div class="drawer-patient-info-divider"></div>
+                    <div class="drawer-patient-info-tags">
+                        <div class="drawer-tag-group">
+                            <span class="drawer-info-key">MODALITAS</span>
+                            <span class="badge-modality-tag"><?php echo e($scan->modality); ?></span>
+                        </div>
+                        <div class="drawer-tag-group">
+                            <span class="drawer-info-key">JK / USIA</span>
+                            <span class="drawer-demog-tag"><?php echo e($scan->gender == 'P' ? '♀ F' : '♂ M'); ?> / <?php echo e($scan->age ?? '18'); ?>Y</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="drawer-header">
+                <div>
+                    <span>Seri Multimodal (<?php echo e(count($patientSeries)); ?>)</span>
+                    <span style="font-size: 0.62rem; color: #38bdf8; display: block; font-weight: 600;">CARDIO-PULMO</span>
+                </div>
+            </div>
+
+            <div class="series-list">
+                <?php $__currentLoopData = $patientSeries; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $s): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="series-thumb-card <?php echo e($idx === 0 ? 'active-vp1' : 'active-vp2'); ?>" 
+                         id="seriesCard_<?php echo e($s['id']); ?>"
+                         onclick="loadSeriesActive('<?php echo e(asset($s['image_path'])); ?>', '<?php echo e($s['name']); ?>', '<?php echo e($s['study']); ?>', '<?php echo e($s['station']); ?>', '<?php echo e($s['matrix']); ?>', '<?php echo e($s['id']); ?>')">
+                        
+                        <div class="thumb-preview-box">
+                            <span class="thumb-badge-float" style="background: <?php echo e($s['badge_color']); ?>25; color: <?php echo e($s['badge_color']); ?>; border: 1px solid <?php echo e($s['badge_color']); ?>50;">
+                                <?php echo e($s['badge']); ?>
+
+                            </span>
+                            <img src="<?php echo e(asset($s['image_path'])); ?>?v=<?php echo e(time()); ?>" alt="<?php echo e($s['name']); ?>">
+                        </div>
+
+                        <div class="thumb-meta">
+                            <strong><?php echo e($s['name']); ?></strong>
+                            <div style="font-size: 0.65rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <?php echo e($s['study']); ?>
+
+                            </div>
+                            <div style="font-size: 0.62rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace; margin-top: 0.15rem;">
+                                <?php echo e($s['station']); ?> &bull; <?php echo e($s['matrix']); ?>
+
+                            </div>
+                        </div>
+
+                        <div class="thumb-actions-bar" onclick="event.stopPropagation()">
+                            <button class="btn-load-vp" onclick="loadSeriesToVp(1, '<?php echo e(asset($s['image_path'])); ?>', '<?php echo e($s['name']); ?>', '<?php echo e($s['study']); ?>', '<?php echo e($s['station']); ?>', '<?php echo e($s['matrix']); ?>', '<?php echo e($s['id']); ?>')" title="Muat ke Viewport A (Kiri)">
+                                ◧ Ke VP-A
+                            </button>
+                            <button class="btn-load-vp btn-vp2" onclick="loadSeriesToVp(2, '<?php echo e(asset($s['image_path'])); ?>', '<?php echo e($s['name']); ?>', '<?php echo e($s['study']); ?>', '<?php echo e($s['station']); ?>', '<?php echo e($s['matrix']); ?>', '<?php echo e($s['id']); ?>')" title="Muat ke Viewport B (Kanan)">
+                                ◨ Ke VP-B
+                            </button>
+                        </div>
+                    </div>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+
+            </div>
+        </aside>
+
+        <!-- Floating Expand Button saat Series Drawer Collapsed -->
+        <button id="btnDrawerExpand" class="drawer-expand-tab" onclick="toggleSeriesDrawer()" title="Buka Detail Pasien & Seri Multimodal">
+            <span style="font-size: 0.75rem;">▶</span>
+            <span style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Detail Pasien</span>
+        </button>
+
+        <!-- 3B. CENTER VIEWPORTS STAGE (DUAL MULTIMODAL) -->
+        <div class="viewports-stage" id="viewportsStage">
+
+            <!-- Floating Tool Hint Toast -->
+            <div class="tool-hint-toast" id="toolHintToast">
+                <span id="toolHintIcon">●</span>
+                <span id="toolHintText">Pilih alat pengukuran di toolbar atas.</span>
+            </div>
+
+            <!-- Viewport 1 (VP-A: Primary Scan - Thorax PA) -->
+            <div class="viewport-cell active-cell" id="vp1" onclick="selectViewport(1)">
+                <div class="viewport-header-hud">
+                    <span class="viewport-tag-name" id="vp1Title">VP-A: <?php echo e($patientSeries[0]['name']); ?> (PRIMARY)</span>
+                    <span style="color: #94a3b8;" id="vp1SeriesInfo"><?php echo e($patientSeries[0]['station']); ?> | <?php echo e($patientSeries[0]['matrix']); ?></span>
+                </div>
+
+                <div class="dicom-hud hud-top-left" id="vp1HudTopLeft">
+                    <strong>CAHAYA DIAGNOSTIC CENTRE</strong><br>
+                    <?php echo e(strtoupper($scan->patient_name)); ?><br>
+                    MRN: <?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?><br>
+                    Acc: <?php echo e($scan->accession_number ?: 'ACC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT)); ?>
+
+                </div>
+                <div class="dicom-hud hud-top-right" id="vp1HudTopRight">
+                    Modalitas: <?php echo e($patientSeries[0]['name']); ?><br>
+                    Studi: <?php echo e($patientSeries[0]['study']); ?><br>
+                    Station: <?php echo e($patientSeries[0]['station']); ?>
+
+                </div>
+                <div class="dicom-hud hud-bottom-left">
+                    Zoom: <span id="lblZoom">100%</span><br>
+                    <span id="lblWwWl">WW: 400 | WL: 40 (Default)</span>
+                </div>
+                <div class="dicom-hud hud-bottom-right">
+                    Hyu PACS &bull; Viewport A<br>
+                    SOP: 1.2.840.10008.5.1.4.1.1.1
+                </div>
+
+                <!-- A/B Comparison Split Curtain Container -->
+                <div class="curtain-slider-container" id="curtainContainer1">
+                    <div class="curtain-label-left">RAW ACQUISITION</div>
+                    <div class="curtain-label-right" id="curtainLabelRight1">DENOISED / RESTORED</div>
+                    <div class="curtain-divider" id="curtainDivider1" style="left: 50%;">
+                        <div class="curtain-handle">⮂</div>
+                    </div>
+                </div>
+
+                <!-- Transformed Stage Layer (Anchors Image & SVG Measurements in 100% Lockstep) -->
+                <div class="vp-stage-layer" id="vpStageLayer1">
+                    <img id="imgVp1" class="medical-image"
+                         src="<?php echo e(asset($patientSeries[0]['image_path'])); ?>?v=<?php echo e(time()); ?>" 
+                         alt="DICOM Scan VP1">
+                    <img id="imgVp1Denoised" class="medical-image medical-image-denoised"
+                         src="<?php echo e(asset($patientSeries[0]['image_path'])); ?>?v=<?php echo e(time()); ?>" 
+                         alt="Denoised Scan VP1">
+                    <!-- Measurement Canvas Overlay inside Stage Layer -->
+                    <svg class="measurement-canvas" id="svgMeasure1"></svg>
+                </div>
+            </div>
+
+            <!-- Viewport 2 (VP-B: Secondary Multimodal - USG / Comparison) -->
+            <div class="viewport-cell" id="vp2" style="display: none;" onclick="selectViewport(2)">
+                <div class="viewport-header-hud">
+                    <span class="viewport-tag-name" id="vp2Title" style="color: #38bdf8;">VP-B: <?php echo e($patientSeries[1]['name'] ?? 'USG Abdomen'); ?> (COMPARISON)</span>
+                    <span style="color: #94a3b8;" id="vp2SeriesInfo"><?php echo e($patientSeries[1]['station'] ?? 'USG_MINDRAY_02'); ?> | <?php echo e($patientSeries[1]['matrix'] ?? 'B-Mode'); ?></span>
+                </div>
+
+                <div class="dicom-hud hud-top-left" id="vp2HudTopLeft">
+                    <strong>CAHAYA DIAGNOSTIC CENTRE</strong><br>
+                    <?php echo e(strtoupper($scan->patient_name)); ?><br>
+                    MRN: <?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?>
+
+                </div>
+                <div class="dicom-hud hud-top-right" id="vp2HudTopRight">
+                    Modalitas: <?php echo e($patientSeries[1]['name'] ?? ($patientSeries[0]['name'] ?? 'Thorax PA')); ?><br>
+                    Studi: <?php echo e($patientSeries[1]['study'] ?? ($patientSeries[0]['study'] ?? 'Pemeriksaan Radiologi')); ?><br>
+                    Station: <?php echo e($patientSeries[1]['station'] ?? ($patientSeries[0]['station'] ?? 'FUJIFILM_FDR')); ?>
+
+                </div>
+                <div class="dicom-hud hud-bottom-left">
+                    Zoom: <span id="lblZoom2">100%</span><br>
+                    Modality: <?php echo e($patientSeries[1]['badge'] ?? ($patientSeries[0]['badge'] ?? 'CR')); ?>
+
+                </div>
+                <div class="dicom-hud hud-bottom-right">
+                    Hyu PACS &bull; Viewport B<br>
+                    Comparison View
+                </div>
+
+                <!-- A/B Comparison Split Curtain Container VP2 -->
+                <div class="curtain-slider-container" id="curtainContainer2">
+                    <div class="curtain-label-left">RAW ACQUISITION</div>
+                    <div class="curtain-label-right" id="curtainLabelRight2">DENOISED / RESTORED</div>
+                    <div class="curtain-divider" id="curtainDivider2" style="left: 50%;">
+                        <div class="curtain-handle">⮂</div>
+                    </div>
+                </div>
+
+                <!-- Transformed Stage Layer (Anchors Image & SVG Measurements in 100% Lockstep) -->
+                <div class="vp-stage-layer" id="vpStageLayer2">
+                    <img id="imgVp2" class="medical-image"
+                         src="<?php echo e(asset($patientSeries[1]['image_path'] ?? $patientSeries[0]['image_path'])); ?>?v=<?php echo e(time()); ?>" 
+                         alt="DICOM Scan VP2">
+                    <img id="imgVp2Denoised" class="medical-image medical-image-denoised"
+                         src="<?php echo e(asset($patientSeries[1]['image_path'] ?? $patientSeries[0]['image_path'])); ?>?v=<?php echo e(time()); ?>" 
+                         alt="Denoised Scan VP2">
+                    <svg class="measurement-canvas" id="svgMeasure2"></svg>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 3C. RIGHT DOCK PANEL (WORKSTATION) -->
+        <aside class="dock-panel collapsed" id="dockPanel">
+            <!-- Left Edge Resizer Handle (Tarik / geser untuk atur ukuran, geser ke kanan untuk minimize) -->
+            <div class="dock-resizer" id="dockResizer" title="Geser ke kiri untuk memperbesar, geser ke kanan untuk minimize. Klik 2x untuk minimize.">
+                <div class="dock-resizer-line"></div>
+                <div class="dock-resizer-handle">
+                    <span></span><span></span><span></span>
+                </div>
+            </div>
+
+            <!-- Thin top bar with tools label + minimize & close -->
+            <div class="dock-header" id="dockHeader">
+                <div class="dock-header-title-wrap">
+                    <span id="dockHeaderIcon" class="dock-header-icon"></span>
+                    <span id="dockHeaderTitle" class="dock-header-title">TOOLS</span>
+                </div>
+                <div class="dock-header-actions">
+                    <button type="button" class="dock-action-btn dock-minimize-btn" onclick="minimizeDockPanel()" title="Minimize / Ciutkan Tools (Bisa juga digeser ke kanan)" aria-label="Minimize Tools">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="4" y1="12" x2="20" y2="12"></line></svg>
+                    </button>
+                    <button type="button" class="dock-action-btn dock-close-btn" onclick="closeDockPanel()" title="Tutup Semua Tab Tools (Esc)" aria-label="Tutup Tools">✕</button>
+                </div>
+            </div>
+
+            <!-- VS Code-style tab bar (populated by JS) -->
+            <div class="dock-tabbar" id="dockTabBar"></div>
+
+            <div class="dock-content">
+
+                <!-- TAB 1: RESTORASI CITRA & QUANTUM NOISE FILTERING -->
+                <div class="tab-pane active-pane" id="paneDenoise">
+                    <div class="dock-card">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title" id="lblDockCategoryTitle">Restorasi & Filter AI</span>
+                            <span id="lblTargetVpBadge" style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; background: rgba(2, 132, 199, 0.2); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(56, 189, 248, 0.3);">Target: VP-A (<?php echo e($patientSeries[0]['name'] ?? 'Primary Scan'); ?>)</span>
+                        </div>
+
+                        <select id="selFilterEngine" class="form-select-pacs" onchange="onEngineChange()" style="font-size: 0.75rem; padding: 0.4rem 0.5rem; text-overflow: ellipsis; white-space: nowrap;">
+                            <optgroup label="── 1. Restorasi Citra (Denoising) ──">
+                                <option value="bilateral" selected>Bilateral Filter (Tomasi 1998)</option>
+                                <option value="nlm">Non-Local Means (NLM - Buades 2005)</option>
+                                <option value="dl_dncnn">DnCNN (pretrained)</option>
+                                <option value="gaussian">Adaptive Gaussian Smoothing</option>
+                            </optgroup>
+                            <optgroup label="── 2. Image Enhancement (Konvensional) ──">
+                                <option value="enhancement_clahe">CLAHE (Adaptive Histogram Eq.)</option>
+                                <option value="enhancement_trabecular">Penonjolan Trabekula & Tulang</option>
+                                <option value="enhancement_window:bone">DICOM VOI LUT: Bone Window (Tulang)</option>
+                                <option value="enhancement_window:lung">DICOM VOI LUT: Lung Window (Paru)</option>
+                                <option value="enhancement_window:soft">DICOM VOI LUT: Soft Tissue Window</option>
+                                <option value="enhancement_invert">Invert Grayscale (Pembalikan Polaritas)</option>
+                            </optgroup>
+                            <optgroup label="── 3. Anatomical Segmentation ──">
+                                <option value="segmentation_bone">Segmentasi Struktur Tulang (Bone Masking)</option>
+                                <option value="segmentation_lung">Segmentasi Lapangan Paru (Lung Contours)</option>
+                            </optgroup>
+                            <optgroup label="── 4. AI Bone Suppression (Dual-Engine) ──">
+                                <option value="bone_suppression_commercial">[AI-01] ALBA-Net (Bone Suppression)</option>
+                                <option value="bone_suppression_qure">[AI-02] Qure.ai Research Baseline</option>
+                            </optgroup>
+                        </select>
+
+                        <!-- KONTROL KHUSUS 1: RESTORASI DENOISING -->
+                        <div id="boxDenoiseControls">
+                            <!-- Kontrol Tingkat Noise DnCNN (Pretrained Model) -->
+                            <div id="boxDncnnLevelGroup" style="display: none; margin-bottom: 0.65rem; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 0.55rem;">
+                                <div class="slider-label-row" style="margin-bottom: 0.35rem;">
+                                    <span style="font-size: 0.73rem; color: #34d399; font-weight: 700;">Tingkat Noise DnCNN (&sigma;):</span>
+                                    <span class="slider-val-badge" id="lblDncnnLevel" style="background: rgba(16, 185, 129, 0.25); color: #34d399; border-color: rgba(16, 185, 129, 0.45);">Auto</span>
+                                </div>
+                                <select id="selDncnnLevel" class="form-select-pacs" onchange="document.getElementById('lblDncnnLevel').innerText = this.options[this.selectedIndex].text.split(' ')[0];" style="font-size: 0.72rem; padding: 0.35rem 0.5rem;">
+                                    <option value="auto" selected>Auto (Estimasi Derau Immerkaer)</option>
+                                    <option value="15">15 (Derau Rendah / Fine Grain)</option>
+                                    <option value="25">25 (Derau Sedang / Standar)</option>
+                                    <option value="50">50 (Derau Tinggi / Heavy Quantum Noise)</option>
+                                </select>
+                                <div style="font-size: 0.64rem; color: #94a3b8; margin-top: 0.3rem; line-height: 1.3;">
+                                    Arsitektur: DnCNN 17-Layer (Zhang et al. 2017). Bobot resmi KAIR, inferensi tiled GPU/CUDA.
+                                </div>
+                            </div>
+
+                            <!-- Parameter Sliders (Bilateral / Gaussian / NLM) -->
+                            <div id="boxSpatialSliders">
+                                <div class="slider-group">
+                                    <div class="slider-label-row">
+                                        <span>Radius Spasial (Kernel &sigma;<sub>s</sub>):</span>
+                                        <span class="slider-val-badge" id="lblSigmaSpace">20</span>
+                                    </div>
+                                    <input type="range" min="5" max="80" value="20" class="pacs-range-slider" id="rngSigmaSpace" oninput="document.getElementById('lblSigmaSpace').innerText = this.value">
+                                </div>
+
+                                <div class="slider-group">
+                                    <div class="slider-label-row">
+                                        <span>Sensitivitas Tepi (Fotometrik &sigma;<sub>r</sub>):</span>
+                                        <span class="slider-val-badge" id="lblSigmaColor">25</span>
+                                    </div>
+                                    <input type="range" min="5" max="80" value="25" class="pacs-range-slider" id="rngSigmaColor" oninput="document.getElementById('lblSigmaColor').innerText = this.value">
+                                </div>
+                            </div>
+
+                            <!-- Telemetry Grid -->
+                            <div class="telemetry-grid">
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">PSNR vs citra masukan:</span>
+                                    <span class="telemetry-val" id="telPsnr">-</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">SNR Gain (estimasi tanpa acuan):</span>
+                                    <span class="telemetry-val" id="telSnrGain">-</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">Estimasi Penurunan Derau:</span>
+                                    <span class="telemetry-val" id="telNoiseRed">-</span>
+                                </div>
+                                <div class="telemetry-item">
+                                    <span class="telemetry-label">Waktu Inferensi:</span>
+                                    <span class="telemetry-val" id="telLatency">-</span>
+                                </div>
+                                <div class="telemetry-item" style="grid-column: span 2;">
+                                    <span class="telemetry-label">Total Proses:</span>
+                                    <span class="telemetry-val" id="telTotalProc">-</span>
+                                </div>
+                            </div>
+                            <div style="font-size: 0.63rem; color: #94a3b8; margin-top: 0.35rem; line-height: 1.35; padding: 0.3rem 0.5rem; background: rgba(15, 23, 42, 0.6); border-radius: 4px; border-left: 2px solid #38bdf8;">
+                                ℹ️ <strong>Keterangan Metrik:</strong><br>
+                                • <em>PSNR vs citra masukan</em>: Dihitung terhadap citra masukan tanpa citra acuan bersih (ground truth), sehingga mengukur <strong>besarnya perubahan citra</strong>, bukan kualitas restorasi absolut.<br>
+                                • <em>SNR Gain (estimasi tanpa acuan) &amp; Estimasi Penurunan Derau</em>: Dihitung dengan estimator Immerkaer (1996) tanpa acuan bersih. Nilai ini <strong>juga naik bila citra terlalu dihaluskan (over-smoothing/blur)</strong>, sehingga bukan ukuran kualitas restorasi tunggal.
+                            </div>
+                        </div>
+
+                        <!-- KONTROL KHUSUS 2: AI BONE SUPPRESSION (DUAL-ENGINE DASHBOARD) -->
+                        <div id="boxAiBoneSuppressionCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 6px; padding: 0.6rem;">
+                            <div style="margin-bottom: 0.4rem;">
+                                <span style="font-size: 0.7rem; font-weight: 700; color: #38bdf8; display: flex; align-items: center; gap: 4px;">
+                                    <span>🧠</span> <span id="lblAiCardEngineName">ALBA-Net (Bone Suppression)</span>
+                                </span>
+                            </div>
+                            <div style="font-size: 0.66rem; color: #cbd5e1; line-height: 1.4; margin-bottom: 0.5rem; display: none;" id="lblAiCardDesc"></div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 0.64rem; margin-bottom: 0.5rem; background: rgba(2, 6, 23, 0.5); padding: 6px; border-radius: 4px;">
+                                <div>
+                                    <span style="color: #64748b; display: block;">Arsitektur / Bobot:</span>
+                                    <span style="color: #f1f5f9; font-weight: 600;" id="lblAiCardArch">ResNet34-UNet (93.9 MB)</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Akselerasi Komputasi:</span>
+                                    <span style="color: #38bdf8; font-weight: 600;" id="lblAiCardDevice">PyTorch CUDA / CPU (~0.45s)</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Target Dekomposisi:</span>
+                                    <span style="color: #f1f5f9; font-weight: 600;">Costae & Clavicula</span>
+                                </div>
+                                <div>
+                                    <span style="color: #64748b; display: block;">Presisi Citra:</span>
+                                    <span style="color: #10b981; font-weight: 600;">Sub-Piksel 2999&times;2999</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KONTROL KHUSUS 3: CONVENTIONAL ENHANCEMENT INFO -->
+                        <div id="boxEnhancementCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.6rem;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem;" id="lblEnhancementTitle">
+                                ✨ DICOM VOI LUT Windowing
+                            </div>
+                            <div style="font-size: 0.66rem; color: #94a3b8; line-height: 1.4;" id="lblEnhancementDesc">
+                                Pemetaan linier rentang kontras piksel 12-bit sesuai standar DICOM PS 3.3/3.4 tanpa merusak data asli.
+                            </div>
+                        </div>
+
+                        <!-- KONTROL KHUSUS 4: SEGMENTATION INFO -->
+                        <div id="boxSegmentationCard" style="display: none; margin-top: 0.5rem; background: rgba(15, 23, 42, 0.7); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 6px; padding: 0.6rem;">
+                            <div style="font-size: 0.7rem; font-weight: 700; color: #f1f5f9; margin-bottom: 0.3rem;" id="lblSegTitle">
+                                🦴 Segmentasi Struktur Anatomi
+                            </div>
+                            <div style="font-size: 0.66rem; color: #94a3b8; line-height: 1.4;" id="lblSegDesc">
+                                Penandaan kontur batas organ dan korteks tulang untuk evaluasi morfologis radiolog.
+                            </div>
+                        </div>
+
+                        <button class="btn-action-primary" id="btnExecuteDenoise" onclick="executeAdvancedDenoise()" style="margin-top: 0.6rem;">
+                            <span>▶ Jalankan Filter Denoising</span>
+                        </button>
+
+                        <!-- Inspection Modes -->
+                        <div class="comparison-modes-bar">
+                            <button class="btn-toggle-mode" id="btnCurtainMode" onclick="toggleCurtainWipe()" style="flex: 1;">
+                                ↔ Tirai A/B Split-Wipe
+                            </button>
+                            <button class="btn-toggle-mode" id="btnResidualMode" onclick="toggleResidualMap()">
+                                Peta Residu Noise
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- TABEL KOMPARASI 4 ALGORITMA (EVALUASI RESTORASI) -->
+                    <div class="dock-card" id="cardBenchmarkDenoise" style="border-color: rgba(56, 189, 248, 0.35);">
+
+                        <div class="dock-card-header">
+                            <span class="dock-card-title" style="color: #38bdf8; display: flex; align-items: center; gap: 0.35rem;">
+                                <span>📊</span> Matriks Komparasi 4 Algoritma
+                            </span>
+                            <button class="tool-btn" onclick="executeAlgorithmBenchmark()" id="btnRunBenchmark" style="padding: 0.2rem 0.5rem; font-size: 0.65rem; background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8;" title="Jalankan pengujian komparatif 4 metode">
+                                ⚡ Uji Komparasi
+                            </button>
+                        </div>
+
+                        <div style="overflow-x: auto; margin-top: 0.5rem;">
+                            <table class="tag-table" id="tableBenchmark" style="font-size: 0.68rem;">
+                                <thead>
+                                    <tr>
+                                        <th>Metode</th>
+                                        <th>
+                                            <span class="term-hint">
+                                                PSNR vs Citra Masukan
+                                                <button class="term-hint-btn" aria-label="Penjelasan PSNR"
+                                                    onclick="openGlossaryModal('psnr', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('psnr',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                SSIM vs Citra Masukan
+                                                <button class="term-hint-btn" aria-label="Penjelasan SSIM"
+                                                    onclick="openGlossaryModal('ssim', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('ssim',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                SNR Gain (estimasi tanpa acuan)
+                                                <button class="term-hint-btn" aria-label="Penjelasan SNR Gain"
+                                                    onclick="openGlossaryModal('snr-gain', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('snr-gain',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                Waktu Inferensi
+                                                <button class="term-hint-btn" aria-label="Penjelasan Waktu Inferensi"
+                                                    onclick="openGlossaryModal('latency', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('latency',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                        <th>
+                                            <span class="term-hint">
+                                                Total Proses
+                                                <button class="term-hint-btn" aria-label="Penjelasan Total Proses"
+                                                    onclick="openGlossaryModal('latency', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('latency',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bodyBenchmark">
+                                    <tr>
+                                        <td style="color: #94a3b8;">
+                                            <span class="term-hint">
+                                                Citra Asli (Raw)
+                                                <button class="term-hint-btn" aria-label="Penjelasan Citra Asli Raw"
+                                                    onclick="openGlossaryModal('raw', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('raw',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
+                                        <td>-</td>
+                                        <td>1.0000</td>
+                                        <td>0.00 dB</td>
+                                        <td>0.0 ms</td>
+                                        <td>0.0 ms</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #38bdf8;">
+                                            <span class="term-hint">
+                                                Bilateral Filter
+                                                <button class="term-hint-btn" aria-label="Penjelasan Bilateral Filter"
+                                                    onclick="openGlossaryModal('bilateral', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('bilateral',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #c084fc;">
+                                            <span class="term-hint">
+                                                Non-Local Means
+                                                <button class="term-hint-btn" aria-label="Penjelasan Non-Local Means"
+                                                    onclick="openGlossaryModal('nlm', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('nlm',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                        <td>-</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #34d399; font-weight: 700;">
+                                            <span class="term-hint">
+                                                DnCNN (pretrained)
+                                                <button class="term-hint-btn" aria-label="Penjelasan DnCNN"
+                                                    onclick="openGlossaryModal('dncnn', this); event.stopPropagation();"
+                                                    onkeydown="if(event.key==='Enter'||event.key===' '){openGlossaryModal('dncnn',this);event.stopPropagation();}">?
+                                                </button>
+                                            </span>
+                                        </td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                        <td style="color: #34d399; font-weight: 700;">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size: 0.62rem; color: #94a3b8; margin-top: 0.35rem; line-height: 1.35; padding: 0.35rem 0.5rem; background: rgba(15, 23, 42, 0.5); border-radius: 4px; border-left: 2px solid #34d399;">
+                                * <strong>Keterangan Metrik:</strong> Nilai <em>PSNR vs Citra Masukan</em> &amp; <em>SSIM vs Citra Masukan</em> dihitung terhadap citra masukan tanpa acuan bersih (ground truth), sehingga mengukur <strong>besarnya perubahan/kemiripan struktur terhadap masukan</strong>, bukan kualitas restorasi absolut. Nilai <em>SNR Gain (estimasi tanpa acuan)</em> menggunakan estimator Immerkaer (1996) dan <strong>juga naik bila citra terlalu dihaluskan (over-smoothing)</strong>, sehingga bukan ukuran kualitas restorasi tunggal. <em>Waktu Inferensi</em> mengukur murni komputasi filter/model (DnCNN via <code>infer_ms</code> GPU, Bilateral via <code>cv2.bilateralFilter</code>). <em>Total Proses</em> mencakup seluruh siklus termasuk pemanggilan subprocess, muat model, dan I/O citra.
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- TAB 2: ALAT UKUR & CTR -->
+                <div class="tab-pane" id="paneMeasure">
+                    <!-- Quick Tool Selector Sub-Pills -->
+                    <div class="dock-card" style="padding: 0.55rem 0.65rem; margin-bottom: 0.5rem; background: rgba(12, 18, 30, 0.85);">
+                        <div style="font-size: 0.68rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span>PILIH INSTRUMEN UKUR:</span>
+                            <span style="font-size: 0.62rem; color: #64748b;">Klik & tarik di gambar</span>
+                        </div>
+                        <div class="measure-pills-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.35rem;">
+                            <button class="measure-sub-pill" id="pillToolCircle" onclick="setTool('circle')">⭕ Lingkaran</button>
+                            <button class="measure-sub-pill" id="pillToolCaliper" onclick="setTool('caliper')">📏 Caliper</button>
+                            <button class="measure-sub-pill" id="pillToolEllipse" onclick="setTool('ellipse')">🥚 Oval</button>
+                            <button class="measure-sub-pill" id="pillToolCtr" onclick="setTool('ctr')">🫀 CTR</button>
+                            <button class="measure-sub-pill" id="pillToolBox" onclick="setTool('box')">🔲 Kotak</button>
+                            <button class="measure-sub-pill" id="pillToolPolygon" onclick="setTool('polygon')">📐 Poligon</button>
+                        </div>
+                    </div>
+
+                    <div class="dock-card">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title">Daftar Anotasi & Temuan</span>
+                            <div>
+                                <button type="button" onclick="clearAllCalipers()" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; font-size: 0.68rem; padding: 2px 8px; border-radius: 4px; cursor: pointer; font-weight: 600; transition: all 0.15s;" onmouseover="this.style.background='rgba(239, 68, 68, 0.25)'" onmouseout="this.style.background='rgba(239, 68, 68, 0.12)'" title="Hapus semua anotasi di viewport ini">Hapus Semua</button>
+                            </div>
+                        </div>
+
+                        <div id="caliperListContainer">
+                            <span style="font-size: 0.72rem; color: var(--ws-text-muted); font-style: italic;">Belum ada pengukuran di Viewport ini. Pilih salah satu instrumen ukur di atas.</span>
+                        </div>
+                    </div>
+
+                    <!-- CARD HASIL EVALUASI CTR KLINIS -->
+                    <div class="dock-card" id="cardCtrLiveVerdict">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title">Evaluasi Klinis CTR (Danzer 1919)</span>
+                            <span id="badgeCtrStatusPill" style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; font-family: monospace; font-weight: 700; background: rgba(148, 163, 184, 0.15); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3);">Belum Diukur</span>
+                        </div>
+
+                        <div id="ctrLiveResultContent">
+                            <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.65rem; text-align: center;">
+                                <span style="font-size: 0.72rem; color: var(--ws-text-muted);">
+                                    Gunakan tool <strong>🫀 CTR</strong> di toolbar atas untuk menghitung rasio diameter transversal jantung & toraks secara langsung.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 3: EKSPERTISE RADIOLOG -->
+                <div class="tab-pane" id="paneDiagnosis">
+                    <div class="dock-card">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title">Lembar Catatan Ekspertise</span>
+                            <span style="font-size: 0.65rem; color: #64748b;">Radiologi Diagnostik</span>
+                        </div>
+
+                        <div style="font-size: 0.68rem; color: #94a3b8; margin-bottom: 0.2rem;">Template Cepat:</div>
+                        <div class="quick-templates-grid">
+                            <button class="btn-template-pill" onclick="insertTemplate('normal')">Cor/Pulmo Normal</button>
+                            <button class="btn-template-pill" onclick="insertTemplate('cardiomegaly')">Suspek Kardiomegali</button>
+                            <button class="btn-template-pill" onclick="insertTemplate('infiltrate')">Infiltrat Paru</button>
+                        </div>
+
+                        <textarea id="txtDiagnosis" rows="5" class="form-diagnosis-area" placeholder="Ketik kesimpulan ekspertise citra rontgen di sini..."><?php echo e($scan->diagnosis_notes); ?></textarea>
+
+                        <div style="margin-top: 0.45rem;">
+                            <input type="text" id="txtDoctor" class="form-diagnosis-area" style="padding: 0.4rem;" value="<?php echo e($scan->doctor_name ?: 'dr. Radiolog Sp.Rad'); ?>" placeholder="Nama Dokter Radiolog">
+                        </div>
+
+                        <button class="btn-save-emr" onclick="saveDiagnosis()">
+                            Simpan Ekspertise ke Rekam Medis
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 4: DICOM TAGS INSPECTOR -->
+                <div class="tab-pane" id="paneDicom">
+                    <div class="dock-card">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title">DICOM Header (NEMA PS 3.6)</span>
+                            <button onclick="openDicomTagsModal()" style="background: none; border: none; color: #38bdf8; font-size: 0.7rem; cursor: pointer; font-weight: 600;">Perbesar ↗</button>
+                        </div>
+                        <div style="font-size: 0.72rem; color: #94a3b8; font-family: monospace; line-height: 1.5;">
+                            (0010,0010) Patient Name: <?php echo e(strtoupper($scan->patient_name)); ?><br>
+                            (0010,0020) Patient ID: <?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?><br>
+                            (0008,0060) Modality: <?php echo e($scan->modality); ?><br>
+                            (0008,1010) Station: <?php echo e($scan->station_name ?: 'FUJIFILM_FDR'); ?><br>
+                            (0028,0004) Photometric: MONOCHROME2<br>
+                            (0028,0100) Bits Allocated: 16<br>
+                            (0028,1050) Window Center: 40<br>
+                            (0028,1051) Window Width: 400
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB 5: IMAGE PROCESSING -->
+                <div class="tab-pane" id="paneContrast">
+                    <div class="dock-card" style="border-color: rgba(56,189,248,0.25);">
+                        <div class="dock-card-header">
+                            <span class="dock-card-title" style="color: #38bdf8; display:flex; align-items:center; gap:0.35rem;">
+                                <span>🎨</span> Image Processing
+                            </span>
+                            <span id="cpTargetBadge" style="font-size:0.65rem; color:#38bdf8; font-family:monospace; background:rgba(2,132,199,0.2); padding:2px 6px; border-radius:4px; border:1px solid rgba(56,189,248,0.3);">VP-A</span>
+                        </div>
+
+                        <!-- ══ BASIC VIEW ══ -->
+                        <div class="cp-basic-view" id="cpBasicView">
+                            <!-- Preset buttons -->
+                            <p class="cp-section-title">Preset Kurva Nada</p>
+                            <div class="cp-preset-grid" id="cpPresetGrid"></div>
+
+                            <!-- Curve + Histogram canvas -->
+                            <p class="cp-section-title">Kurva Nada / LUT</p>
+                            <div class="cp-curve-wrap">
+                                <canvas id="cpCurveCanvas" width="220" height="150"
+                                        aria-label="Editor kurva nada — seret titik untuk mengubah kurva"
+                                        role="img"></canvas>
+                                <span class="cp-curve-label">Input →</span>
+                            </div>
+
+                            <!-- Brightness slider -->
+                            <p class="cp-section-title">Kecerahan &amp; Kontras</p>
+                            <div class="cp-slider-row">
+                                <span class="cp-slider-label">Kecerahan:</span>
+                                <button class="cp-step-btn" id="cpBrightnessMinus" aria-label="Kurangi kecerahan">−</button>
+                                <input type="range" class="cp-range" id="cpBrightness"
+                                       min="-8" max="8" step="1" value="0"
+                                       aria-label="Kecerahan">
+                                <button class="cp-step-btn" id="cpBrightnessPlus" aria-label="Tambah kecerahan">+</button>
+                                <span class="cp-val-badge" id="cpBrightnessVal">0</span>
+                            </div>
+
+                            <!-- Contrast slider -->
+                            <div class="cp-slider-row">
+                                <span class="cp-slider-label">Kontras:</span>
+                                <button class="cp-step-btn" id="cpContrastMinus" aria-label="Kurangi kontras">−</button>
+                                <input type="range" class="cp-range" id="cpContrast"
+                                       min="-8" max="8" step="1" value="0"
+                                       aria-label="Kontras">
+                                <button class="cp-step-btn" id="cpContrastPlus" aria-label="Tambah kontras">+</button>
+                                <span class="cp-val-badge" id="cpContrastVal">0</span>
+                            </div>
+
+                            <!-- Reset -->
+                            <button class="cp-reset-btn" id="cpResetBtn">
+                                🔄 Reset Kontras ke Balanced
+                            </button>
+
+                            <!-- Advance button -->
+                            <button class="cp-advance-btn" id="cpAdvanceBtn" aria-label="Buka penyesuaian lanjutan">
+                                Advance &rarr;
+                            </button>
+                        </div><!-- end .cp-basic-view -->
+
+                        <!-- ══ ADVANCED VIEW ══ -->
+                        <div class="cp-adv-view" id="cpAdvView">
+                            <div class="cp-adv-title">Advanced Adjustment</div>
+
+                            <!-- Amplifier (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Amplifier</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvAmpMinus" aria-label="Kurangi Amplifier">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvAmpPlus" aria-label="Tambah Amplifier">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvAmplifierBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvAmplifier"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Amplifier">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Latitude (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Latitude</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvLatMinus" aria-label="Kurangi Latitude">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvLatPlus" aria-label="Tambah Latitude">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvLatitudeBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvLatitude"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Latitude">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Detail (1–40) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Detail</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvDetMinus" aria-label="Kurangi Detail">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvDetPlus" aria-label="Tambah Detail">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvDetailBubble">20</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvDetail"
+                                           min="1" max="40" step="1" value="20"
+                                           aria-label="Detail">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~40)</div>
+                            </div>
+
+                            <!-- Noise Mode (1–20) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Noise Mode</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvNoiseMinus" aria-label="Kurangi Noise Mode">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvNoisePlus" aria-label="Tambah Noise Mode">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvNoiseModeBubble">10</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvNoiseMode"
+                                           min="1" max="20" step="1" value="10"
+                                           aria-label="Noise Mode">
+                                </div>
+                                <div class="cp-adv-range-hint">(1~20)</div>
+                            </div>
+
+                            <!-- Brightness (adv mirror) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Brightness</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvBrightMinus" aria-label="Kurangi Kecerahan">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvBrightPlus" aria-label="Tambah Kecerahan">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvBrightnessBubble">0</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvBrightness"
+                                           min="-8" max="8" step="1" value="0"
+                                           aria-label="Brightness (advanced)">
+                                </div>
+                                <div class="cp-adv-range-hint">(-8~8)</div>
+                            </div>
+
+                            <!-- Contrast (adv mirror) -->
+                            <div class="cp-fuji-group">
+                                <div class="cp-fuji-head">
+                                    <span class="cp-fuji-title">Contrast</span>
+                                    <div class="cp-fuji-stepper">
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvContMinus" aria-label="Kurangi Kontras">−</button>
+                                        <span class="cp-fuji-sep">|</span>
+                                        <button type="button" class="cp-fuji-step-btn" id="cpAdvContPlus" aria-label="Tambah Kontras">+</button>
+                                    </div>
+                                </div>
+                                <div class="cp-fuji-track-box">
+                                    <div class="cp-fuji-bubble" id="cpAdvContrastBubble">0</div>
+                                    <input type="range" class="cp-fuji-range" id="cpAdvContrast"
+                                           min="-8" max="8" step="1" value="0"
+                                           aria-label="Contrast (advanced)">
+                                </div>
+                                <div class="cp-adv-range-hint">(-8~8)</div>
+                            </div>
+
+                            <!-- Algorithm dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">Algorithm</span>
+                                <select class="cp-adv-select" id="cpAdvAlgorithm" aria-label="Algorithm">
+                                    <option value="symphony">Symphony</option>
+                                    <option value="classic">Classic</option>
+                                    <option value="dynamic">Dynamic</option>
+                                    <option value="fuji">Fuji-Linear</option>
+                                </select>
+                            </div>
+
+                            <!-- LUT dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">LUT</span>
+                                <select class="cp-adv-select" id="cpAdvLUT" aria-label="LUT">
+                                    <option value="sigmoid1">SIGMOID1</option>
+                                    <option value="sigmoid2">SIGMOID2</option>
+                                    <option value="linear">LINEAR</option>
+                                    <option value="gamma">GAMMA</option>
+                                    <option value="log">LOG</option>
+                                </select>
+                            </div>
+
+                            <!-- Style dropdown -->
+                            <div class="cp-adv-dropdown-row">
+                                <span class="cp-adv-dropdown-label">Style</span>
+                                <select class="cp-adv-select" id="cpAdvStyle" aria-label="Style">
+                                    <option value="Bone">Bone</option>
+                                    <option value="Balanced">Balanced</option>
+                                    <option value="Soft Tissue">Soft Tissue</option>
+                                    <option value="HighContrast">HighContrast</option>
+                                    <option value="LUT">LUT</option>
+                                </select>
+                            </div>
+
+                            <!-- Action buttons row -->
+                            <div class="cp-adv-btn-row">
+                                <button class="cp-adv-action-btn" id="cpAdvResetParam">Reset Param</button>
+                                <button class="cp-adv-action-btn cp-adv-save" id="cpAdvSaveParam">Save Param</button>
+                            </div>
+                            <!-- Return button on right side -->
+                            <div class="cp-adv-return-row">
+                                <div></div>
+                                <button class="cp-adv-action-btn cp-adv-return" id="cpAdvReturnBtn">Return</button>
+                            </div>
+                            <div class="cp-adv-saved-flash" id="cpAdvSavedFlash">✔ Parameter tersimpan</div>
+                        </div><!-- end .cp-adv-view -->
+
+                    </div>
+                </div>
+
+            </div>
+        </aside>
+
+        <!-- Floating Restore / Expand Button saat Dock Panel Collapsed -->
+        <button id="btnDockExpand" class="dock-expand-tab" onclick="restoreDockPanel()" title="Buka / Pulihkan Tools (Klik atau Tarik ke Kiri)">
+            <span style="font-size: 0.75rem;">◀</span>
+            <span style="writing-mode: vertical-rl; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Tools</span>
+        </button>
+
+    </div>
+
+    <!-- 4. BOTTOM DIAGNOSTIC TELEMETRY BAR -->
+    <footer class="pacs-status-footer">
+        <div class="footer-left">
+            <span>SOP Class: 1.2.840.10008.5.1.4.1.1.1 (CR Image Storage)</span>
+            <span>|</span>
+            <span>Matrix: 2048 x 2048 x 16-bit</span>
+            <span>|</span>
+            <span>Photometric: MONOCHROME2</span>
+        </div>
+        <div class="footer-right">
+            <span>Renderer: WebGL / 2D Canvas (60 FPS)</span>
+            <span>|</span>
+            <span>AE: HYU_PACS</span>
+        </div>
+    </footer>
+
+    <?php else: ?>
+    
+    <main style="flex: 1; display: flex; align-items: center; justify-content: center;
+                 background: radial-gradient(circle at 50% 40%, #0d1728 0%, #060911 100%);
+                 padding: 2.5rem 1.5rem; text-align: center; overflow-y: auto;">
+        <div style="max-width: 640px; width: 100%;">
+
+            
+            <?php if(session('success')): ?>
+            <div style="background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.4); color: #34d399;
+                        padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.85rem; text-align: left;">
+                ✅ <?php echo e(session('success')); ?>
+
+            </div>
+            <?php endif; ?>
+
+            
+            <div style="background: rgba(245,158,11,0.1); border: 2px solid rgba(245,158,11,0.35);
+                        border-radius: 50%; width: 96px; height: 96px;
+                        display: inline-flex; align-items: center; justify-content: center;
+                        margin-bottom: 1.5rem; box-shadow: 0 0 40px rgba(245,158,11,0.18);">
+                <span style="font-size: 3rem;">☢️</span>
+            </div>
+
+            
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem;
+                        background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35);
+                        padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.74rem; font-weight: 700;
+                        color: #fbbf24; margin-bottom: 1.25rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                <span style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 8px #fbbf24; display:inline-block;"></span>
+                Status: Siap di Ruang Rontgen
+            </div>
+
+            
+            <h2 style="font-size: 1.65rem; font-weight: 800; color: #f8fafc;
+                       margin-bottom: 0.75rem; letter-spacing: -0.02em;">
+                Pemeriksaan Belum Dilakukan
+            </h2>
+            <p style="color: #94a3b8; font-size: 0.9rem; line-height: 1.65; margin-bottom: 2rem;">
+                Pasien <strong style="color: #f1f5f9;"><?php echo e($scan->patient_name); ?></strong>
+                masih dalam antrian dan belum menjalani pemeriksaan radiologi.<br>
+                Pengambilan citra (image retrieval) dan instrumen analisis Viewer tidak dapat diakses
+                sampai pemeriksaan selesai dilakukan pada stasiun radiologi dan citra DICOM diterima oleh server PACS.
+            </p>
+
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem;
+                        background: rgba(17,26,44,0.85); border: 1px solid #1e293b; border-radius: 10px;
+                        padding: 1rem 1.25rem; margin-bottom: 2rem; text-align: left;">
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">No. Rekam Medis</div>
+                    <div style="font-size: 0.84rem; color: #38bdf8; font-weight: 700; font-family: 'JetBrains Mono', monospace;"><?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?></div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Accession No</div>
+                    <div style="font-size: 0.84rem; color: #cbd5e1; font-weight: 700; font-family: 'JetBrains Mono', monospace;"><?php echo e($scan->accession_number ?: 'ACC-' . str_pad($scan->id, 4, '0', STR_PAD_LEFT)); ?></div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Modalitas Order</div>
+                    <div style="font-size: 0.84rem; color: #f8fafc; font-weight: 700;"><?php echo e($scan->modality); ?></div>
+                </div>
+                <div>
+                    <div style="font-size: 0.67rem; color: #64748b; font-weight: 700; text-transform: uppercase; margin-bottom: 0.2rem;">Stasiun Alat</div>
+                    <div style="font-size: 0.84rem; color: #cbd5e1; font-weight: 700; font-family: monospace;"><?php echo e($scan->station_name ?: 'FUJIFILM_FDR_01'); ?></div>
+                </div>
+            </div>
+
+            
+            <div style="display: flex; gap: 0.9rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                <a href="<?php echo e(route('scans.index')); ?>"
+                   style="background: linear-gradient(135deg, #0284c7, #06b6d4); color: #fff; border: none;
+                          padding: 0.75rem 1.6rem; border-radius: 8px; font-weight: 700; font-size: 0.875rem;
+                          text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;
+                          box-shadow: 0 4px 16px rgba(2,132,199,0.35); transition: opacity 0.2s;"
+                   onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                    ⬅️ Kembali ke Daftar Pasien
+                </a>
+
+                <button onclick="window.location.reload()"
+                   style="background: rgba(30,41,59,0.85); color: #cbd5e1; border: 1px solid #334155;
+                          padding: 0.75rem 1.4rem; border-radius: 8px; font-weight: 600; font-size: 0.875rem;
+                          cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
+                          transition: background 0.15s;"
+                   onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='rgba(30,41,59,0.85)'">
+                    🔄 Cek Status Terbaru
+                </button>
+            </div>
+        </div>
+    </main>
+    <?php endif; ?>
+
+    <!-- Interactive PACS JavaScript -->
+    <script>
+        // State Per Viewport (1=VP-A, 2=VP-B)
+        let activeViewport = 1;
+        let isMultimodal = false;
+        let isDrawerOpen = (window.innerWidth > 768);
+
+        const vpState = {
+            1: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' },
+            2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
+        };
+        window.vpState = vpState; // Exposed for ContrastPanel module
+
+
+        // Measurements Store & Undo/Redo Stacks
+        const measurements = { 1: [], 2: [] };
+        const undoStack = { 1: [], 2: [] };
+        const redoStack = { 1: [], 2: [] };
+
+        function pushMeasurementHistory(vpId) {
+            if (!undoStack[vpId]) undoStack[vpId] = [];
+            if (!redoStack[vpId]) redoStack[vpId] = [];
+            undoStack[vpId].push(JSON.parse(JSON.stringify(measurements[vpId])));
+            if (undoStack[vpId].length > 40) undoStack[vpId].shift();
+            redoStack[vpId] = [];
+            updateUndoRedoButtons();
+        }
+
+        function updateUndoRedoButtons() {
+            const btnUndo = document.getElementById('btnDockUndo');
+            const btnRedo = document.getElementById('btnDockRedo');
+            const btnTbUndo = document.getElementById('btnToolbarUndo');
+            const btnTbRedo = document.getElementById('btnToolbarRedo');
+            const canUndo = (activeTool === 'polygon' && currentPolygonPoints.length > 0) || 
+                            (undoStack[activeViewport] && undoStack[activeViewport].length > 0) || 
+                            (measurements[activeViewport] && measurements[activeViewport].length > 0);
+            const canRedo = (redoStack[activeViewport] && redoStack[activeViewport].length > 0);
+
+            if (btnUndo) {
+                btnUndo.disabled = !canUndo;
+                btnUndo.style.opacity = canUndo ? '1' : '0.35';
+                btnUndo.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+            }
+            if (btnRedo) {
+                btnRedo.disabled = !canRedo;
+                btnRedo.style.opacity = canRedo ? '1' : '0.35';
+                btnRedo.style.cursor = canRedo ? 'pointer' : 'not-allowed';
+            }
+            if (btnTbUndo) {
+                btnTbUndo.disabled = !canUndo;
+                btnTbUndo.style.opacity = canUndo ? '1' : '0.4';
+                btnTbUndo.style.cursor = canUndo ? 'pointer' : 'not-allowed';
+            }
+            if (btnTbRedo) {
+                btnTbRedo.disabled = !canRedo;
+                btnTbRedo.style.opacity = canRedo ? '1' : '0.4';
+                btnTbRedo.style.cursor = canRedo ? 'pointer' : 'not-allowed';
+            }
+        }
+        let activeDrawing = null;
+        let activeCircleDrawing = null;
+        let isCircleDrawing = false;
+        let activeBoxDrawing = null;
+        let isBoxDrawing = false;
+        let activeEllipseDrawing = null;
+        let isEllipseDrawing = false;
+        let currentPolygonPoints = [];
+        let polygonHoverPoint = null;
+        let isPolygonSnapping = false;
+
+        let ctrWorkflow = {
+            step: 1,
+            heartLine: null,
+            thoraxLine: null
+        };
+
+        let activeTool = 'pan';
+        let isDragging = false;
+        let startX, startY;
+        let activeDraggingCurtainVp = null;
+
+        const vpStageLayer1 = document.getElementById('vpStageLayer1');
+        const vpStageLayer2 = document.getElementById('vpStageLayer2');
+        const img1 = document.getElementById('imgVp1');
+        const img2 = document.getElementById('imgVp2');
+        const img1Denoised = document.getElementById('imgVp1Denoised');
+        const img2Denoised = document.getElementById('imgVp2Denoised');
+        const vp1 = document.getElementById('vp1');
+        const vp2 = document.getElementById('vp2');
+        const viewportsStage = document.getElementById('viewportsStage');
+        const seriesDrawer = document.getElementById('seriesDrawer');
+        const lblZoom = document.getElementById('lblZoom');
+        const lblWwWl = document.getElementById('lblWwWl');
+        const svgMeasure1 = document.getElementById('svgMeasure1');
+        const svgMeasure2 = document.getElementById('svgMeasure2');
+        const toolHintToast = document.getElementById('toolHintToast');
+        const toolHintIcon = document.getElementById('toolHintIcon');
+        const toolHintText = document.getElementById('toolHintText');
+        const curtainContainer1 = document.getElementById('curtainContainer1');
+        const curtainContainer2 = document.getElementById('curtainContainer2');
+        const curtainDivider1 = document.getElementById('curtainDivider1');
+        const curtainDivider2 = document.getElementById('curtainDivider2');
+
+        let selectedAnnotation = null; // { vpId: 1, index: 0 }
+
+        // Init Initial Image Sources & Drawer Responsive State
+        if (img1) vpState[1].rawSrc = img1.src;
+        if (img2) vpState[2].rawSrc = img2.src;
+        <?php if(!empty($scan->denoised_image_path) && file_exists(public_path($scan->denoised_image_path))): ?>
+            vpState[1].denoisedSrc = "<?php echo e(asset($scan->denoised_image_path)); ?>?v=<?php echo e(time()); ?>";
+            if (img1Denoised) img1Denoised.src = vpState[1].denoisedSrc;
+        <?php endif; ?>
+        if (seriesDrawer) {
+            seriesDrawer.classList.toggle('collapsed', !isDrawerOpen);
+            const icon = document.getElementById('btnDrawerIcon');
+            if (icon) icon.innerText = isDrawerOpen ? '◀' : '▶';
+            const chk = document.getElementById('vmChkSeries');
+            if (chk) chk.textContent = isDrawerOpen ? '✓' : '';
+        }
+
+        // Drawer Toggle
+        function toggleSeriesDrawer() {
+            isDrawerOpen = !isDrawerOpen;
+            seriesDrawer.classList.toggle('collapsed', !isDrawerOpen);
+            const icon = document.getElementById('btnDrawerIcon');
+            if (icon) icon.innerText = isDrawerOpen ? '◀' : '▶';
+            // Sync checkmark di View menu
+            const chk = document.getElementById('vmChkSeries');
+            if (chk) chk.textContent = isDrawerOpen ? '✓' : '';
+        }
+
+        // Layout Switcher: 1x1 vs 1x2
+        function setLayoutMode(mode) {
+            isMultimodal = (mode === '1x2');
+            const btnSingle = document.getElementById('btnLayoutSingle');
+            const btnDual = document.getElementById('btnLayoutDual');
+            if (btnSingle) btnSingle.classList.toggle('active', !isMultimodal);
+            if (btnDual) btnDual.classList.toggle('active', isMultimodal);
+
+            if (isMultimodal) {
+                if (typeof viewportsStage !== 'undefined' && viewportsStage) viewportsStage.classList.add('split-1x2');
+                if (typeof vp2 !== 'undefined' && vp2) vp2.style.display = 'flex';
+                showToolHint('◧◨', 'Mode 1x2: Membandingkan Thorax PA (Rontgen) vs USG secara berdampingan.');
+            } else {
+                if (typeof viewportsStage !== 'undefined' && viewportsStage) viewportsStage.classList.remove('split-1x2');
+                if (typeof vp2 !== 'undefined' && vp2) vp2.style.display = 'none';
+                selectViewport(1);
+                hideToolHint();
+            }
+        }
+
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        // Load Series into Specific Viewport (1=A, 2=B)
+        function loadSeriesToVp(targetVp, imgUrl, name, studyDesc, station, matrix, cardId) {
+            const targetImg = (targetVp === 1) ? img1 : img2;
+            const targetDenoisedImg = (targetVp === 1) ? img1Denoised : img2Denoised;
+            const cContainer = (targetVp === 1) ? curtainContainer1 : curtainContainer2;
+
+            if (targetImg) {
+                targetImg.src = imgUrl;
+                vpState[targetVp].rawSrc = imgUrl;
+                vpState[targetVp].denoisedSrc = '';
+                vpState[targetVp].residualSrc = '';
+                vpState[targetVp].isResidual = false;
+                vpState[targetVp].isCurtain = false;
+                vpState[targetVp].metrics = null;
+                vpState[targetVp].zoom = 1;
+                vpState[targetVp].translateX = 0;
+                vpState[targetVp].translateY = 0;
+
+                if (targetDenoisedImg) {
+                    targetDenoisedImg.src = imgUrl;
+                    targetDenoisedImg.style.display = 'none';
+                }
+                if (cContainer) cContainer.style.display = 'none';
+                updateTransform(targetVp);
+                updateFilter(targetVp);
+                if (window.ContrastPanel) window.ContrastPanel.onImageLoad(targetVp);
+            }
+
+            if (targetVp === 1) {
+                document.getElementById('vp1Title').innerText = `VP-A: ${name} (PRIMARY)`;
+                document.getElementById('vp1SeriesInfo').innerText = `${station} | ${matrix}`;
+                document.getElementById('vp1HudTopRight').innerHTML = `Modalitas: ${escapeHtml(name)}<br>Studi: ${escapeHtml(studyDesc)}<br>Station: ${escapeHtml(station)}`;
+                selectViewport(1);
+            } else {
+                document.getElementById('vp2Title').innerText = `VP-B: ${name} (COMPARISON)`;
+                document.getElementById('vp2SeriesInfo').innerText = `${station} | ${matrix}`;
+                document.getElementById('vp2HudTopRight').innerHTML = `Modalitas: ${escapeHtml(name)}<br>Studi: ${escapeHtml(studyDesc)}<br>Station: ${escapeHtml(station)}`;
+                if (!isMultimodal) setLayoutMode('1x2');
+                selectViewport(2);
+            }
+
+            showToolHint('📂', `Memuat ${name} ke Viewport ${targetVp === 1 ? 'A (Kiri)' : 'B (Kanan)'}`);
+            setTimeout(hideToolHint, 2500);
+
+            if (window.innerWidth <= 768 && isDrawerOpen) {
+                toggleSeriesDrawer();
+            }
+        }
+
+        // Load Series into Currently Active Viewport
+        function loadSeriesActive(imgUrl, name, studyDesc, station, matrix, cardId) {
+            loadSeriesToVp(activeViewport, imgUrl, name, studyDesc, station, matrix, cardId);
+            if (window.innerWidth <= 768 && isDrawerOpen) {
+                toggleSeriesDrawer();
+            }
+        }
+
+        // Right Dock Workstation Controller
+        const DOCK_TAB_META = {
+            denoise:   { title: 'Restorasi & Denoising', icon: '⚡', paneId: 'paneDenoise',   chkId: 'vmChkDenoise' },
+            contrast:  { title: 'Image Processing',      icon: '🎨', paneId: 'paneContrast',  chkId: 'vmChkContrast' },
+            measure:   { title: 'Hasil Ukur / CTR',      icon: '📏', paneId: 'paneMeasure',   chkId: 'vmChkMeasure' },
+            diagnosis: { title: 'Ekspertise Radiologi',  icon: '📝', paneId: 'paneDiagnosis', chkId: 'vmChkDiagnosis' },
+            dicom:     { title: 'Tags DICOM',            icon: '📋', paneId: 'paneDicom',     chkId: 'vmChkDicom' }
+        };
+
+        let currentDockTab = null;
+        // Ordered list of open tab IDs (preserves open order)
+        let _openDockTabs = [];
+
+        function _renderDockTabBar() {
+            const bar = document.getElementById('dockTabBar');
+            if (!bar) return;
+            bar.innerHTML = '';
+            _openDockTabs.forEach(function(tabId) {
+                const meta = DOCK_TAB_META[tabId];
+                if (!meta) return;
+                const tab = document.createElement('div');
+                tab.className = 'dock-tab' + (tabId === currentDockTab ? ' active' : '');
+                tab.setAttribute('data-tab', tabId);
+                tab.innerHTML =
+                    '<span class="dock-tab-icon">' + meta.icon + '</span>' +
+                    '<span class="dock-tab-label">' + meta.title + '</span>' +
+                    '<span class="dock-tab-close" data-close="' + tabId + '" title="Tutup tab">✕</span>';
+                // Click on tab label/icon → switch
+                tab.addEventListener('click', function(e) {
+                    if (e.target.closest('.dock-tab-close')) return;
+                    switchDockTab(tabId);
+                });
+                // Click on close × → close that tab
+                tab.querySelector('.dock-tab-close').addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    closeDockTab(tabId);
+                });
+                bar.appendChild(tab);
+            });
+        }
+
+        function closeDockTab(tabId) {
+            _openDockTabs = _openDockTabs.filter(function(t) { return t !== tabId; });
+            // Sync checkmark off
+            const meta = DOCK_TAB_META[tabId];
+            if (meta) {
+                const chk = document.getElementById(meta.chkId);
+                if (chk) chk.textContent = '';
+            }
+            if (currentDockTab === tabId) {
+                // Switch to nearest remaining tab, or close panel
+                if (_openDockTabs.length > 0) {
+                    switchDockTab(_openDockTabs[_openDockTabs.length - 1]);
+                } else {
+                    closeDockPanel();
+                }
+            } else {
+                _renderDockTabBar();
+            }
+        }
+
+        // ── Dock Panel Drag Resizer & Minimize Controller ──
+        let _dockSavedWidth = parseInt(localStorage.getItem('pacs_dock_width'), 10) || 380;
+        if (isNaN(_dockSavedWidth) || _dockSavedWidth < 280 || _dockSavedWidth > 850) _dockSavedWidth = 380;
+
+        function setDockWidth(w, saveToStorage = true) {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            const maxW = Math.max(380, Math.min(window.innerWidth - 300, 850));
+            const boundedWidth = Math.max(280, Math.min(Math.round(w), maxW));
+            dock.style.width = boundedWidth + 'px';
+            dock.style.minWidth = boundedWidth + 'px';
+            if (saveToStorage) {
+                _dockSavedWidth = boundedWidth;
+                try { localStorage.setItem('pacs_dock_width', boundedWidth); } catch (e) {}
+            }
+        }
+
+        function minimizeDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            const currentW = dock.getBoundingClientRect().width;
+            if (currentW >= 260) {
+                _dockSavedWidth = Math.round(currentW);
+                try { localStorage.setItem('pacs_dock_width', _dockSavedWidth); } catch (e) {}
+            }
+            dock.classList.add('collapsed');
+            dock.classList.remove('dock-will-minimize', 'is-resizing');
+            // Catatan: saat diminimize, daftar tab dan tab aktif tetap tersimpan di memori
+            // sehingga saat dipulihkan/dibuka kembali, pekerjaan user tidak hilang!
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        function restoreDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (!dock) return;
+            dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+            setDockWidth(_dockSavedWidth, false);
+            if (_openDockTabs.length > 0 && currentDockTab) {
+                switchDockTab(currentDockTab);
+            } else {
+                openDockPanel('denoise');
+            }
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        function closeDockPanel() {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) {
+                dock.classList.add('collapsed');
+                dock.classList.remove('dock-will-minimize', 'is-resizing');
+            }
+            if (window.ContrastPanel) window.ContrastPanel.deactivate();
+            // Clear all checkmarks
+            Object.values(DOCK_TAB_META).forEach(function(meta) {
+                const chk = document.getElementById(meta.chkId);
+                if (chk) chk.textContent = '';
+            });
+            _openDockTabs = [];
+            currentDockTab = null;
+            const bar = document.getElementById('dockTabBar');
+            if (bar) bar.innerHTML = '';
+            document.querySelectorAll('.tab-pane').forEach(function(p) { p.classList.remove('active-pane'); });
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        function openDockPanel(tabId) {
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) {
+                dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+                setDockWidth(_dockSavedWidth, false);
+            }
+            if (tabId) switchDockTab(tabId);
+        }
+
+        function switchDockTab(tabId) {
+            const meta = DOCK_TAB_META[tabId];
+            if (!meta) return;
+
+            // Ensure dock panel is open and sized properly
+            const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+            if (dock) {
+                dock.classList.remove('collapsed', 'dock-will-minimize', 'is-resizing');
+                setDockWidth(_dockSavedWidth, false);
+            }
+
+            // Add to open tabs if not already there
+            if (!_openDockTabs.includes(tabId)) {
+                _openDockTabs.push(tabId);
+            }
+
+            // Deactivate all panes, activate target
+            document.querySelectorAll('.tab-pane').forEach(function(pane) { pane.classList.remove('active-pane'); });
+            const targetPane = document.getElementById(meta.paneId);
+            if (targetPane) targetPane.classList.add('active-pane');
+
+            // Contrast panel lifecycle
+            if (tabId !== 'contrast' && window.ContrastPanel) {
+                window.ContrastPanel.deactivate();
+            } else if (tabId === 'contrast' && window.ContrastPanel) {
+                window.ContrastPanel.activate(activeViewport);
+            }
+
+            // Sync checkmarks in View menu
+            Object.keys(DOCK_TAB_META).forEach(function(key) {
+                const chk = document.getElementById(DOCK_TAB_META[key].chkId);
+                if (chk) chk.textContent = (_openDockTabs.includes(key)) ? '✓' : '';
+            });
+
+            currentDockTab = tabId;
+
+            // Re-render tab bar
+            _renderDockTabBar();
+
+            // Legacy quick buttons
+            const qDenoise  = document.getElementById('btnQuickDenoise');
+            const qContrast = document.getElementById('btnQuickContrast');
+            if (qDenoise) {
+                qDenoise.style.background   = tabId === 'denoise' ? 'rgba(2,132,199,0.4)' : 'rgba(2,132,199,0.15)';
+                qDenoise.style.borderColor  = tabId === 'denoise' ? '#38bdf8' : 'rgba(2,132,199,0.35)';
+            }
+            if (qContrast) {
+                qContrast.style.background  = tabId === 'contrast' ? 'rgba(2,132,199,0.4)' : 'rgba(2,132,199,0.15)';
+                qContrast.style.borderColor = tabId === 'contrast' ? '#38bdf8' : 'rgba(2,132,199,0.35)';
+            }
+
+            setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+        }
+
+        // Initialize drag-to-resize and drag-to-minimize on dock resizer
+        function initDockResizer() {
+            const resizer = document.getElementById('dockResizer');
+            const dock = document.getElementById('dockPanel');
+            const expandTab = document.getElementById('btnDockExpand');
+            if (!dock) return;
+
+            setDockWidth(_dockSavedWidth, false);
+
+            if (resizer) {
+                let isDragging = false;
+                let startX = 0;
+                let startWidth = 0;
+                const MIN_COLLAPSE_THRESHOLD = 220; // below this width, dragging right will minimize
+
+                function onPointerDown(e) {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    isDragging = true;
+                    startX = e.clientX;
+                    startWidth = dock.getBoundingClientRect().width;
+
+                    dock.classList.add('is-resizing');
+                    document.body.classList.add('is-resizing-dock');
+
+                    window.addEventListener('pointermove', onPointerMove);
+                    window.addEventListener('pointerup', onPointerUp);
+                    window.addEventListener('pointercancel', onPointerUp);
+                    e.preventDefault();
+                }
+
+                function onPointerMove(e) {
+                    if (!isDragging) return;
+                    const currentX = e.clientX;
+                    // Right dock: dragging left (smaller X) increases width; dragging right (larger X) decreases width
+                    const deltaX = startX - currentX;
+                    const newWidth = startWidth + deltaX;
+
+                    if (newWidth < MIN_COLLAPSE_THRESHOLD) {
+                        // User is dragging toward the right edge to minimize!
+                        dock.classList.add('dock-will-minimize');
+                        dock.style.width = Math.max(120, newWidth) + 'px';
+                        dock.style.minWidth = Math.max(120, newWidth) + 'px';
+                    } else {
+                        dock.classList.remove('dock-will-minimize');
+                        setDockWidth(newWidth, false);
+                    }
+                }
+
+                function onPointerUp(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+
+                    dock.classList.remove('is-resizing');
+                    document.body.classList.remove('is-resizing-dock');
+
+                    window.removeEventListener('pointermove', onPointerMove);
+                    window.removeEventListener('pointerup', onPointerUp);
+                    window.removeEventListener('pointercancel', onPointerUp);
+
+                    const currentX = e.clientX;
+                    const deltaX = startX - currentX;
+                    const finalWidth = startWidth + deltaX;
+
+                    if (finalWidth < MIN_COLLAPSE_THRESHOLD || dock.classList.contains('dock-will-minimize')) {
+                        // Minimize manual dengan cara digeser ke kanan!
+                        minimizeDockPanel();
+                    } else {
+                        setDockWidth(finalWidth, true);
+                        dock.classList.remove('dock-will-minimize');
+                    }
+                    setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+                }
+
+                resizer.addEventListener('pointerdown', onPointerDown);
+
+                // Double click resizer to toggle minimize
+                resizer.addEventListener('dblclick', function(e) {
+                    e.preventDefault();
+                    minimizeDockPanel();
+                });
+            }
+
+            // Allow dragging or clicking the floating restore tab on right edge
+            if (expandTab) {
+                let isPulling = false;
+                let pullStartX = 0;
+
+                expandTab.addEventListener('pointerdown', function(e) {
+                    if (e.button !== undefined && e.button !== 0) return;
+                    isPulling = true;
+                    pullStartX = e.clientX;
+                    dock.classList.remove('collapsed');
+                    dock.classList.add('is-resizing');
+                    document.body.classList.add('is-resizing-dock');
+
+                    function onPullMove(pe) {
+                        if (!isPulling) return;
+                        const pullWidth = window.innerWidth - pe.clientX;
+                        if (pullWidth > 150) {
+                            setDockWidth(pullWidth, false);
+                        }
+                    }
+
+                    function onPullUp(pe) {
+                        if (!isPulling) return;
+                        isPulling = false;
+                        dock.classList.remove('is-resizing');
+                        document.body.classList.remove('is-resizing-dock');
+                        window.removeEventListener('pointermove', onPullMove);
+                        window.removeEventListener('pointerup', onPullUp);
+
+                        const totalMove = Math.abs(pe.clientX - pullStartX);
+                        const finalW = window.innerWidth - pe.clientX;
+
+                        if (totalMove < 8) {
+                            // Simple click → restore to saved width
+                            restoreDockPanel();
+                        } else if (finalW < 220) {
+                            // Dragged back to right edge → keep minimized
+                            minimizeDockPanel();
+                        } else {
+                            // Dragged out to a custom width
+                            setDockWidth(finalW, true);
+                            if (_openDockTabs.length > 0 && currentDockTab) {
+                                switchDockTab(currentDockTab);
+                            } else {
+                                openDockPanel('denoise');
+                            }
+                        }
+                        setTimeout(function() { window.dispatchEvent(new Event('resize')); }, 60);
+                    }
+
+                    window.addEventListener('pointermove', onPullMove);
+                    window.addEventListener('pointerup', onPullUp);
+                    e.preventDefault();
+                });
+            }
+        }
+
+        // Initialize dock resizer immediately
+        initDockResizer();
+
+        // Close dock panel on Escape key (if no dialog / input is active)
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                const activeEl = document.activeElement;
+                if (activeEl && ['INPUT', 'TEXTAREA', 'SELECT'].includes(activeEl.tagName)) return;
+                const modal = document.getElementById('dicomTagsModal');
+                if (modal && (modal.style.display === 'flex' || modal.classList.contains('show'))) return;
+                const vmPanel = document.getElementById('viewMenuPanel');
+                if (vmPanel && !vmPanel.hidden) return; // handled by View menu handler
+                const dock = document.getElementById('dockPanel') || document.querySelector('.dock-panel');
+                if (dock && !dock.classList.contains('collapsed')) {
+                    closeDockPanel();
+                }
+            }
+        });
+
+        // Dropdown Menu Controller
+        function toggleDropdown(event, dropdownId) {
+            event.stopPropagation();
+            const dd = document.getElementById(dropdownId);
+            const isOpen = dd.classList.contains('open');
+            closeAllDropdowns();
+            if (!isOpen) dd.classList.add('open');
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.tool-dropdown').forEach(d => d.classList.remove('open'));
+        }
+
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.tool-dropdown')) closeAllDropdowns();
+        });
+
+        // Viewport Selection
+        function selectViewport(id) {
+            if (activeViewport !== id && currentPolygonPoints.length > 0) {
+                currentPolygonPoints = [];
+                polygonHoverPoint = null;
+                isPolygonSnapping = false;
+                renderMeasurements(activeViewport);
+            }
+            activeViewport = id;
+            vp1.classList.toggle('active-cell', id === 1);
+            vp2.classList.toggle('active-cell', id === 2);
+            document.getElementById('btnInvert').classList.toggle('active', vpState[id].inverted);
+            
+            // Update target badge on Denoise Dock
+            const badge = document.getElementById('lblTargetVpBadge');
+            if (badge) {
+                const sName1 = <?php echo json_encode($patientSeries[0]['name'] ?? 'Primary Scan', 15, 512) ?>;
+                const sName2 = <?php echo json_encode($patientSeries[1]['name'] ?? 'Secondary Scan', 15, 512) ?>;
+                if (id === 1) {
+                    badge.innerText = `Target: VP-A (${sName1})`;
+                    badge.style.color = '#38bdf8';
+                    badge.style.borderColor = 'rgba(56, 189, 248, 0.4)';
+                    badge.style.background = 'rgba(2, 132, 199, 0.2)';
+                } else {
+                    badge.innerText = `Target: VP-B (${sName2})`;
+                    badge.style.color = '#10b981';
+                    badge.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    badge.style.background = 'rgba(16, 185, 129, 0.2)';
+                }
+            }
+
+            // Update Contrast Panel if active
+            const cpBadge = document.getElementById('cpTargetBadge');
+            if (cpBadge) cpBadge.textContent = id === 1 ? 'VP-A' : 'VP-B';
+            if (window.ContrastPanel && document.getElementById('paneContrast')?.classList.contains('active-pane')) {
+                window.ContrastPanel.activate(id);
+            }
+
+            updateInspectionButtons();
+            updateTelemetryForViewport(id);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+        }
+
+        function updateInspectionButtons() {
+            const st = vpState[activeViewport];
+            const btnCurtain = document.getElementById('btnCurtainMode');
+            const btnResidual = document.getElementById('btnResidualMode');
+            if (btnCurtain) btnCurtain.classList.toggle('active-mode', !!st.isCurtain);
+            if (btnResidual) btnResidual.classList.toggle('active-mode', !!st.isResidual);
+        }
+
+        function updateTelemetryForViewport(id) {
+            const st = vpState[id];
+            if (st && st.metrics) {
+                if (st.metrics.psnr_db !== undefined && st.metrics.psnr_db !== null) {
+                    document.getElementById('telPsnr').innerText = st.metrics.psnr_db + ' dB';
+                }
+                if (st.metrics.snr_gain_db !== undefined && st.metrics.snr_gain_db !== null) {
+                    document.getElementById('telSnrGain').innerText = st.metrics.snr_gain_db;
+                }
+                if (st.metrics.noise_reduction_pct !== undefined && st.metrics.noise_reduction_pct !== null) {
+                    document.getElementById('telNoiseRed').innerText = st.metrics.noise_reduction_pct;
+                }
+                const inferVal = (st.metrics.infer_ms !== undefined && st.metrics.infer_ms !== null)
+                    ? st.metrics.infer_ms + ' ms'
+                    : (st.metrics.inference_time_ms ? st.metrics.inference_time_ms + ' ms' : (st.metrics.processing_time_ms ? st.metrics.processing_time_ms + ' ms' : '-'));
+                document.getElementById('telLatency').innerText = inferVal;
+
+                const telTotal = document.getElementById('telTotalProc');
+                if (telTotal) {
+                    const totalVal = (st.metrics.total_ms !== undefined && st.metrics.total_ms !== null)
+                        ? st.metrics.total_ms + ' ms'
+                        : (st.metrics.total_process_ms ? st.metrics.total_process_ms + ' ms' : '-');
+                    telTotal.innerText = totalVal;
+                }
+            } else {
+                document.getElementById('telPsnr').innerText = '-';
+                document.getElementById('telSnrGain').innerText = '-';
+                document.getElementById('telNoiseRed').innerText = '-';
+                document.getElementById('telLatency').innerText = '-';
+                const telTotal = document.getElementById('telTotalProc');
+                if (telTotal) telTotal.innerText = '-';
+            }
+        }
+
+        function showToolHint(icon, text) {
+            if (toolHintToast) {
+                toolHintIcon.innerText = icon;
+                toolHintText.innerText = text;
+                toolHintToast.style.display = 'flex';
+            }
+        }
+
+        function hideToolHint() {
+            if (toolHintToast) toolHintToast.style.display = 'none';
+        }
+
+        function setTool(tool) {
+            if (activeTool === 'polygon' && tool !== 'polygon') {
+                currentPolygonPoints = [];
+                polygonHoverPoint = null;
+                isPolygonSnapping = false;
+                renderMeasurements(activeViewport);
+            }
+            activeCircleDrawing = null;
+            isCircleDrawing = false;
+            activeBoxDrawing = null;
+            isBoxDrawing = false;
+            activeEllipseDrawing = null;
+            isEllipseDrawing = false;
+            activeDrawing = null;
+            isMeasuring = false;
+
+            activeTool = tool;
+            document.querySelectorAll('.pacs-navbar .tool-btn, .pacs-toolbar .tool-btn').forEach(btn => {
+                if (btn.id !== 'btnLayoutSingle' && btn.id !== 'btnLayoutDual') {
+                    btn.classList.remove('active');
+                }
+            });
+            document.querySelectorAll('.measure-sub-pill').forEach(btn => btn.classList.remove('active-pill'));
+            vp1.classList.remove('cursor-caliper', 'cursor-polygon', 'cursor-zoom');
+            vp2.classList.remove('cursor-caliper', 'cursor-polygon', 'cursor-zoom');
+
+            const btnMeasureMain = document.getElementById('btnMeasureMain');
+            const lblMeasureTitle = document.getElementById('lblMeasureTitle');
+            const lblMeasureIcon = document.getElementById('lblMeasureIcon');
+
+            if (tool === 'zoom') {
+                tool = 'pan';
+            }
+
+            if (tool === 'pan') {
+                const btnPan = document.getElementById('btnPan');
+                if (btnPan) btnPan.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Alat Ukur';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '📐';
+                hideToolHint();
+            } else if (tool === 'circle') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Lingkaran';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '⭕';
+                const pill = document.getElementById('pillToolCircle');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-caliper');
+                vp2.classList.add('cursor-caliper');
+                showToolHint('⭕', 'Lingkaran Sempurna (1:1): Sentuh & geser diagonal untuk mengukur nodul/kista bulat (Ø Diameter & Area).');
+                switchDockTab('measure');
+            } else if (tool === 'caliper') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Caliper';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '📏';
+                const pill = document.getElementById('pillToolCaliper');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-caliper');
+                vp2.classList.add('cursor-caliper');
+                showToolHint('📏', 'Linear Caliper Aktif: Sentuh/klik dan geser untuk menarik garis ukur 2-titik (D1, D2).');
+                switchDockTab('measure');
+            } else if (tool === 'ellipse') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Oval';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '🥚';
+                const pill = document.getElementById('pillToolEllipse');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-caliper');
+                vp2.classList.add('cursor-caliper');
+                showToolHint('🥚', 'Oval / Ellipse Caliper: Sentuh & geser diagonal untuk mengukur lesi oval/asimetris (D1 x D2 & Area).');
+                switchDockTab('measure');
+            } else if (tool === 'box') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Kotak ROI';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '🔲';
+                const pill = document.getElementById('pillToolBox');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-caliper');
+                vp2.classList.add('cursor-caliper');
+                showToolHint('🔲', 'Box ROI Aktif: Sentuh & geser diagonal untuk membuat kotak area.');
+                switchDockTab('measure');
+            } else if (tool === 'polygon') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'Polygon';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '📐';
+                const pill = document.getElementById('pillToolPolygon');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-polygon');
+                vp2.classList.add('cursor-polygon');
+                showToolHint('📐', 'Polygon ROI: Sentuh/klik titik 1➔2➔3. Dekatkan ke Titik 1 (Magnetik Snap) untuk menutup area.');
+                switchDockTab('measure');
+            } else if (tool === 'ctr') {
+                if (btnMeasureMain) btnMeasureMain.classList.add('active');
+                if (lblMeasureTitle) lblMeasureTitle.innerText = 'CTR';
+                if (lblMeasureIcon) lblMeasureIcon.innerText = '🫀';
+                const pill = document.getElementById('pillToolCtr');
+                if (pill) pill.classList.add('active-pill');
+                vp1.classList.add('cursor-caliper');
+                vp2.classList.add('cursor-caliper');
+                ctrWorkflow.step = 1;
+                ctrWorkflow.heartLine = null;
+                ctrWorkflow.thoraxLine = null;
+                showToolHint('🫀', 'Mode CTR (Langkah 1/2): Tarik garis diameter transversal jantung (A + B).');
+                switchDockTab('measure');
+            }
+        }
+
+        // ==========================================
+        // ADVANCED RESTORATION & DENOISING ENGINE
+        // ==========================================
+        function onEngineChange() {
+            const engine = document.getElementById('selFilterEngine').value;
+            const btn = document.getElementById('btnExecuteDenoise');
+            const lblCategoryTitle = document.getElementById('lblDockCategoryTitle');
+
+            const boxDenoise = document.getElementById('boxDenoiseControls');
+            const boxAi = document.getElementById('boxAiBoneSuppressionCard');
+            const boxEnhance = document.getElementById('boxEnhancementCard');
+            const boxSeg = document.getElementById('boxSegmentationCard');
+            const cardBench = document.getElementById('cardBenchmarkDenoise');
+            const btnResidual = document.getElementById('btnResidualMode');
+            const btnCurtain = document.getElementById('btnCurtainMode');
+
+            // Reset semua card tersembunyi
+            if (boxDenoise) boxDenoise.style.display = 'none';
+            if (boxAi) boxAi.style.display = 'none';
+            if (boxEnhance) boxEnhance.style.display = 'none';
+            if (boxSeg) boxSeg.style.display = 'none';
+            if (cardBench) cardBench.style.display = 'none';
+            if (btnResidual) btnResidual.style.display = 'none';
+
+            if (engine.startsWith('bone_suppression')) {
+                // KATEGORI 4: AI BONE SUPPRESSION
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'AI Bone Suppression (Dual-Engine)';
+                if (boxAi) boxAi.style.display = 'block';
+                if (btnCurtain) btnCurtain.style.flex = '1';
+
+                const lblName = document.getElementById('lblAiCardEngineName');
+                const lblDesc = document.getElementById('lblAiCardDesc');
+                const lblArch = document.getElementById('lblAiCardArch');
+                const lblDev = document.getElementById('lblAiCardDevice');
+
+                if (engine === 'bone_suppression_commercial') {
+                    if (lblName) lblName.innerText = '[AI-01] ALBA-Net (Bone Suppression)';
+                    if (lblDesc) {
+                        lblDesc.innerText = '';
+                        lblDesc.style.display = 'none';
+                    }
+                    if (lblArch) lblArch.innerText = 'ResNet34-UNet (93.9 MB)';
+                    if (lblDev) lblDev.innerText = 'PyTorch CUDA / CPU (~0.45s)';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan ALBA-Net Bone Suppression</span>';
+                } else {
+                    if (lblName) lblName.innerText = '[AI-02] Qure.ai Research Baseline';
+                    if (lblDesc) {
+                        lblDesc.innerText = '';
+                        lblDesc.style.display = 'none';
+                    }
+                    if (lblArch) lblArch.innerText = 'Qure.ai Decomposed (398.14 MB)';
+                    if (lblDev) lblDev.innerText = 'PyTorch CUDA (~4.5s)';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Qure.ai Research Bone Suppression</span>';
+                }
+            } else if (engine.startsWith('enhancement_')) {
+                // KATEGORI 2: IMAGE ENHANCEMENT
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Image Enhancement (Konvensional)';
+                if (boxEnhance) boxEnhance.style.display = 'block';
+                const eTitle = document.getElementById('lblEnhancementTitle');
+                const eDesc = document.getElementById('lblEnhancementDesc');
+
+                if (engine === 'enhancement_clahe') {
+                    if (eTitle) eTitle.innerText = '🔍 CLAHE (Adaptive Histogram Eq.)';
+                    if (eDesc) eDesc.innerText = 'Meningkatkan kontras lokal parenkim paru dan bayangan infiltrat secara adaptif.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan CLAHE Enhancement</span>';
+                } else if (engine === 'enhancement_trabecular') {
+                    if (eTitle) eTitle.innerText = '🦴 Penonjolan Trabekula & Tulang';
+                    if (eDesc) eDesc.innerText = 'Filter unsharp mask spasial frekuensi tinggi untuk mempertegas garis trabekula & fraktur.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan Penonjolan Tulang</span>';
+                } else if (engine === 'enhancement_invert') {
+                    if (eTitle) eTitle.innerText = '🔄 Invert Grayscale (Pembalikan Polaritas)';
+                    if (eDesc) eDesc.innerText = 'Membalik intensitas hitam-putih untuk memperjelas efusi pleura & kalsifikasi halus.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan Invert Grayscale</span>';
+                } else {
+                    if (eTitle) eTitle.innerText = '📐 DICOM VOI LUT Windowing';
+                    if (eDesc) eDesc.innerText = 'Penyesuaian Window Center (Level) dan Window Width standar DICOM PS 3.3/3.4.';
+                    if (btn) btn.innerHTML = '<span>▶ Terapkan DICOM VOI LUT</span>';
+                }
+            } else if (engine.startsWith('segmentation_')) {
+                // KATEGORI 3: ANATOMICAL SEGMENTATION
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Segmentasi Struktur Anatomi';
+                if (boxSeg) boxSeg.style.display = 'block';
+                const sTitle = document.getElementById('lblSegTitle');
+                const sDesc = document.getElementById('lblSegDesc');
+
+                if (engine === 'segmentation_bone') {
+                    if (sTitle) sTitle.innerText = '🦴 Masking Korteks Tulang (Otsu Morphological)';
+                    if (sDesc) sDesc.innerText = 'Isolasi piksel berdensitas tinggi untuk analisis cakupan area tulang toraks.';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Segmentasi Tulang</span>';
+                } else {
+                    if (sTitle) sTitle.innerText = '🫁 Segmentasi Lapangan Paru Bilateral';
+                    if (sDesc) sDesc.innerText = 'Deteksi otomatis batas hemi-diafragma dan parenkim paru kiri-kanan.';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan Segmentasi Paru</span>';
+                }
+            } else {
+                // KATEGORI 1: RESTORASI DENOISING
+                if (lblCategoryTitle) lblCategoryTitle.innerText = 'Restorasi Citra (Denoising)';
+                if (boxDenoise) boxDenoise.style.display = 'block';
+                if (cardBench) cardBench.style.display = 'block';
+                if (btnResidual) btnResidual.style.display = 'inline-block';
+
+                const boxDncnn = document.getElementById('boxDncnnLevelGroup');
+                const boxSliders = document.getElementById('boxSpatialSliders');
+                const lblLat = document.getElementById('telLatency');
+
+                if (engine === 'dl_dncnn') {
+                    if (boxDncnn) boxDncnn.style.display = 'block';
+                    if (boxSliders) boxSliders.style.display = 'none';
+                    if (lblLat) lblLat.innerText = '-';
+                    if (btn) btn.innerHTML = '<span>▶ Jalankan DnCNN (pretrained)</span>';
+                } else {
+                    if (boxDncnn) boxDncnn.style.display = 'none';
+                    if (boxSliders) boxSliders.style.display = 'block';
+                    if (engine === 'nlm') {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan NLM Denoising</span>';
+                    } else if (engine === 'gaussian') {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan Gaussian Smoothing</span>';
+                    } else {
+                        if (lblLat) lblLat.innerText = '-';
+                        if (btn) btn.innerHTML = '<span>▶ Jalankan Bilateral Denoising</span>';
+                    }
+                }
+            }
+        }
+
+
+        function executeAdvancedDenoise() {
+            const targetVp = activeViewport;
+            const btn = document.getElementById('btnExecuteDenoise');
+            const origHtml = btn.innerHTML;
+            const sNameActive = (targetVp === 1) ? <?php echo json_encode($patientSeries[0]['name'] ?? 'Primary', 15, 512) ?> : <?php echo json_encode($patientSeries[1]['name'] ?? 'Secondary', 15, 512) ?>;
+            btn.innerHTML = `⏳ Memproses VP-${targetVp === 1 ? 'A' : 'B'} (${sNameActive})...`;
+            btn.disabled = true;
+
+            const engine = document.getElementById('selFilterEngine').value;
+            const sigmaColor = document.getElementById('rngSigmaColor').value;
+            const sigmaSpace = document.getElementById('rngSigmaSpace').value;
+            const dncnnLevel = document.getElementById('selDncnnLevel') ? document.getElementById('selDncnnLevel').value : 'auto';
+            const targetImgSrc = vpState[targetVp].rawSrc;
+
+            fetch("<?php echo e(route('scans.denoise', $scan->id)); ?>", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+                },
+                body: JSON.stringify({
+                    engine: engine,
+                    level: dncnnLevel,
+                    sigma_color: sigmaColor,
+                    sigma_space: sigmaSpace,
+                    viewport: targetVp,
+                    target_image: targetImgSrc
+                })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data && data.ok === false)) {
+                    const errMsg = (data && (data.error || data.message)) || "Gagal memproses restorasi citra";
+                    throw new Error(errMsg);
+                }
+                return data;
+            })
+            .then(data => {
+                // Tangani respons audit jika bobot model AI benar-benar belum ada (tidak ada fallback)
+                if (data.status === 'info') {
+                    showToolHint('⚠️', `${data.method_name}: Bobot AI tidak ditemukan dan tidak ada fallback tersedia.`);
+                    setTimeout(hideToolHint, 5000);
+                    return;
+                }
+
+                vpState[targetVp].denoisedSrc = data.image_url;
+                vpState[targetVp].residualSrc = data.residual_url;
+                vpState[targetVp].metrics = Object.assign({}, data.metrics || {}, {
+                    infer_ms: (data.infer_ms !== undefined) ? data.infer_ms : (data.metrics ? data.metrics.inference_time_ms : null),
+                    total_ms: (data.total_ms !== undefined) ? data.total_ms : (data.metrics ? data.metrics.total_process_ms : null)
+                });
+                vpState[targetVp].engine = data.engine;
+
+                // Update label dinamis pada Tirai A/B sisi kanan
+                const lblCurtainRight = document.getElementById('curtainLabelRight' + targetVp);
+                if (lblCurtainRight && data.engine) {
+                    lblCurtainRight.innerText = data.engine.toUpperCase();
+                }
+
+                const targetImg = (targetVp === 1) ? img1 : img2;
+                const targetDenoisedImg = (targetVp === 1) ? img1Denoised : img2Denoised;
+
+                if (targetDenoisedImg) {
+                    targetDenoisedImg.src = data.image_url;
+                }
+
+                if (engine.startsWith('bone_suppression')) {
+                    if (!vpState[targetVp].isCurtain) {
+                        toggleCurtainWipe();
+                    } else {
+                        targetImg.src = vpState[targetVp].rawSrc;
+                        if (targetDenoisedImg) {
+                            targetDenoisedImg.style.display = 'block';
+                            applyCurtainSplit(targetVp);
+                        }
+                    }
+                } else if (vpState[targetVp].isCurtain) {
+                    targetImg.src = vpState[targetVp].rawSrc;
+                    if (targetDenoisedImg) {
+                        targetDenoisedImg.style.display = 'block';
+                        applyCurtainSplit(targetVp);
+                    }
+                } else if (vpState[targetVp].isResidual && data.residual_url) {
+                    targetImg.src = data.residual_url;
+                } else {
+                    targetImg.src = data.image_url;
+                }
+
+                updateTransform(targetVp);
+                updateFilter(targetVp);
+                updateTelemetryForViewport(targetVp);
+                updateInspectionButtons();
+
+                const displayTitle = data.method_name || data.engine || 'Pemrosesan';
+                // Jika engine AI menggunakan fallback, tampilkan keterangan tambahan
+                const isFallback = data.details && data.details.is_fallback;
+                if (isFallback) {
+                    showToolHint('🔄', `${displayTitle} berhasil (Fallback ke ALBA-Net: Qure.ai weights belum ada di server)`);
+                    setTimeout(hideToolHint, 5000);
+                } else {
+                    showToolHint('✅', `${displayTitle} berhasil diterapkan pada Viewport ${targetVp === 1 ? 'A' : 'B'} (${sNameActive})!`);
+                    setTimeout(hideToolHint, 3000);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Eror Pemrosesan Citra:\n' + err.message);
+            })
+            .finally(() => {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+            });
+        }
+
+        // ==========================================
+        // MULTI-ALGORITHM BENCHMARK & EXPORT
+        // ==========================================
+        let currentBenchmarkRows = null;
+
+        function executeAlgorithmBenchmark() {
+            const targetVp = activeViewport;
+            const btn = document.getElementById('btnRunBenchmark');
+            const origHtml = btn.innerHTML;
+            btn.innerHTML = `⏳ Menguji 4 Algoritma...`;
+            btn.disabled = true;
+
+            const sigmaColor = document.getElementById('rngSigmaColor') ? document.getElementById('rngSigmaColor').value : 25;
+            const sigmaSpace = document.getElementById('rngSigmaSpace') ? document.getElementById('rngSigmaSpace').value : 20;
+            const targetImgSrc = vpState[targetVp].rawSrc;
+
+            showToolHint('⚡', `Menjalankan komparasi 4 algoritma (Raw, Bilateral, NLM, DnCNN) pada Viewport ${targetVp === 1 ? 'A' : 'B'}...`);
+
+            fetch("<?php echo e(route('scans.benchmark', $scan->id)); ?>", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+                },
+                body: JSON.stringify({
+                    sigma_color: sigmaColor,
+                    sigma_space: sigmaSpace,
+                    viewport: targetVp,
+                    target_image: targetImgSrc
+                })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok || (data && data.ok === false)) {
+                    const errMsg = (data && (data.error || data.message)) || "Gagal memproses benchmark";
+                    throw new Error(errMsg);
+                }
+                return data;
+            })
+            .then(data => {
+                if (data.status === 'success' && data.benchmark_rows) {
+                    currentBenchmarkRows = data.benchmark_rows;
+                    renderBenchmarkTable(data.benchmark_rows);
+                    showToolHint('✅', `Komparasi 4 Algoritma berhasil dieksekusi! Matriks evaluasi siap.`);
+                    setTimeout(hideToolHint, 4000);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Eror Benchmark Komparasi:\n' + err.message);
+            })
+            .finally(() => {
+                btn.innerHTML = origHtml;
+                btn.disabled = false;
+            });
+        }
+
+        function renderBenchmarkTable(rows) {
+            const tbody = document.getElementById('bodyBenchmark');
+            if (!tbody) return;
+            let html = '';
+            rows.forEach(r => {
+                const isDncnn = (r.id === 'dl_dncnn');
+                const isRaw = (r.id === 'raw');
+                const isBilat = (r.id === 'bilateral');
+                const isNlm = (r.id === 'nlm');
+                
+                let colorStyle = '#f1f5f9;';
+                if (isRaw) colorStyle = '#94a3b8;';
+                else if (isBilat) colorStyle = '#38bdf8;';
+                else if (isNlm) colorStyle = '#c084fc;';
+                else if (isDncnn) colorStyle = '#34d399; font-weight: 700;';
+
+                const infTime = r.infer_time || r.latency || '-';
+                const totTime = r.total_time || '-';
+
+                html += `
+                    <tr>
+                        <td style="color: ${colorStyle}">${r.name}</td>
+                        <td style="color: ${colorStyle}">${r.psnr}</td>
+                        <td style="color: ${colorStyle}">${r.ssim}</td>
+                        <td style="color: ${colorStyle}">${r.snr_gain}</td>
+                        <td style="color: ${colorStyle}">${infTime}</td>
+                        <td style="color: ${colorStyle}">${totTime}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        // ==========================================
+        // EXPORT OPTIONS: PDF, EXCEL, AND CSV
+        // ==========================================
+        function getBenchmarkExportData() {
+            if (!currentBenchmarkRows) {
+                alert('Silakan klik tombol "⚡ Uji Komparasi" terlebih dahulu untuk menghitung dan menampilkan matriks evaluasi riil citra ini.');
+                return null;
+            }
+            const rows = currentBenchmarkRows;
+
+            const patientName = "<?php echo e(addslashes($scan->patient_name)); ?>";
+            const patientId = "<?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?>";
+            const modality = "<?php echo e(addslashes($scan->modality)); ?>";
+            const dateStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+            return { rows, patientName, patientId, modality, dateStr };
+        }
+
+        function escapeXml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;');
+        }
+
+        function exportBenchmarkCsv() {
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
+
+            let csv = '\uFEFF'; // UTF-8 BOM for universal spreadsheet compatibility
+            csv += `# ====================================================================\n`;
+            csv += `# HYU PACS - MATRIKS KOMPARASI EVALUASI RESTORASI CITRA MEDIS\n`;
+            csv += `# Pasien: ${patientName} | MRN: ${patientId} | Modalitas: ${modality}\n`;
+            csv += `# Waktu Pengujian: ${dateStr} | Standar Metrik: Wang et al. (2004) & Immerkaer (1996)\n`;
+            csv += `# Catatan Metrik: PSNR & SSIM diukur vs citra masukan tanpa acuan bersih (mengukur deviasi/perubahan spasial). SNR Gain & Estimasi Penurunan Derau (Immerkaer 1996) juga naik bila citra terlalu dihaluskan (bukan ukuran kualitas restorasi tunggal).\n`;
+            csv += `# ====================================================================\n\n`;
+            csv += `Metode Algoritma,PSNR vs Citra Masukan (dB),SSIM vs citra masukan,SNR Gain (estimasi tanpa acuan) (dB),Estimasi Penurunan Derau (%),Waktu Inferensi (ms),Total Proses (ms)\n`;
+
+            rows.forEach(r => {
+                const cleanPsnr = (r.psnr || '-').replace(' dB', '');
+                const cleanSnrGain = (r.snr_gain || '0').replace(' dB', '');
+                const cleanNoise = (r.noise_red || '-').replace('%', '');
+                const cleanInfer = (r.infer_time || r.latency || '0').replace(' ms', '');
+                const cleanTotal = (r.total_time || '-').replace(' ms', '');
+                csv += `"${r.name}",${cleanPsnr},${r.ssim},${cleanSnrGain},${cleanNoise},${cleanInfer},${cleanTotal}\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Tabel_Komparasi_Denoising_${patientId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToolHint('📥', 'File CSV Matriks Komparasi (.csv) berhasil diunduh!');
+            setTimeout(hideToolHint, 3000);
+        }
+
+        function exportBenchmarkExcel() {
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
+
+            let xml = '<' + '?xml version="1.0" encoding="UTF-8"?>\n' +
+                '<' + '?mso-application progid="Excel.Sheet"?>\n' +
+                `<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <DocumentProperties xmlns="urn:schemas-microsoft-com:office:office">
+  <Title>Matriks Evaluasi Restorasi Citra Medis</Title>
+  <Author>Hyu PACS Workstation</Author>
+  <Company>Cahaya Diagnostic Centre</Company>
+ </DocumentProperties>
+ <Styles>
+  <Style ss:ID="Default" ss:Name="Normal">
+   <Alignment ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Color="#1E293B"/>
+  </Style>
+  <Style ss:ID="TitleHeader">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="13" ss:Color="#FFFFFF" ss:Bold="1"/>
+   <Interior ss:Color="#0F172A" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="SubHeader">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Color="#94A3B8"/>
+   <Interior ss:Color="#0F172A" ss:Pattern="Solid"/>
+  </Style>
+  <Style ss:ID="MetaLabel">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Bold="1" ss:Color="#334155"/>
+   <Interior ss:Color="#F1F5F9" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="MetaValue">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9" ss:Color="#0F172A"/>
+   <Interior ss:Color="#FFFFFF" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#CBD5E1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="TableHeader">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="10" ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#0284C7" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#0369A1"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataLeft">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Color="#0F172A"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Color="#0F172A"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E8F0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataAiLeft">
+   <Alignment ss:Horizontal="Left" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Bold="1" ss:Color="#047857"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+   </Borders>
+  </Style>
+  <Style ss:ID="DataAiCenter">
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+   <Font ss:FontName="Segoe UI" ss:Size="9.5" ss:Bold="1" ss:Color="#047857"/>
+   <Interior ss:Color="#ECFDF5" ss:Pattern="Solid"/>
+   <Borders>
+    <Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+    <Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#A7F3D0"/>
+   </Borders>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Matriks Evaluasi">
+  <Table ss:DefaultRowHeight="20">
+   <Column ss:Width="200"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="120"/>
+   <Column ss:Width="150"/>
+   <Column ss:Width="140"/>
+   <Column ss:Width="105"/>
+   <Column ss:Width="100"/>
+
+   <Row ss:Height="26">
+    <Cell ss:MergeAcross="6" ss:StyleID="TitleHeader"><Data ss:Type="String">CAHAYA DIAGNOSTIC CENTRE (CDC) - HYU PACS WORKSTATION</Data></Cell>
+   </Row>
+   <Row ss:Height="18">
+    <Cell ss:MergeAcross="6" ss:StyleID="SubHeader"><Data ss:Type="String">Laporan Hasil Matriks Komparasi Evaluasi Restorasi &amp; Denoising Citra Medis</Data></Cell>
+   </Row>
+   <Row ss:Height="10"></Row>
+
+   <Row>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Nama Pasien</Data></Cell>
+    <Cell ss:MergeAcross="2" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientName)}</Data></Cell>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Modalitas</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(modality)}</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">No. Rekam Medis (MRN)</Data></Cell>
+    <Cell ss:MergeAcross="2" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(patientId)}</Data></Cell>
+    <Cell ss:StyleID="MetaLabel"><Data ss:Type="String">Waktu Pengujian</Data></Cell>
+    <Cell ss:MergeAcross="1" ss:StyleID="MetaValue"><Data ss:Type="String">${escapeXml(dateStr)}</Data></Cell>
+   </Row>
+   <Row ss:Height="12"></Row>
+
+   <Row ss:Height="24">
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Metode Algoritma</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">PSNR vs Masukan (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SSIM vs Citra Masukan</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">SNR Gain (estimasi tanpa acuan) (dB)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Estimasi Penurunan Derau (%)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Waktu Inferensi (ms)</Data></Cell>
+    <Cell ss:StyleID="TableHeader"><Data ss:Type="String">Total Proses (ms)</Data></Cell>
+   </Row>`;
+
+            rows.forEach(r => {
+                const isAi = (r.name || '').includes('DnCNN') || (r.id === 'dl_dncnn');
+                const styleL = isAi ? 'DataAiLeft' : 'DataLeft';
+                const styleC = isAi ? 'DataAiCenter' : 'DataCenter';
+
+                const cleanPsnr = (r.psnr || '-').replace(' dB', '');
+                const cleanSnr = (r.snr_gain || '0').replace(' dB', '');
+                const cleanNoise = (r.noise_red || '-').replace('%', '');
+                const cleanInfer = (r.infer_time || r.latency || '0').replace(' ms', '');
+                const cleanTotal = (r.total_time || '-').replace(' ms', '');
+
+                xml += `\n   <Row ss:Height="21">
+    <Cell ss:StyleID="${styleL}"><Data ss:Type="String">${escapeXml(r.name)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanPsnr)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="Number">${r.ssim}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanSnr)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanNoise)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanInfer)}</Data></Cell>
+    <Cell ss:StyleID="${styleC}"><Data ss:Type="String">${escapeXml(cleanTotal)}</Data></Cell>
+   </Row>`;
+            });
+
+            xml += `\n   <Row ss:Height="12"></Row>
+   <Row>
+    <Cell ss:MergeAcross="6"><Data ss:Type="String">Catatan Metrik: PSNR &amp; SSIM dihitung vs citra masukan tanpa acuan bersih. SNR Gain &amp; Penurunan Derau (Immerkaer 1996) juga naik bila citra terlalu dihaluskan (bukan ukuran kualitas restorasi tunggal).</Data></Cell>
+   </Row>
+   <Row>
+    <Cell ss:MergeAcross="6"><Data ss:Type="String">Status: Terverifikasi oleh Sistem Hyu PACS • Dokumen Resmi Hasil Radiologi</Data></Cell>
+   </Row>
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <Selected/>
+   <DoNotDisplayGridlines/>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>`;
+
+            const blob = new Blob([xml], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Tabel_Komparasi_Denoising_${patientId}.xls`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToolHint('📊', 'File Excel Matriks Komparasi (.xls) berhasil diunduh!');
+            setTimeout(hideToolHint, 3000);
+        }
+
+        function exportBenchmarkPdf() {
+            const expData = getBenchmarkExportData();
+            if (!expData) return;
+            const { rows, patientName, patientId, modality, dateStr } = expData;
+
+            // A4 dimensions: 595.28 x 841.89 points
+            const pageWidth = 595.28;
+            const pageHeight = 841.89;
+
+            let contentStream = '';
+            
+            function escapePdfText(str) {
+                if (str === null || str === undefined) return '';
+                let s = String(str)
+                    .replace(/Δ/g, 'Delta ')
+                    .replace(/µ/g, 'u')
+                    .replace(/[^\x20-\x7E]/g, ' ');
+                return s.replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)');
+            }
+
+            function addText(text, x, y, size, isBold, r, g, b) {
+                size = size || 10;
+                r = (r !== undefined) ? r : 0;
+                g = (g !== undefined) ? g : 0;
+                b = (b !== undefined) ? b : 0;
+                const escaped = escapePdfText(text);
+                const font = isBold ? '/F2' : '/F1';
+                contentStream += `BT ${font} ${size} Tf ${r} ${g} ${b} rg 1 0 0 1 ${x} ${y} Tm (${escaped}) Tj ET\n`;
+            }
+
+            function addRect(x, y, w, h, fillR, fillG, fillB, stroke) {
+                fillR = (fillR !== undefined) ? fillR : 0.9;
+                fillG = (fillG !== undefined) ? fillG : 0.9;
+                fillB = (fillB !== undefined) ? fillB : 0.9;
+                contentStream += `${fillR} ${fillG} ${fillB} rg\n`;
+                contentStream += `${x} ${y} ${w} ${h} re f\n`;
+                if (stroke) {
+                    contentStream += `0 0 0 RG 0.5 w ${x} ${y} ${w} ${h} re S\n`;
+                }
+            }
+
+            function addLine(x1, y1, x2, y2, r, g, b, width) {
+                r = (r !== undefined) ? r : 0.7;
+                g = (g !== undefined) ? g : 0.7;
+                b = (b !== undefined) ? b : 0.7;
+                width = width || 1;
+                contentStream += `${r} ${g} ${b} RG ${width} w ${x1} ${y1} m ${x2} ${y2} l S\n`;
+            }
+
+            // Header Banner
+            addRect(40, 770, 515, 45, 0.05, 0.1, 0.18);
+            addText("CAHAYA DIAGNOSTIC CENTRE (CDC)", 55, 795, 14, true, 0.22, 0.74, 0.97);
+            addText("Hyu PACS - Matriks Komparasi Evaluasi Restorasi Citra Medis", 55, 780, 9, false, 0.8, 0.85, 0.9);
+
+            // Patient Info Box
+            addRect(40, 700, 515, 60, 0.96, 0.97, 0.99, true);
+            addText("INFORMASI PASIEN & MODALITAS", 50, 745, 9, true, 0.1, 0.2, 0.35);
+            
+            addText("Nama Pasien : " + patientName, 50, 728, 9, false, 0.2, 0.2, 0.2);
+            addText("MRN / No ID : " + patientId, 50, 712, 9, false, 0.2, 0.2, 0.2);
+            addText("Modalitas   : " + modality, 320, 728, 9, false, 0.2, 0.2, 0.2);
+            addText("Tanggal Uji : " + dateStr, 320, 712, 9, false, 0.2, 0.2, 0.2);
+
+            // Table Header
+            let tableY = 665;
+            addRect(40, tableY - 5, 515, 22, 0.1, 0.15, 0.25);
+            addText("Metode Algoritma", 44, tableY + 2, 8, true, 1, 1, 1);
+            addText("PSNR (In)", 180, tableY + 2, 8, true, 1, 1, 1);
+            addText("SSIM vs In", 235, tableY + 2, 8, true, 1, 1, 1);
+            addText("SNR Gain (Est)", 295, tableY + 2, 8, true, 1, 1, 1);
+            addText("Est. Penurunan", 365, tableY + 2, 8, true, 1, 1, 1);
+            addText("Inferensi", 435, tableY + 2, 8, true, 1, 1, 1);
+            addText("Total Proc", 495, tableY + 2, 8, true, 1, 1, 1);
+
+            // Table Rows
+            let currentY = tableY - 26;
+            rows.forEach((r, idx) => {
+                const isAi = (r.name || '').includes('DnCNN') || (r.id === 'dl_dncnn');
+                if (isAi) {
+                    addRect(40, currentY - 5, 515, 20, 0.9, 0.98, 0.93);
+                } else if (idx % 2 === 1) {
+                    addRect(40, currentY - 5, 515, 20, 0.97, 0.97, 0.98);
+                }
+                
+                addLine(40, currentY - 5, 555, currentY - 5, 0.85, 0.85, 0.88, 0.5);
+
+                const textColor = isAi ? [0.05, 0.5, 0.3] : [0.15, 0.15, 0.15];
+                const infTime = r.infer_time || r.latency || '-';
+                const totTime = r.total_time || '-';
+                addText(r.name, 44, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.psnr || '-', 180, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(String(r.ssim), 235, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.snr_gain || '0 dB', 295, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(r.noise_red || '-', 365, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(infTime, 435, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+                addText(totTime, 495, currentY + 1, 7.5, isAi, textColor[0], textColor[1], textColor[2]);
+
+                currentY -= 21;
+            });
+
+            // Outer Table Border
+            addLine(40, tableY + 17, 555, tableY + 17, 0.2, 0.3, 0.4, 1);
+            addLine(40, currentY, 555, currentY, 0.2, 0.3, 0.4, 1);
+
+            // Scientific Citation & Notes
+            currentY -= 20;
+            addText("Catatan Metodologi Ilmiah Evaluasi Citra Medis:", 40, currentY, 9, true, 0.2, 0.3, 0.45);
+            currentY -= 14;
+            addText("1. PSNR vs Citra Masukan & SSIM vs Citra Masukan: Diukur terhadap citra input tanpa ground truth bersih.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
+            currentY -= 12;
+            addText("2. SNR Gain (estimasi tanpa acuan) & Est. Penurunan Derau: Estimator Immerkaer (1996); juga naik bila citra terlalu dihaluskan.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
+            currentY -= 12;
+            addText("3. Waktu Inferensi: Waktu eksekusi komputasi filter/model murni. Total Proses: Keseluruhan siklus request-to-disk.", 40, currentY, 7.5, false, 0.35, 0.4, 0.45);
+
+            // Footer / Digital Signature Stamp
+            currentY -= 45;
+            addRect(360, currentY - 10, 195, 55, 0.98, 0.98, 1, true);
+            addText("VALIDASI RADIOLOGI KLINIS", 370, currentY + 30, 8, true, 0.1, 0.3, 0.6);
+            addText("Tervalidasi secara Elektronik", 370, currentY + 18, 7.5, false, 0.1, 0.6, 0.3);
+            addText("Hyu PACS Workstation Medical Hub", 370, currentY + 7, 7, false, 0.5, 0.5, 0.5);
+            addText("Dokumen Resmi Berkas Radiologi CDC", 370, currentY - 4, 7, false, 0.5, 0.5, 0.5);
+
+            // System Footer
+            addText("Dokumen ini dicetak/diekspor secara otomatis dari sistem Hyu PACS. Informasi bersifat Rahasia Medis.", 100, 30, 7.5, false, 0.6, 0.6, 0.6);
+
+            const encoder = new TextEncoder();
+            const streamBytes = encoder.encode(contentStream);
+            const streamLength = streamBytes.length;
+
+            const objects = [];
+            objects.push(`1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n`);
+            objects.push(`2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n`);
+            objects.push(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Contents 7 0 R /Resources 4 0 R >>\nendobj\n`);
+            objects.push(`4 0 obj\n<< /Font << /F1 5 0 R /F2 6 0 R >> >>\nendobj\n`);
+            objects.push(`5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n`);
+            objects.push(`6 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>\nendobj\n`);
+            objects.push(`7 0 obj\n<< /Length ${streamLength} >>\nstream\n${contentStream}endstream\nendobj\n`);
+
+            let pdf = `%PDF-1.4\n%\xE2\xE3\xCF\xD3\n`;
+            const xrefOffsets = [0];
+
+            objects.forEach(obj => {
+                xrefOffsets.push(encoder.encode(pdf).length);
+                pdf += obj;
+            });
+
+            const startXref = encoder.encode(pdf).length;
+            pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+            for (let i = 1; i <= objects.length; i++) {
+                pdf += String(xrefOffsets[i]).padStart(10, '0') + ` 00000 n \n`;
+            }
+            pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${startXref}\n%%EOF\n`;
+
+            const blob = new Blob([encoder.encode(pdf)], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `Tabel_Komparasi_Denoising_${patientId}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+            showToolHint('📄', 'File PDF Matriks Komparasi (.pdf) berhasil diunduh!');
+            setTimeout(hideToolHint, 3000);
+        }
+
+        function applyCurtainSplit(vpId, pct) {
+            if (pct === undefined || pct === null) {
+                pct = (vpState[vpId] && vpState[vpId].curtainPos !== undefined) ? vpState[vpId].curtainPos : 50;
+            }
+            if (vpState[vpId]) vpState[vpId].curtainPos = pct;
+
+            const divider = document.getElementById('curtainDivider' + vpId);
+            if (divider) divider.style.left = `${pct}%`;
+
+            const targetDenoisedImg = (vpId === 1) ? img1Denoised : img2Denoised;
+            const baseImg = (vpId === 1) ? img1 : img2;
+            const vpEl = (vpId === 1) ? vp1 : vp2;
+
+            if (targetDenoisedImg && baseImg && vpEl) {
+                const vpRect = vpEl.getBoundingClientRect();
+                const imgRect = baseImg.getBoundingClientRect();
+
+                let imgPct = pct;
+                if (imgRect.width > 0 && vpRect.width > 0) {
+                    const dividerX = vpRect.left + (vpRect.width * (pct / 100));
+                    imgPct = ((dividerX - imgRect.left) / imgRect.width) * 100;
+                    imgPct = Math.max(0, Math.min(100, imgPct));
+                }
+                const st = vpState[vpId];
+                if (st && st.flipH) {
+                    imgPct = 100 - imgPct;
+                }
+                targetDenoisedImg.style.clipPath = `polygon(${imgPct.toFixed(2)}% 0, 100% 0, 100% 100%, ${imgPct.toFixed(2)}% 100%)`;
+            }
+        }
+
+        function toggleCurtainWipe() {
+            const targetVp = activeViewport;
+            const st = vpState[targetVp];
+            const cContainer = (targetVp === 1) ? curtainContainer1 : curtainContainer2;
+            const targetImg = (targetVp === 1) ? img1 : img2;
+            const targetDenoisedImg = (targetVp === 1) ? img1Denoised : img2Denoised;
+
+            st.isCurtain = !st.isCurtain;
+
+            if (st.isCurtain) {
+                // Matikan mode residu jika aktif di viewport ini
+                if (st.isResidual) {
+                    st.isResidual = false;
+                }
+
+                if (!st.denoisedSrc) {
+                    st.isCurtain = false;
+                    updateInspectionButtons();
+                    if (confirm(`Viewport ${targetVp === 1 ? 'A (Thorax)' : 'B (USG)'} belum difilter. Jalankan filter denoising sekarang untuk mengaktifkan Tirai A/B Wipe?`)) {
+                        executeAdvancedDenoise();
+                    }
+                    return;
+                }
+
+                if (cContainer) cContainer.style.display = 'block';
+                targetImg.src = st.rawSrc;
+                if (targetDenoisedImg) {
+                    targetDenoisedImg.src = st.denoisedSrc;
+                    targetDenoisedImg.style.display = 'block';
+                    targetDenoisedImg.onload = () => { if (st.isCurtain) applyCurtainSplit(targetVp); };
+                    applyCurtainSplit(targetVp, st.curtainPos || 50);
+                }
+                if (targetImg) {
+                    targetImg.onload = () => { if (st.isCurtain) applyCurtainSplit(targetVp); };
+                }
+                updateTransform(targetVp);
+                updateFilter(targetVp);
+
+                showToolHint('⮂', `Mode Tirai A/B VP-${targetVp === 1 ? 'A' : 'B'}: Geser garis pembatas untuk komparasi Citra Asli (Kiri) vs Denoised (Kanan).`);
+            } else {
+                if (cContainer) cContainer.style.display = 'none';
+                if (targetDenoisedImg) targetDenoisedImg.style.display = 'none';
+                targetImg.src = st.denoisedSrc || st.rawSrc;
+                hideToolHint();
+            }
+            updateInspectionButtons();
+        }
+
+        function toggleResidualMap() {
+            const targetVp = activeViewport;
+            const st = vpState[targetVp];
+            const targetImg = (targetVp === 1) ? img1 : img2;
+
+            st.isResidual = !st.isResidual;
+
+            if (st.isResidual) {
+                // Matikan mode tirai jika aktif di viewport ini
+                if (st.isCurtain) {
+                    st.isCurtain = false;
+                    const cContainer = (targetVp === 1) ? curtainContainer1 : curtainContainer2;
+                    if (cContainer) cContainer.style.display = 'none';
+                    const imgDen = (targetVp === 1) ? img1Denoised : img2Denoised;
+                    if (imgDen) imgDen.style.display = 'none';
+                }
+
+                if (st.residualSrc) {
+                    targetImg.src = st.residualSrc;
+                    showToolHint('🔍', `Peta Residu Noise VP-${targetVp === 1 ? 'A' : 'B'} (|Raw - Processed|): Menampilkan derau kuantum/speckle yang diekstraksi.`);
+                } else {
+                    st.isResidual = false;
+                    updateInspectionButtons();
+                    if (confirm(`Viewport ${targetVp === 1 ? 'A (Thorax)' : 'B (USG)'} belum difilter. Jalankan filter denoising sekarang untuk membuat Peta Residu?`)) {
+                        executeAdvancedDenoise();
+                    }
+                }
+            } else {
+                targetImg.src = st.denoisedSrc || st.rawSrc;
+                hideToolHint();
+            }
+            updateInspectionButtons();
+        }
+
+        // Curtain Slider Dragging (Support Touch & Mouse on VP1 & VP2)
+        [1, 2].forEach(vpId => {
+            const divider = document.getElementById('curtainDivider' + vpId);
+            if (divider) {
+                divider.addEventListener('mousedown', (e) => {
+                    activeDraggingCurtainVp = vpId;
+                    e.stopPropagation();
+                });
+                divider.addEventListener('touchstart', (e) => {
+                    activeDraggingCurtainVp = vpId;
+                    e.stopPropagation();
+                    if (e.cancelable) e.preventDefault();
+                }, { passive: false });
+            }
+        });
+
+        // Windowing Presets
+        function applyPreset(preset) {
+            const st = vpState[activeViewport];
+            const lblPreset = document.getElementById('lblActivePreset');
+            if (preset === 'default') {
+                st.brightness = 100; st.contrast = 100;
+                lblWwWl.innerText = 'WW: 400 | WL: 40 (Default)';
+                if (lblPreset) lblPreset.innerText = 'Window: Default';
+            } else if (preset === 'lung') {
+                st.brightness = 130; st.contrast = 150;
+                lblWwWl.innerText = 'WW: 1500 | WL: -600 (Lung)';
+                if (lblPreset) lblPreset.innerText = 'Window: Lung';
+            } else if (preset === 'bone') {
+                st.brightness = 90; st.contrast = 200;
+                lblWwWl.innerText = 'WW: 2500 | WL: 480 (Bone)';
+                if (lblPreset) lblPreset.innerText = 'Window: Bone';
+            } else if (preset === 'soft') {
+                st.brightness = 110; st.contrast = 115;
+                lblWwWl.innerText = 'WW: 350 | WL: 50 (Soft Tissue)';
+                if (lblPreset) lblPreset.innerText = 'Window: Soft Tissue';
+            }
+            updateFilter(activeViewport);
+        }
+
+        function rotateImage() {
+            vpState[activeViewport].rotation = (vpState[activeViewport].rotation + 90) % 360;
+            updateTransform(activeViewport);
+        }
+
+        function flipHorizontal() {
+            vpState[activeViewport].flipH = !vpState[activeViewport].flipH;
+            updateTransform(activeViewport);
+        }
+
+        function flipVertical() {
+            vpState[activeViewport].flipV = !vpState[activeViewport].flipV;
+            updateTransform(activeViewport);
+        }
+
+        function toggleInvert() {
+            const st = vpState[activeViewport];
+            st.inverted = !st.inverted;
+            document.getElementById('btnInvert').classList.toggle('active', st.inverted);
+            updateFilter(activeViewport);
+        }
+
+        function resetViewer() {
+            selectedAnnotation = null;
+            [1, 2].forEach(id => {
+                vpState[id] = { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: vpState[id].rawSrc, denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' };
+                const cContainer = (id === 1) ? curtainContainer1 : curtainContainer2;
+                const imgDen = (id === 1) ? img1Denoised : img2Denoised;
+                if (cContainer) cContainer.style.display = 'none';
+                if (imgDen) imgDen.style.display = 'none';
+                updateTransform(id);
+                updateFilter(id);
+            });
+            img1.src = vpState[1].rawSrc;
+            img2.src = vpState[2].rawSrc;
+            clearAllCalipers();
+            setTool('pan');
+            document.getElementById('btnInvert').classList.remove('active');
+            if (window.ContrastPanel) window.ContrastPanel.onResetViewer();
+            lblWwWl.innerText = 'WW: 400 | WL: 40 (Default)';
+            document.getElementById('lblActivePreset').innerText = 'Window: Default';
+            updateInspectionButtons();
+            updateTelemetryForViewport(activeViewport);
+        }
+
+        function updateTransform(id) {
+            const stage = (id === 1) ? document.getElementById('vpStageLayer1') : document.getElementById('vpStageLayer2');
+            if (!stage) return;
+            const st = vpState[id];
+            const transformStr = `translate(${st.translateX}px, ${st.translateY}px) rotate(${st.rotation}deg) scaleX(${st.flipH ? -1 : 1}) scaleY(${st.flipV ? -1 : 1}) scale(${st.zoom})`;
+            stage.style.transform = transformStr;
+            if (id === 1 && lblZoom) lblZoom.innerText = Math.round(st.zoom * 100) + '%';
+            else {
+                const lbl2 = document.getElementById('lblZoom2');
+                if (lbl2) lbl2.innerText = Math.round(st.zoom * 100) + '%';
+            }
+            if (st.isCurtain) {
+                applyCurtainSplit(id);
+            }
+        }
+
+        function updateFilter(id) {
+            const img = (id === 1) ? img1 : img2;
+            const imgDenoised = (id === 1) ? img1Denoised : img2Denoised;
+            if (!img) return;
+            const st = vpState[id];
+            const filterStr = `invert(${st.inverted ? 1 : 0}) brightness(${st.brightness}%) contrast(${st.contrast}%)`;
+            img.style.filter = filterStr;
+            if (imgDenoised) imgDenoised.style.filter = filterStr;
+        }
+
+        // ==========================================
+        // MEASUREMENTS: CALIPER, BOX, POLYGON & CTR
+        // ==========================================
+        function calculatePolygonMetrics(points) {
+            const n = points.length;
+            if (n < 3) return null;
+            let areaPx = 0;
+            let perimeterPx = 0;
+            for (let i = 0; i < n; i++) {
+                const j = (i + 1) % n;
+                areaPx += points[i].x * points[j].y;
+                areaPx -= points[j].y * points[i].x;
+                const dx = points[j].x - points[i].x;
+                const dy = points[j].y - points[i].y;
+                perimeterPx += Math.sqrt(dx * dx + dy * dy);
+            }
+            areaPx = Math.abs(areaPx) / 2;
+            const areaCm2 = (areaPx * 0.08 * 0.08).toFixed(2);
+            const perimeterCm = (perimeterPx * 0.08).toFixed(2);
+            let cx = 0, cy = 0;
+            points.forEach(p => { cx += p.x; cy += p.y; });
+            cx = Math.round(cx / n);
+            cy = Math.round(cy / n);
+            return { areaCm2, perimeterCm, areaPx: Math.round(areaPx), perimeterPx: Math.round(perimeterPx), cx, cy };
+        }
+
+        function finishPolygon(vpId) {
+            if (currentPolygonPoints.length < 3) {
+                currentPolygonPoints = [];
+                polygonHoverPoint = null;
+                isPolygonSnapping = false;
+                renderMeasurements(vpId);
+                updateUndoRedoButtons();
+                return;
+            }
+            pushMeasurementHistory(vpId);
+            const metrics = calculatePolygonMetrics(currentPolygonPoints);
+            const countRoi = measurements[vpId].filter(m => m.type === 'polygon').length + 1;
+            measurements[vpId].push({
+                type: 'polygon',
+                points: [...currentPolygonPoints],
+                areaCm2: metrics.areaCm2,
+                perimeterCm: metrics.perimeterCm,
+                cx: metrics.cx,
+                cy: metrics.cy,
+                label: 'ROI-' + countRoi
+            });
+            currentPolygonPoints = [];
+            polygonHoverPoint = null;
+            isPolygonSnapping = false;
+            renderMeasurements(vpId);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('📐', `ROI tersimpan: ${metrics.areaCm2} cm² (Kll: ${metrics.perimeterCm} cm)`);
+        }
+
+        function selectMeasurement(vpId, idx) {
+            selectViewport(vpId);
+            if (selectedAnnotation && selectedAnnotation.vpId === vpId && selectedAnnotation.index === idx) {
+                return;
+            }
+            selectedAnnotation = { vpId: vpId, index: idx };
+            renderMeasurements(vpId);
+            updateMeasurementsPanel();
+
+            // Scroll corresponding measurement in list into view
+            setTimeout(() => {
+                const itemEl = document.getElementById(`measureItem_${vpId}_${idx}`);
+                if (itemEl) {
+                    itemEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            }, 50);
+        }
+
+        function deselectMeasurement() {
+            if (selectedAnnotation) {
+                const prevVp = selectedAnnotation.vpId;
+                selectedAnnotation = null;
+                renderMeasurements(prevVp);
+                updateMeasurementsPanel();
+            }
+        }
+
+        function renderMeasurements(vpId) {
+            const targetSvg = (vpId === 1) ? svgMeasure1 : svgMeasure2;
+            if (!targetSvg) return;
+            let html = '';
+
+            measurements[vpId].forEach((m, idx) => {
+                const isSelected = (selectedAnnotation && selectedAnnotation.vpId === vpId && selectedAnnotation.index === idx);
+                const strokeColor = isSelected ? '#38bdf8' : '#facc15';
+                const strokeW = isSelected ? 2.8 : 2;
+                const glowFilter = isSelected ? 'filter="drop-shadow(0 0 7px rgba(56, 189, 248, 0.85))"' : '';
+
+                if (m.type === 'circle') {
+                    const badgeY = (m.cy - m.r - 14 >= 14) ? (m.cy - m.r - 14) : (m.cy + m.r + 14);
+                    const deleteBtnY = (badgeY > m.cy) ? (badgeY + 26) : (badgeY - 26);
+                    html += `
+                        <g id="circle-group-${vpId}-${idx}">
+                            <!-- Invisible Wide Hit-Test Circle Area -->
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
+                            <!-- True Circle Body (1:1 Locked) -->
+                            <circle cx="${m.cx}" cy="${m.cy}" r="${m.r}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            
+                            <!-- Crosshair Axes -->
+                            <line x1="${m.cx - m.r}" y1="${m.cy}" x2="${m.cx + m.r}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx}" y1="${m.cy - m.r}" x2="${m.cx}" y2="${m.cy + m.r}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            
+                            <!-- Center Crosshair Marker -->
+                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="2" />
+                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="${strokeColor}" stroke-width="2" />
+                            
+                            <!-- 4 Cardinal Boundary Points -->
+                            <circle cx="${m.cx - m.r}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx + m.r}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy - m.r}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy + m.r}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            
+                            <!-- Compact Rim Badge (Anti-Occlusion) -->
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-65" y="-11" width="130" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    ${m.label}: &Oslash; ${m.diamCm} cm &bull; ${m.areaCm2} cm²
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
+                        </g>
+                    `;
+                } else if (m.type === 'ellipse') {
+                    const badgeY = (m.cy - m.ry - 14 >= 14) ? (m.cy - m.ry - 14) : (m.cy + m.ry + 14);
+                    const deleteBtnY = (badgeY > m.cy) ? (badgeY + 26) : (badgeY - 26);
+                    html += `
+                        <g id="ellipse-group-${vpId}-${idx}">
+                            <!-- Invisible Wide Hit-Test Ellipse Area -->
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx + 8}" ry="${m.ry + 8}" fill="transparent" stroke="transparent" stroke-width="16" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
+                            <!-- Ellipse Body -->
+                            <ellipse cx="${m.cx}" cy="${m.cy}" rx="${m.rx}" ry="${m.ry}" fill="rgba(250, 204, 21, ${isSelected ? '0.28' : '0.16'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            
+                            <!-- Orthogonal Diameter Lines (Major & Minor Axis) -->
+                            <line x1="${m.cx - m.rx}" y1="${m.cy}" x2="${m.cx + m.rx}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            <line x1="${m.cx}" y1="${m.cy - m.ry}" x2="${m.cx}" y2="${m.cy + m.ry}" stroke="${strokeColor}" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.85" />
+                            
+                            <!-- Center Crosshair Marker -->
+                            <line x1="${m.cx - 4}" y1="${m.cy}" x2="${m.cx + 4}" y2="${m.cy}" stroke="${strokeColor}" stroke-width="2" />
+                            <line x1="${m.cx}" y1="${m.cy - 4}" x2="${m.cx}" y2="${m.cy + 4}" stroke="${strokeColor}" stroke-width="2" />
+                            
+                            <!-- 4 Cardinal Boundary Points -->
+                            <circle cx="${m.cx - m.rx}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx + m.rx}" cy="${m.cy}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy - m.ry}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            <circle cx="${m.cx}" cy="${m.cy + m.ry}" r="3.5" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.2" />
+                            
+                            <!-- Compact Rim Badge (Anti-Occlusion) -->
+                            <g transform="translate(${m.cx}, ${badgeY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-70" y="-11" width="140" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    ${m.label}: ${m.d1Cm}&times;${m.d2Cm} &bull; ${m.areaCm2} cm²
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
+                        </g>
+                    `;
+                } else if (m.type === 'polygon') {
+                    const ptsString = m.points.map(p => `${p.x},${p.y}`).join(' ');
+                    const deleteBtnY = (m.cy - 34 >= 14) ? (m.cy - 34) : (m.cy + 34);
+                    html += `
+                        <g id="roi-group-${vpId}-${idx}">
+                            <!-- Polygon Body with Hit Handler -->
+                            <polygon points="${ptsString}" fill="rgba(250, 204, 21, ${isSelected ? '0.32' : '0.2'})" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-linejoin="round" ${glowFilter} class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            ${m.points.map(p => `<circle cx="${p.x}" cy="${p.y}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />`).join('')}
+                            
+                            <g transform="translate(${m.cx}, ${m.cy})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-11" width="110" height="22" rx="11" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="3" fill="${strokeColor}" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    ${m.label}: ${m.areaCm2} cm²
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${m.cx}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
+                        </g>
+                    `;
+                } else if (m.type === 'ctr') {
+                    const h = m.heart;
+                    const t = m.thorax;
+                    const midHX = (h.x1 + h.x2) / 2;
+                    const midHY = (h.y1 + h.y2) / 2;
+                    const midTX = (t.x1 + t.x2) / 2;
+                    const midTY = (t.y1 + t.y2) / 2;
+                    const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
+                    const centerCtrX = (midHX + midTX) / 2;
+                    const centerCtrY = (midHY + midTY) / 2;
+                    const deleteBtnY = (centerCtrY - 36 >= 14) ? (centerCtrY - 36) : (centerCtrY + 36);
+
+                    html += `
+                        <g id="ctr-group-${vpId}-${idx}">
+                            <!-- Invisible Hit Test Lines -->
+                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
+                            <!-- Heart Line (Transversal Cor) -->
+                            <line x1="${h.x1}" y1="${h.y1}" x2="${h.x2}" y2="${h.y2}" stroke="#f43f5e" stroke-width="${isSelected ? '3.2' : '2.5'}" ${glowFilter} />
+                            <circle cx="${h.x1}" cy="${h.y1}" r="4.5" fill="#f43f5e" stroke="#000" />
+                            <circle cx="${h.x2}" cy="${h.y2}" r="4.5" fill="#f43f5e" stroke="#000" />
+                            <g transform="translate(${midHX}, ${midHY - 11})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#f43f5e" stroke-width="1" />
+                                <text x="0" y="4" fill="#f43f5e" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    Jantung: ${h.distCm} cm
+                                </text>
+                            </g>
+
+                            <!-- Thorax Line (Transversal Thorax) -->
+                            <line x1="${t.x1}" y1="${t.y1}" x2="${t.x2}" y2="${t.y2}" stroke="#facc15" stroke-width="${isSelected ? '3.2' : '2.5'}" stroke-dasharray="4,4" ${glowFilter} />
+                            <circle cx="${t.x1}" cy="${t.y1}" r="4.5" fill="#facc15" stroke="#000" />
+                            <circle cx="${t.x2}" cy="${t.y2}" r="4.5" fill="#facc15" stroke="#000" />
+                            <g transform="translate(${midTX}, ${midTY - 11})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-55" y="-9" width="110" height="18" rx="3" fill="rgba(15, 23, 42, 0.9)" stroke="#facc15" stroke-width="1" />
+                                <text x="0" y="4" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    Toraks: ${t.distCm} cm
+                                </text>
+                            </g>
+
+                            <!-- Center Overall CTR Badge -->
+                            <g transform="translate(${centerCtrX}, ${centerCtrY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-85" y="-13" width="170" height="26" rx="13" fill="rgba(15, 23, 42, 0.95)" stroke="${isSelected ? '#38bdf8' : badgeColor}" stroke-width="${isSelected ? '2.5' : '1.5'}" ${glowFilter} />
+                                <text x="0" y="3" fill="${badgeColor}" font-size="11" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    CTR: ${m.ratio}% (${m.verdict})
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${centerCtrX}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
+                        </g>
+                    `;
+                } else {
+                    // Linear Caliper
+                    const midX = (m.x1 + m.x2) / 2;
+                    const midY = (m.y1 + m.y2) / 2;
+                    const deleteBtnY = (midY - 38 >= 14) ? (midY - 38) : (midY + 36);
+                    html += `
+                        <g id="caliper-group-${vpId}-${idx}">
+                            <!-- Invisible Wide Hit-Test Line (Easy to Click) -->
+                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="transparent" stroke-width="26" class="measurement-shape-hit" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});" />
+
+                            <!-- Visible Caliper Line -->
+                            <line x1="${m.x1}" y1="${m.y1}" x2="${m.x2}" y2="${m.y2}" stroke="${strokeColor}" stroke-width="${strokeW}" stroke-dasharray="${isSelected ? 'none' : '4,4'}" ${glowFilter} />
+                            <circle cx="${m.x1}" cy="${m.y1}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />
+                            <circle cx="${m.x2}" cy="${m.y2}" r="${isSelected ? '5' : '4'}" fill="${strokeColor}" stroke="#0f172a" stroke-width="1.5" />
+                            
+                            <!-- Midpoint Measurement Badge -->
+                            <g transform="translate(${midX}, ${midY})" class="measurement-interactive-item" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); selectMeasurement(${vpId}, ${idx});">
+                                <rect x="-44" y="-10" width="88" height="20" rx="10" fill="rgba(15, 23, 42, 0.94)" stroke="${strokeColor}" stroke-width="${isSelected ? '1.8' : '1.2'}" />
+                                <text x="0" y="4" fill="${strokeColor}" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                    ${m.label}: ${m.distCm} cm
+                                </text>
+                            </g>
+
+                            <!-- On-Canvas Floating Quick Delete Button (When Selected) -->
+                            ${isSelected ? `
+                                <g class="annotation-quick-delete-badge" transform="translate(${midX}, ${deleteBtnY})" style="cursor: pointer; pointer-events: all;" onpointerdown="event.stopPropagation();" onmousedown="event.stopPropagation();" ontouchstart="event.stopPropagation();" onclick="event.stopPropagation(); deleteSingleMeasurement(${vpId}, ${idx});">
+                                    <rect class="quick-delete-hitbox" x="-46" y="-16" width="92" height="32" fill="transparent" stroke="transparent" />
+                                    <rect class="quick-delete-bg" x="-38" y="-11" width="76" height="22" rx="11" fill="#ef4444" stroke="#ffffff" stroke-width="1.5" filter="drop-shadow(0 2px 8px rgba(0,0,0,0.85))" />
+                                    <text x="0" y="4" fill="#ffffff" font-size="10" font-weight="bold" font-family="'Plus Jakarta Sans', sans-serif" text-anchor="middle" pointer-events="none">🗑️ Hapus</text>
+                                </g>
+                            ` : ''}
+                        </g>
+                    `;
+                }
+            });
+
+            // Active Dragging Caliper, Ellipse, Circle, or Box
+            if (activeDrawing && activeViewport === vpId) {
+                const midX = (activeDrawing.x1 + activeDrawing.x2) / 2;
+                const midY = (activeDrawing.y1 + activeDrawing.y2) / 2;
+                const dx = activeDrawing.x2 - activeDrawing.x1;
+                const dy = activeDrawing.y2 - activeDrawing.y1;
+                const distCm = (Math.hypot(dx, dy) * 0.08).toFixed(2);
+
+                if (activeTool === 'ctr') {
+                    const isStep1 = (ctrWorkflow.step === 1);
+                    const color = isStep1 ? '#f43f5e' : '#facc15';
+                    const title = isStep1 ? 'Jantung (A+B)' : 'Toraks (C)';
+                    html += `
+                        <g id="ctr-active">
+                            <line x1="${activeDrawing.x1}" y1="${activeDrawing.y1}" x2="${activeDrawing.x2}" y2="${activeDrawing.y2}" stroke="${color}" stroke-width="2.5" stroke-dasharray="3,3" />
+                            <circle cx="${activeDrawing.x1}" cy="${activeDrawing.y1}" r="4" fill="${color}" stroke="#000" />
+                            <circle cx="${activeDrawing.x2}" cy="${activeDrawing.y2}" r="4" fill="${color}" stroke="#000" />
+                            <rect x="${midX - 60}" y="${midY - 20}" width="120" height="20" rx="4" fill="rgba(15, 23, 42, 0.95)" stroke="${color}" stroke-width="1.2" />
+                            <text x="${midX}" y="${midY - 6}" fill="${color}" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                ${title}: ${distCm} cm
+                            </text>
+                        </g>
+                    `;
+                } else {
+                    html += `
+                        <g id="caliper-active">
+                            <line x1="${activeDrawing.x1}" y1="${activeDrawing.y1}" x2="${activeDrawing.x2}" y2="${activeDrawing.y2}" stroke="#facc15" stroke-width="2" stroke-dasharray="3,3" />
+                            <circle cx="${activeDrawing.x1}" cy="${activeDrawing.y1}" r="4" fill="#facc15" stroke="#000" />
+                            <circle cx="${activeDrawing.x2}" cy="${activeDrawing.y2}" r="4" fill="#facc15" stroke="#000" />
+                            <rect x="${midX - 44}" y="${midY - 18}" width="88" height="20" rx="10" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
+                            <text x="${midX}" y="${midY - 5}" fill="#facc15" font-size="10.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                Caliper: ${distCm} cm
+                            </text>
+                        </g>
+                    `;
+                }
+            }
+
+            if (activeCircleDrawing && isCircleDrawing && activeViewport === vpId) {
+                const dx = activeCircleDrawing.x2 - activeCircleDrawing.x1;
+                const dy = activeCircleDrawing.y2 - activeCircleDrawing.y1;
+                const cx = (activeCircleDrawing.x1 + activeCircleDrawing.x2) / 2;
+                const cy = (activeCircleDrawing.y1 + activeCircleDrawing.y2) / 2;
+                const r = Math.max(2, Math.max(Math.abs(dx), Math.abs(dy)) / 2);
+                const diamCm = (r * 2 * 0.08).toFixed(2);
+                const areaCm2 = (Math.PI * r * r * 0.08 * 0.08).toFixed(2);
+                const badgeY = (cy - r - 14 >= 14) ? (cy - r - 14) : (cy + r + 14);
+
+                html += `
+                    <g id="circle-active">
+                        <circle cx="${cx}" cy="${cy}" r="${r}" fill="rgba(250, 204, 21, 0.18)" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
+                        <line x1="${cx - r}" y1="${cy}" x2="${cx + r}" y2="${cy}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.8" />
+                        <line x1="${cx}" y1="${cy - r}" x2="${cx}" y2="${cy + r}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.8" />
+                        <line x1="${cx - 4}" y1="${cy}" x2="${cx + 4}" y2="${cy}" stroke="#facc15" stroke-width="2" />
+                        <line x1="${cx}" y1="${cy - 4}" x2="${cx}" y2="${cy + 4}" stroke="#facc15" stroke-width="2" />
+                        <circle cx="${cx - r}" cy="${cy}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx + r}" cy="${cy}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx}" cy="${cy - r}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx}" cy="${cy + r}" r="3.5" fill="#facc15" stroke="#000" />
+                        <g transform="translate(${cx}, ${badgeY})">
+                            <rect x="-65" y="-11" width="130" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
+                            <text x="0" y="3" fill="#facc15" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                Lingkaran: &Oslash; ${diamCm} cm &bull; ${areaCm2} cm²
+                            </text>
+                        </g>
+                    </g>
+                `;
+            }
+
+            if (activeEllipseDrawing && isEllipseDrawing && activeViewport === vpId) {
+                const minX = Math.min(activeEllipseDrawing.x1, activeEllipseDrawing.x2);
+                const maxX = Math.max(activeEllipseDrawing.x1, activeEllipseDrawing.x2);
+                const minY = Math.min(activeEllipseDrawing.y1, activeEllipseDrawing.y2);
+                const maxY = Math.max(activeEllipseDrawing.y1, activeEllipseDrawing.y2);
+                const cx = (minX + maxX) / 2;
+                const cy = (minY + maxY) / 2;
+                const rx = Math.max(1, (maxX - minX) / 2);
+                const ry = Math.max(1, (maxY - minY) / 2);
+                const d1Cm = (rx * 2 * 0.08).toFixed(2);
+                const d2Cm = (ry * 2 * 0.08).toFixed(2);
+                const areaCm2 = (Math.PI * rx * ry * 0.08 * 0.08).toFixed(2);
+                const badgeY = (cy - ry - 14 >= 14) ? (cy - ry - 14) : (cy + ry + 14);
+
+                html += `
+                    <g id="ellipse-active">
+                        <ellipse cx="${cx}" cy="${cy}" rx="${rx}" ry="${ry}" fill="rgba(250, 204, 21, 0.18)" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
+                        <line x1="${cx - rx}" y1="${cy}" x2="${cx + rx}" y2="${cy}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.8" />
+                        <line x1="${cx}" y1="${cy - ry}" x2="${cx}" y2="${cy + ry}" stroke="#facc15" stroke-width="1.2" stroke-dasharray="2,2" opacity="0.8" />
+                        <line x1="${cx - 4}" y1="${cy}" x2="${cx + 4}" y2="${cy}" stroke="#facc15" stroke-width="2" />
+                        <line x1="${cx}" y1="${cy - 4}" x2="${cx}" y2="${cy + 4}" stroke="#facc15" stroke-width="2" />
+                        <circle cx="${cx - rx}" cy="${cy}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx + rx}" cy="${cy}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx}" cy="${cy - ry}" r="3.5" fill="#facc15" stroke="#000" />
+                        <circle cx="${cx}" cy="${cy + ry}" r="3.5" fill="#facc15" stroke="#000" />
+                        <g transform="translate(${cx}, ${badgeY})">
+                            <rect x="-70" y="-11" width="140" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
+                            <text x="0" y="3" fill="#facc15" font-size="9.5" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                Oval: ${d1Cm}&times;${d2Cm} &bull; ${areaCm2} cm²
+                            </text>
+                        </g>
+                    </g>
+                `;
+            }
+
+            if (activeBoxDrawing && isBoxDrawing && activeViewport === vpId) {
+                const minX = Math.min(activeBoxDrawing.x1, activeBoxDrawing.x2);
+                const maxX = Math.max(activeBoxDrawing.x1, activeBoxDrawing.x2);
+                const minY = Math.min(activeBoxDrawing.y1, activeBoxDrawing.y2);
+                const maxY = Math.max(activeBoxDrawing.y1, activeBoxDrawing.y2);
+                const w = maxX - minX;
+                const h = maxY - minY;
+                const areaCm2 = (w * h * 0.08 * 0.08).toFixed(2);
+                const midX = (minX + maxX) / 2;
+                const midY = (minY + maxY) / 2;
+
+                html += `
+                    <g id="box-active">
+                        <rect x="${minX}" y="${minY}" width="${w}" height="${h}" fill="rgba(250, 204, 21, 0.18)" stroke="#facc15" stroke-width="2" stroke-dasharray="4,4" />
+                        <circle cx="${minX}" cy="${minY}" r="4" fill="#facc15" stroke="#000" />
+                        <circle cx="${maxX}" cy="${minY}" r="4" fill="#facc15" stroke="#000" />
+                        <circle cx="${maxX}" cy="${maxY}" r="4" fill="#facc15" stroke="#000" />
+                        <circle cx="${minX}" cy="${maxY}" r="4" fill="#facc15" stroke="#000" />
+                        <g transform="translate(${midX}, ${midY})">
+                            <rect x="-55" y="-11" width="110" height="22" rx="11" fill="rgba(15, 23, 42, 0.92)" stroke="#facc15" stroke-width="1.2" />
+                            <text x="0" y="3" fill="#facc15" font-size="10" font-weight="bold" font-family="'JetBrains Mono', monospace" text-anchor="middle">
+                                Kotak: ${areaCm2} cm²
+                            </text>
+                        </g>
+                    </g>
+                `;
+            }
+
+            // Polygon In Progress
+            if (currentPolygonPoints.length > 0 && activeViewport === vpId) {
+                for (let i = 0; i < currentPolygonPoints.length - 1; i++) {
+                    const pA = currentPolygonPoints[i];
+                    const pB = currentPolygonPoints[i + 1];
+                    html += `<line x1="${pA.x}" y1="${pA.y}" x2="${pB.x}" y2="${pB.y}" stroke="#facc15" stroke-width="2" />`;
+                }
+
+                if (polygonHoverPoint) {
+                    const lastP = currentPolygonPoints[currentPolygonPoints.length - 1];
+                    const strokeColor = isPolygonSnapping ? '#10b981' : '#facc15';
+                    const strokeWidth = isPolygonSnapping ? '2.5' : '2';
+                    html += `<line x1="${lastP.x}" y1="${lastP.y}" x2="${polygonHoverPoint.x}" y2="${polygonHoverPoint.y}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-dasharray="${isPolygonSnapping ? 'none' : '3,3'}" />`;
+                }
+
+                currentPolygonPoints.forEach((p, i) => {
+                    const r = (i === 0 && isPolygonSnapping) ? 8 : 4.5;
+                    const fill = (i === 0 && isPolygonSnapping) ? '#10b981' : '#facc15';
+                    html += `<circle cx="${p.x}" cy="${p.y}" r="${r}" fill="${fill}" stroke="#0f172a" stroke-width="1.5" />`;
+                });
+            }
+
+            targetSvg.innerHTML = html;
+        }
+
+        function updateMeasurementsPanel() {
+            const container = document.getElementById('caliperListContainer');
+            const list = measurements[activeViewport];
+            if (!list || list.length === 0) {
+                container.innerHTML = '<span style="font-size: 0.72rem; color: var(--ws-text-muted); font-style: italic;">Belum ada pengukuran di Viewport ini. Pilih salah satu instrumen ukur di atas.</span>';
+            } else {
+                let html = '<div style="display: flex; flex-direction: column; gap: 0.4rem;">';
+                list.forEach((m, idx) => {
+                    const isSelected = (selectedAnnotation && selectedAnnotation.vpId === activeViewport && selectedAnnotation.index === idx);
+                    const deleteBtnHtml = `
+                        <button type="button" onclick="event.stopPropagation(); deleteSingleMeasurement(${activeViewport}, ${idx})" class="btn-delete-item" title="Hapus ${m.label || 'pengukuran ini'}" aria-label="Hapus">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    `;
+
+                    if (m.type === 'ctr') {
+                        const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
+                        html += `
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: ${badgeColor};">
+                                    <span>Cardiothoracic Ratio (CTR)</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.ratio}% (${m.verdict})</span>
+                                        ${deleteBtnHtml}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.2rem;">
+                                    Jantung: ${m.heart.distCm} cm | Toraks: ${m.thorax.distCm} cm
+                                </div>
+                            </div>
+                        `;
+                    } else if (m.type === 'circle') {
+                        html += `
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
+                                    <span>${m.label} (Lingkaran Sempurna)</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.2rem;">
+                                    &Oslash; Diameter: ${m.diamCm} cm &bull; Jari-jari: ${(m.r * 0.08).toFixed(2)} cm
+                                </div>
+                            </div>
+                        `;
+                    } else if (m.type === 'ellipse') {
+                        html += `
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
+                                    <span>${m.label} (Oval / Ellipse)</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.65rem; color: #38bdf8; font-family: monospace; margin-top: 0.2rem;">
+                                    D1: ${m.d1Cm} cm &bull; D2: ${m.d2Cm} cm
+                                </div>
+                            </div>
+                        `;
+                    } else if (m.type === 'polygon') {
+                        html += `
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #facc15;">
+                                    <span>${m.label} (Area ROI)</span>
+                                    <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                        <span style="font-family: 'JetBrains Mono', monospace;">${m.areaCm2} cm²</span>
+                                        ${deleteBtnHtml}
+                                    </div>
+                                </div>
+                                <div style="font-size: 0.65rem; color: #94a3b8; font-family: monospace; margin-top: 0.2rem;">
+                                    Keliling: ${m.perimeterCm} cm
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        html += `
+                            <div class="measurement-list-item ${isSelected ? 'is-selected-in-list' : ''}" id="measureItem_${activeViewport}_${idx}" onclick="selectMeasurement(${activeViewport}, ${idx})" style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: #facc15; font-weight: 700;">${m.label} (Linear Caliper)</span>
+                                <div style="display: flex; align-items: center; gap: 0.45rem;">
+                                    <span style="font-family: 'JetBrains Mono', monospace; color: #facc15; font-weight: 600;">${m.distCm} cm</span>
+                                    ${deleteBtnHtml}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // Cari pengukuran CTR terbaru di viewport aktif untuk Card Evaluasi Klinis Otomatis
+            const latestCtr = list ? [...list].reverse().find(m => m.type === 'ctr') : null;
+            const linears = list ? list.filter(m => m.type === 'linear') : [];
+            const badgePill = document.getElementById('badgeCtrStatusPill');
+            const ctrContent = document.getElementById('ctrLiveResultContent');
+
+            if (latestCtr && badgePill && ctrContent) {
+                const isNormal = latestCtr.isNormal;
+                const ratio = latestCtr.ratio;
+                const heartCm = latestCtr.heart.distCm;
+                const thoraxCm = latestCtr.thorax.distCm;
+
+                if (isNormal) {
+                    badgePill.innerText = 'NORMAL (≤ 50%)';
+                    badgePill.style.color = '#34d399';
+                    badgePill.style.background = 'rgba(16, 185, 129, 0.2)';
+                    badgePill.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                } else {
+                    badgePill.innerText = 'KARDIOMEGALI (> 50%)';
+                    badgePill.style.color = '#f87171';
+                    badgePill.style.background = 'rgba(239, 68, 68, 0.2)';
+                    badgePill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                }
+
+                ctrContent.innerHTML = `
+                    <div style="background: ${isNormal ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${isNormal ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.55rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+                            <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">HASIL CARDIOTHORACIC RATIO:</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; color: ${isNormal ? '#34d399' : '#f87171'};">${ratio}%</span>
+                        </div>
+                        
+                        <div style="font-size: 0.78rem; font-weight: 700; color: ${isNormal ? '#34d399' : '#f87171'}; margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>${isNormal ? '✅' : '⚠️'}</span>
+                            <span>Kategori: ${isNormal ? 'Cor Dalam Batas Normal (Normal)' : 'Suspek Kardiomegali (Pembesaran Jantung)'}</span>
+                        </div>
+
+                        <div style="font-size: 0.68rem; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.35); padding: 0.35rem 0.55rem; border-radius: 4px; display: flex; justify-content: space-between;">
+                            <span>Jantung (A+B): <strong>${heartCm} cm</strong></span>
+                            <span>Toraks (C): <strong>${thoraxCm} cm</strong></span>
+                        </div>
+                    </div>
+
+                    <button class="btn-template-pill" onclick="copyCtrToDiagnosis(${ratio}, ${isNormal}, '${heartCm}', '${thoraxCm}')" style="width: 100%; text-align: center; padding: 0.45rem; background: rgba(2, 132, 199, 0.2); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.75rem;">
+                        📋 Salin ke Catatan Ekspertise Dokter
+                    </button>
+                `;
+            } else if (!latestCtr && linears.length >= 2 && badgePill && ctrContent) {
+                // Auto-detect dari 2 garis linear caliper (D1 & D2)
+                const lastTwo = linears.slice(-2);
+                const sorted = [...lastTwo].sort((a, b) => parseFloat(a.distCm) - parseFloat(b.distCm));
+                const heart = sorted[0];
+                const thorax = sorted[1];
+                const heartDist = parseFloat(heart.distCm);
+                const thoraxDist = parseFloat(thorax.distCm);
+                const estRatio = Math.round((heartDist / thoraxDist) * 100);
+                const isNormal = (estRatio <= 50);
+
+                badgePill.innerText = isNormal ? 'ESTIMASI NORMAL (≤ 50%)' : 'ESTIMASI KARDIOMEGALI (> 50%)';
+                badgePill.style.color = isNormal ? '#34d399' : '#f87171';
+                badgePill.style.background = isNormal ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)';
+                badgePill.style.borderColor = isNormal ? 'rgba(16, 185, 129, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+
+                ctrContent.innerHTML = `
+                    <div style="background: ${isNormal ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'}; border: 1px solid ${isNormal ? 'rgba(16, 185, 129, 0.35)' : 'rgba(239, 68, 68, 0.35)'}; border-radius: 8px; padding: 0.75rem; margin-bottom: 0.55rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.35rem;">
+                            <span style="font-size: 0.7rem; color: #94a3b8; font-weight: 700; text-transform: uppercase;">ESTIMASI CTR DARI ${heart.label} & ${thorax.label}:</span>
+                            <span style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; color: ${isNormal ? '#34d399' : '#f87171'};">${estRatio}%</span>
+                        </div>
+                        
+                        <div style="font-size: 0.78rem; font-weight: 700; color: ${isNormal ? '#34d399' : '#f87171'}; margin-bottom: 0.45rem; display: flex; align-items: center; gap: 0.35rem;">
+                            <span>${isNormal ? '✅' : '⚠️'}</span>
+                            <span>Kategori: ${isNormal ? 'Cor Dalam Batas Normal (Normal)' : 'Suspek Kardiomegali (Pembesaran Jantung)'}</span>
+                        </div>
+
+                        <div style="font-size: 0.68rem; color: #cbd5e1; font-family: 'JetBrains Mono', monospace; background: rgba(0,0,0,0.35); padding: 0.35rem 0.55rem; border-radius: 4px; display: flex; justify-content: space-between;">
+                            <span>Jantung (${heart.label}): <strong>${heartDist} cm</strong></span>
+                            <span>Toraks (${thorax.label}): <strong>${thoraxDist} cm</strong></span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                        <button class="btn-template-pill" onclick="convertLinearToCtr()" style="width: 100%; text-align: center; padding: 0.45rem; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.72rem;">
+                            🫀 Konversi ${heart.label} & ${thorax.label} Jadi Pengukuran CTR Resmi
+                        </button>
+                        <button class="btn-template-pill" onclick="copyCtrToDiagnosis(${estRatio}, ${isNormal}, '${heartDist}', '${thoraxDist}')" style="width: 100%; text-align: center; padding: 0.45rem; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: #34d399; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.35rem; font-size: 0.72rem;">
+                            📋 Salin ke Ekspertise Dokter
+                        </button>
+                    </div>
+                `;
+            } else if (badgePill && ctrContent) {
+                badgePill.innerText = 'Belum Diukur';
+                badgePill.style.color = '#94a3b8';
+                badgePill.style.background = 'rgba(148, 163, 184, 0.15)';
+                badgePill.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+
+                ctrContent.innerHTML = `
+                    <div style="background: rgba(15, 23, 42, 0.6); border: 1px dashed var(--ws-border); border-radius: 6px; padding: 0.65rem; text-align: center;">
+                        <span style="font-size: 0.72rem; color: var(--ws-text-muted);">
+                            Gunakan tombol <strong>🫀 CTR</strong> di toolbar atas untuk mengukur rasio jantung & toraks secara langsung.
+                        </span>
+                    </div>
+                `;
+            }
+        }
+
+        function convertLinearToCtr() {
+            const list = measurements[activeViewport];
+            if (!list) return;
+            const linears = list.filter(m => m.type === 'linear');
+            if (linears.length < 2) return;
+
+            pushMeasurementHistory(activeViewport);
+
+            // Ambil 2 linear terakhir
+            const lastTwo = linears.slice(-2);
+            const sorted = [...lastTwo].sort((a, b) => parseFloat(a.distCm) - parseFloat(b.distCm));
+            const heart = sorted[0];
+            const thorax = sorted[1];
+            const heartDist = parseFloat(heart.distCm);
+            const thoraxDist = parseFloat(thorax.distCm);
+            const ratio = Math.round((heartDist / thoraxDist) * 100);
+            const isNormal = (ratio <= 50);
+            const verdict = isNormal ? 'Normal' : 'Suspek Kardiomegali';
+
+            // Hapus 2 linear tersebut dan ganti jadi 1 CTR
+            measurements[activeViewport] = list.filter(m => m !== lastTwo[0] && m !== lastTwo[1]);
+            measurements[activeViewport].push({
+                type: 'ctr',
+                heart: { x1: heart.x1, y1: heart.y1, x2: heart.x2, y2: heart.y2, distCm: heart.distCm },
+                thorax: { x1: thorax.x1, y1: thorax.y1, x2: thorax.x2, y2: thorax.y2, distCm: thorax.distCm },
+                ratio: ratio,
+                isNormal: isNormal,
+                verdict: verdict
+            });
+
+            renderMeasurements(activeViewport);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint(isNormal ? '✅' : '⚠️', `CTR Berhasil Dikonversi: ${ratio}% (${verdict})`);
+        }
+
+        function copyCtrToDiagnosis(ratio, isNormal, heartCm, thoraxCm) {
+            const txt = document.getElementById('txtDiagnosis');
+            if (!txt) return;
+            const narrative = isNormal 
+                ? `\n- Cardiothoracic Ratio (CTR): ${ratio}% (Normal ≤ 50%).\n  Diameter transversal jantung (${heartCm} cm) terhadap diameter toraks (${thoraxCm} cm) dalam batas normal, tidak tampak kardiomegali.`
+                : `\n- Cardiothoracic Ratio (CTR): ${ratio}% (> 50%).\n  Tampak peningkatan diameter transversal jantung (${heartCm} cm) terhadap rongga toraks (${thoraxCm} cm), kesan Suspek Kardiomegali.`;
+            
+            txt.value = (txt.value.trim() ? txt.value.trim() + "\n" : "") + narrative;
+            switchDockTab('diagnosis');
+            showToolHint('📋', `Hasil CTR (${ratio}%) berhasil disalin ke Lembar Ekspertise!`);
+            setTimeout(hideToolHint, 3000);
+        }
+
+        let isDeletingMeasurement = false;
+        function deleteSingleMeasurement(vpId, index) {
+            if (isDeletingMeasurement) return;
+            if (!measurements[vpId] || !measurements[vpId][index]) return;
+            isDeletingMeasurement = true;
+            setTimeout(() => { isDeletingMeasurement = false; }, 200);
+
+            pushMeasurementHistory(vpId);
+            const itemLabel = measurements[vpId][index].label || 'Pengukuran';
+            measurements[vpId].splice(index, 1);
+
+            if (selectedAnnotation && selectedAnnotation.vpId === vpId) {
+                if (selectedAnnotation.index === index) {
+                    selectedAnnotation = null;
+                } else if (selectedAnnotation.index > index) {
+                    selectedAnnotation.index--;
+                }
+            }
+
+            renderMeasurements(vpId);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('🗑️', `${itemLabel} berhasil dihapus.`);
+            setTimeout(hideToolHint, 2000);
+        }
+
+        function undoLastMeasurement() {
+            if (activeTool === 'polygon' && currentPolygonPoints.length > 0) {
+                currentPolygonPoints.pop();
+                polygonHoverPoint = null;
+                isPolygonSnapping = false;
+                renderMeasurements(activeViewport);
+                updateUndoRedoButtons();
+                return;
+            }
+
+            if (undoStack[activeViewport] && undoStack[activeViewport].length > 0) {
+                redoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport] = undoStack[activeViewport].pop();
+                selectedAnnotation = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↺', 'Undo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
+            } else if (measurements[activeViewport] && measurements[activeViewport].length > 0) {
+                redoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport].pop();
+                selectedAnnotation = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↺', 'Undo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
+            }
+        }
+
+        function redoLastMeasurement() {
+            if (redoStack[activeViewport] && redoStack[activeViewport].length > 0) {
+                undoStack[activeViewport].push(JSON.parse(JSON.stringify(measurements[activeViewport])));
+                measurements[activeViewport] = redoStack[activeViewport].pop();
+                selectedAnnotation = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+                showToolHint('↻', 'Redo anotasi berhasil.');
+                setTimeout(hideToolHint, 1500);
+            }
+        }
+
+        function clearAllCalipers() {
+            if ((!measurements[activeViewport] || measurements[activeViewport].length === 0) && currentPolygonPoints.length === 0) return;
+            if (measurements[activeViewport] && measurements[activeViewport].length > 0) {
+                pushMeasurementHistory(activeViewport);
+            }
+            selectedAnnotation = null;
+            currentPolygonPoints = [];
+            polygonHoverPoint = null;
+            isPolygonSnapping = false;
+            measurements[activeViewport] = [];
+            renderMeasurements(activeViewport);
+            updateMeasurementsPanel();
+            updateUndoRedoButtons();
+            showToolHint('🗑️', 'Semua anotasi pengukuran berhasil dihapus.');
+            setTimeout(hideToolHint, 2000);
+        }
+
+        // ==========================================
+        // UNIFIED TOUCH & MOUSE VIEWPORT INTERACTION
+        // ==========================================
+        let touchPinchDist = null;
+        let touchPinchInitialZoom = 1;
+
+        function getEventCoords(e, element) {
+            const rect = element ? element.getBoundingClientRect() : { left: 0, top: 0, width: 0, height: 0 };
+            let clientX = 0, clientY = 0;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else if (e.clientX !== undefined) {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            const x = Math.round(clientX - rect.left);
+            const y = Math.round(clientY - rect.top);
+            return { clientX, clientY, x, y, rect };
+        }
+
+        function getSvgCoords(e, svgElement) {
+            if (!svgElement) return { x: 0, y: 0, clientX: 0, clientY: 0 };
+            let clientX = 0, clientY = 0;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else if (e.changedTouches && e.changedTouches.length > 0) {
+                clientX = e.changedTouches[0].clientX;
+                clientY = e.changedTouches[0].clientY;
+            } else if (e.clientX !== undefined) {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+
+            try {
+                const ctm = svgElement.getScreenCTM();
+                if (ctm) {
+                    const pt = svgElement.createSVGPoint();
+                    pt.x = clientX;
+                    pt.y = clientY;
+                    const transPt = pt.matrixTransform(ctm.inverse());
+                    return {
+                        x: Math.round(transPt.x),
+                        y: Math.round(transPt.y),
+                        clientX,
+                        clientY
+                    };
+                }
+            } catch (err) {
+                console.warn('CTM transform fallback:', err);
+            }
+
+            const rect = svgElement.getBoundingClientRect();
+            return {
+                x: Math.round(clientX - rect.left),
+                y: Math.round(clientY - rect.top),
+                clientX,
+                clientY
+            };
+        }
+
+        function handleViewportStart(vpId, e) {
+            const cell = (vpId === 1) ? vp1 : vp2;
+            const targetSvg = (vpId === 1) ? svgMeasure1 : svgMeasure2;
+            if (!cell || !targetSvg) return;
+
+            // Prevent interaction conflicts when interacting with quick delete badge or existing measurements
+            const targetEl = e.target;
+            if (targetEl && typeof targetEl.closest === 'function') {
+                if (targetEl.closest('.annotation-quick-delete-badge')) {
+                    // Do NOT intercept or deselect; allow quick delete badge handlers to process cleanly
+                    return;
+                }
+                if (targetEl.closest('.measurement-interactive-item') || targetEl.closest('.measurement-shape-hit')) {
+                    // Do NOT start drawing or panning; allow selection handler to process
+                    selectViewport(vpId);
+                    return;
+                }
+            }
+
+            // Multi-touch Pinch to Zoom
+            if (e.touches && e.touches.length === 2) {
+                const t0 = e.touches[0];
+                const t1 = e.touches[1];
+                touchPinchDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+                touchPinchInitialZoom = vpState[vpId].zoom;
+                if (e.cancelable) e.preventDefault();
+                return;
+            }
+
+            if (e.cancelable && e.type.startsWith('touch')) {
+                e.preventDefault();
+            }
+
+            selectViewport(vpId);
+            
+            // Svg-relative coordinates (100% attached to image anatomy regardless of zoom/pan)
+            const pos = getSvgCoords(e, targetSvg);
+            const clickX = pos.x;
+            const clickY = pos.y;
+
+            if (activeTool === 'polygon') {
+                deselectMeasurement();
+                if (currentPolygonPoints.length >= 2 && isPolygonSnapping) {
+                    finishPolygon(vpId);
+                    return;
+                }
+                currentPolygonPoints.push({ x: clickX, y: clickY });
+                renderMeasurements(vpId);
+                return;
+            }
+
+            if (activeTool === 'circle') {
+                deselectMeasurement();
+                isCircleDrawing = true;
+                activeCircleDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
+                renderMeasurements(vpId);
+                return;
+            }
+
+            if (activeTool === 'ellipse') {
+                deselectMeasurement();
+                isEllipseDrawing = true;
+                activeEllipseDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
+                renderMeasurements(vpId);
+                return;
+            }
+
+            if (activeTool === 'box') {
+                deselectMeasurement();
+                isBoxDrawing = true;
+                activeBoxDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
+                renderMeasurements(vpId);
+                return;
+            }
+
+            if (activeTool === 'caliper' || activeTool === 'ctr') {
+                deselectMeasurement();
+                isMeasuring = true;
+                activeDrawing = { x1: clickX, y1: clickY, x2: clickX, y2: clickY };
+                renderMeasurements(vpId);
+                return;
+            }
+
+            deselectMeasurement();
+            isDragging = true;
+            startX = pos.clientX - vpState[vpId].translateX;
+            startY = pos.clientY - vpState[vpId].translateY;
+        }
+
+        function handleViewportMove(e) {
+            // 1. Multi-touch pinch zoom
+            if (e.touches && e.touches.length === 2 && touchPinchDist !== null) {
+                if (e.cancelable) e.preventDefault();
+                const t0 = e.touches[0];
+                const t1 = e.touches[1];
+                const newDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+                const scale = newDist / touchPinchDist;
+                vpState[activeViewport].zoom = Math.max(0.4, Math.min(3.5, touchPinchInitialZoom * scale));
+                updateTransform(activeViewport);
+                return;
+            }
+
+            // 2. Curtain slider dragging
+            if (activeDraggingCurtainVp) {
+                if (e.cancelable) e.preventDefault();
+                const vpEl = (activeDraggingCurtainVp === 1) ? vp1 : vp2;
+                if (vpEl) {
+                    const pos = getEventCoords(e, vpEl);
+                    const posX = Math.max(10, Math.min(pos.rect.width - 10, pos.x));
+                    const pct = Math.round((posX / pos.rect.width) * 100);
+                    applyCurtainSplit(activeDraggingCurtainVp, pct);
+                }
+                return;
+            }
+
+            const targetSvg = (activeViewport === 1) ? svgMeasure1 : svgMeasure2;
+
+            // 3. Polygon in progress
+            if (activeTool === 'polygon' && currentPolygonPoints.length > 0) {
+                if (e.cancelable) e.preventDefault();
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                const curX = pos.x;
+                const curY = pos.y;
+
+                if (currentPolygonPoints.length >= 2) {
+                    const firstP = currentPolygonPoints[0];
+                    const distToFirst = Math.hypot(curX - firstP.x, curY - firstP.y);
+                    if (distToFirst <= 30) {
+                        isPolygonSnapping = true;
+                        polygonHoverPoint = { x: firstP.x, y: firstP.y };
+                    } else {
+                        isPolygonSnapping = false;
+                        polygonHoverPoint = { x: curX, y: curY };
+                    }
+                } else {
+                    isPolygonSnapping = false;
+                    polygonHoverPoint = { x: curX, y: curY };
+                }
+
+                renderMeasurements(activeViewport);
+                return;
+            }
+
+            // 4. Circle active drawing
+            if (activeTool === 'circle' && isCircleDrawing && activeCircleDrawing) {
+                if (e.cancelable) e.preventDefault();
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeCircleDrawing.x2 = pos.x;
+                activeCircleDrawing.y2 = pos.y;
+                renderMeasurements(activeViewport);
+                return;
+            }
+
+            // 5. Ellipse active drawing
+            if (activeTool === 'ellipse' && isEllipseDrawing && activeEllipseDrawing) {
+                if (e.cancelable) e.preventDefault();
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeEllipseDrawing.x2 = pos.x;
+                activeEllipseDrawing.y2 = pos.y;
+                renderMeasurements(activeViewport);
+                return;
+            }
+
+            // 6. Box ROI active drawing
+            if (activeTool === 'box' && isBoxDrawing && activeBoxDrawing) {
+                if (e.cancelable) e.preventDefault();
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeBoxDrawing.x2 = pos.x;
+                activeBoxDrawing.y2 = pos.y;
+                renderMeasurements(activeViewport);
+                return;
+            }
+
+            // 7. Linear Caliper or CTR active measurement
+            if (isMeasuring && activeDrawing) {
+                if (e.cancelable) e.preventDefault();
+                if (!targetSvg) return;
+                const pos = getSvgCoords(e, targetSvg);
+                activeDrawing.x2 = pos.x;
+                activeDrawing.y2 = pos.y;
+                renderMeasurements(activeViewport);
+                return;
+            }
+
+            // 8. Viewport Pan or Zoom Dragging
+            if (!isDragging) return;
+            if (e.cancelable) e.preventDefault();
+            const pos = getEventCoords(e, null);
+
+            if (activeTool === 'pan') {
+                vpState[activeViewport].translateX = pos.clientX - startX;
+                vpState[activeViewport].translateY = pos.clientY - startY;
+                updateTransform(activeViewport);
+            } else if (activeTool === 'zoom') {
+                const deltaY = startY - pos.clientY;
+                startY = pos.clientY;
+                vpState[activeViewport].zoom = Math.max(0.4, Math.min(3.5, vpState[activeViewport].zoom + (deltaY * 0.01)));
+                updateTransform(activeViewport);
+            }
+        }
+
+        function handleViewportEnd(e) {
+            touchPinchDist = null;
+
+            if (isMeasuring && activeDrawing) {
+                const dx = activeDrawing.x2 - activeDrawing.x1;
+                const dy = activeDrawing.y2 - activeDrawing.y1;
+                const distPx = Math.sqrt(dx * dx + dy * dy);
+                const distCm = (distPx * 0.08).toFixed(2);
+
+                if (distPx > 8) {
+                    if (activeTool === 'ctr') {
+                        if (ctrWorkflow.step === 1) {
+                            ctrWorkflow.heartLine = { x1: activeDrawing.x1, y1: activeDrawing.y1, x2: activeDrawing.x2, y2: activeDrawing.y2, distCm: distCm, distPx: distPx };
+                            ctrWorkflow.step = 2;
+                            showToolHint('🫀', 'Mode CTR (Langkah 2/2): Tarik garis diameter transversal toraks (C).');
+                        } else if (ctrWorkflow.step === 2) {
+                            ctrWorkflow.thoraxLine = { x1: activeDrawing.x1, y1: activeDrawing.y1, x2: activeDrawing.x2, y2: activeDrawing.y2, distCm: distCm, distPx: distPx };
+                            const heartDist = parseFloat(ctrWorkflow.heartLine.distCm);
+                            const thoraxDist = parseFloat(ctrWorkflow.thoraxLine.distCm);
+                            const ratio = Math.round((heartDist / thoraxDist) * 100);
+                            const isNormal = (ratio <= 50);
+                            const verdict = isNormal ? 'Normal' : 'Suspek Kardiomegali';
+
+                            pushMeasurementHistory(activeViewport);
+                            measurements[activeViewport].push({
+                                type: 'ctr',
+                                heart: ctrWorkflow.heartLine,
+                                thorax: ctrWorkflow.thoraxLine,
+                                ratio: ratio,
+                                isNormal: isNormal,
+                                verdict: verdict
+                            });
+
+                            ctrWorkflow.step = 1;
+                            ctrWorkflow.heartLine = null;
+                            ctrWorkflow.thoraxLine = null;
+                            showToolHint(isNormal ? '✅' : '⚠️', `CTR: ${ratio}% (${verdict})`);
+                        }
+                    } else {
+                        pushMeasurementHistory(activeViewport);
+                        const countLinear = measurements[activeViewport].filter(m => m.type === 'linear').length + 1;
+                        measurements[activeViewport].push({
+                            type: 'linear',
+                            x1: activeDrawing.x1,
+                            y1: activeDrawing.y1,
+                            x2: activeDrawing.x2,
+                            y2: activeDrawing.y2,
+                            distCm: distCm,
+                            label: 'D' + countLinear
+                        });
+                    }
+                }
+                activeDrawing = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+            }
+
+            if (isCircleDrawing && activeCircleDrawing) {
+                const dx = activeCircleDrawing.x2 - activeCircleDrawing.x1;
+                const dy = activeCircleDrawing.y2 - activeCircleDrawing.y1;
+                const cx = Math.round((activeCircleDrawing.x1 + activeCircleDrawing.x2) / 2);
+                const cy = Math.round((activeCircleDrawing.y1 + activeCircleDrawing.y2) / 2);
+                const r = Math.round(Math.max(Math.abs(dx), Math.abs(dy)) / 2);
+
+                if (r > 4) {
+                    const diamCm = (r * 2 * 0.08).toFixed(2);
+                    const areaCm2 = (Math.PI * r * r * 0.08 * 0.08).toFixed(2);
+                    pushMeasurementHistory(activeViewport);
+                    const countCircle = measurements[activeViewport].filter(m => m.type === 'circle').length + 1;
+                    measurements[activeViewport].push({
+                        type: 'circle',
+                        cx: cx,
+                        cy: cy,
+                        r: r,
+                        diamCm: diamCm,
+                        areaCm2: areaCm2,
+                        label: 'CIR-' + countCircle
+                    });
+                }
+                activeCircleDrawing = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+            }
+
+            if (isEllipseDrawing && activeEllipseDrawing) {
+                const minX = Math.min(activeEllipseDrawing.x1, activeEllipseDrawing.x2);
+                const maxX = Math.max(activeEllipseDrawing.x1, activeEllipseDrawing.x2);
+                const minY = Math.min(activeEllipseDrawing.y1, activeEllipseDrawing.y2);
+                const maxY = Math.max(activeEllipseDrawing.y1, activeEllipseDrawing.y2);
+                const cx = Math.round((minX + maxX) / 2);
+                const cy = Math.round((minY + maxY) / 2);
+                const rx = Math.round((maxX - minX) / 2);
+                const ry = Math.round((maxY - minY) / 2);
+
+                if (rx > 4 && ry > 4) {
+                    const d1Cm = (rx * 2 * 0.08).toFixed(2);
+                    const d2Cm = (ry * 2 * 0.08).toFixed(2);
+                    const areaCm2 = (Math.PI * rx * ry * 0.08 * 0.08).toFixed(2);
+                    pushMeasurementHistory(activeViewport);
+                    const countEllipse = measurements[activeViewport].filter(m => m.type === 'ellipse').length + 1;
+                    measurements[activeViewport].push({
+                        type: 'ellipse',
+                        cx: cx,
+                        cy: cy,
+                        rx: rx,
+                        ry: ry,
+                        d1Cm: d1Cm,
+                        d2Cm: d2Cm,
+                        areaCm2: areaCm2,
+                        label: 'EL-' + countEllipse
+                    });
+                }
+                activeEllipseDrawing = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+            }
+
+            if (isBoxDrawing && activeBoxDrawing) {
+                const minX = Math.min(activeBoxDrawing.x1, activeBoxDrawing.x2);
+                const maxX = Math.max(activeBoxDrawing.x1, activeBoxDrawing.x2);
+                const minY = Math.min(activeBoxDrawing.y1, activeBoxDrawing.y2);
+                const maxY = Math.max(activeBoxDrawing.y1, activeBoxDrawing.y2);
+                const w = maxX - minX;
+                const h = maxY - minY;
+
+                if (w > 8 && h > 8) {
+                    const pts = [
+                        { x: minX, y: minY },
+                        { x: maxX, y: minY },
+                        { x: maxX, y: maxY },
+                        { x: minX, y: maxY }
+                    ];
+                    const metrics = calculatePolygonMetrics(pts);
+                    pushMeasurementHistory(activeViewport);
+                    const countRoi = measurements[activeViewport].filter(m => m.type === 'polygon').length + 1;
+                    measurements[activeViewport].push({
+                        type: 'polygon',
+                        points: pts,
+                        areaCm2: metrics.areaCm2,
+                        perimeterCm: metrics.perimeterCm,
+                        cx: metrics.cx,
+                        cy: metrics.cy,
+                        label: 'ROI-' + countRoi
+                    });
+                }
+                activeBoxDrawing = null;
+                renderMeasurements(activeViewport);
+                updateMeasurementsPanel();
+                updateUndoRedoButtons();
+            }
+
+            isDragging = false;
+            isMeasuring = false;
+            isCircleDrawing = false;
+            isEllipseDrawing = false;
+            isBoxDrawing = false;
+            activeDraggingCurtainVp = null;
+        }
+
+        // Attach Viewport Interaction Listeners (Mouse + Touch)
+        [vp1, vp2].forEach((cell, idx) => {
+            if (!cell) return;
+            const vpId = idx + 1;
+
+            cell.addEventListener('mousedown', (e) => handleViewportStart(vpId, e));
+            cell.addEventListener('touchstart', (e) => handleViewportStart(vpId, e), { passive: false });
+
+            cell.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY > 0 ? -0.1 : 0.1;
+                vpState[vpId].zoom = Math.max(0.4, Math.min(3.5, vpState[vpId].zoom + delta));
+                updateTransform(vpId);
+            }, { passive: false });
+        });
+
+        // Global Move & Up Listeners (Mouse + Touch)
+        window.addEventListener('mousemove', handleViewportMove);
+        window.addEventListener('touchmove', handleViewportMove, { passive: false });
+
+        window.addEventListener('mouseup', handleViewportEnd);
+        window.addEventListener('touchend', handleViewportEnd);
+        window.addEventListener('touchcancel', handleViewportEnd);
+
+        window.addEventListener('resize', () => {
+            if (vpState[1] && vpState[1].isCurtain) applyCurtainSplit(1);
+            if (vpState[2] && vpState[2].isCurtain) applyCurtainSplit(2);
+        });
+
+        // Keyboard Shortcut: Delete / Backspace key to remove selected measurement
+        window.addEventListener('keydown', (e) => {
+            if ((e.key === 'Delete' || e.key === 'Backspace') && selectedAnnotation) {
+                const activeEl = document.activeElement;
+                if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA')) return;
+                e.preventDefault();
+                deleteSingleMeasurement(selectedAnnotation.vpId, selectedAnnotation.index);
+            }
+        });
+
+        // Quick Templates
+        function insertTemplate(type) {
+            const txt = document.getElementById('txtDiagnosis');
+            const templates = {
+                'normal': "Cor dan pulmo dalam batas normal.\nSinus kostofrenikus kanan dan kiri tajam.\nDiafragma kanan dan kiri licin.\nKesan: Normal.",
+                'cardiomegaly': "Cor membesar ke lateral kiri (CTR > 50%).\nPulmo: Corakan bronkovaskular dalam batas normal.\nSinus dan diafragma normal.\nKesan: Suspek Kardiomegali.",
+                'infiltrate': "Cor dalam batas normal.\nPulmo: Tampak infiltrat halus di lapangan paru tengah/bawah.\nSinus kostofrenikus tajam.\nKesan: Suspek Infiltrat Paru / Bronkopneumonia."
+            };
+            txt.value = (txt.value ? txt.value + "\n\n" : "") + (templates[type] || "");
+            switchDockTab('diagnosis');
+        }
+
+        function saveDiagnosis() {
+            const btn = document.querySelector('.btn-save-emr');
+            const origText = btn.innerHTML;
+            const diagnosisNotes = document.getElementById('txtDiagnosis').value;
+            const doctorName = document.getElementById('txtDoctor').value;
+
+            if (!diagnosisNotes.trim()) {
+                alert('Ketik catatan ekspertise terlebih dahulu.');
+                return;
+            }
+
+            btn.innerHTML = '⏳ Menyimpan ke EMR...';
+            btn.disabled = true;
+
+            fetch("<?php echo e(route('scans.diagnosis', $scan->id)); ?>", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+                },
+                body: JSON.stringify({
+                    diagnosis_notes: diagnosisNotes,
+                    doctor_name: doctorName
+                })
+            })
+            .then(async res => {
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Gagal menyimpan');
+                return data;
+            })
+            .then(data => {
+                showToolHint('✅', 'Ekspertise berhasil disimpan ke Rekam Medis!');
+                setTimeout(hideToolHint, 3000);
+            })
+            .catch(err => {
+                alert('Eror: ' + err.message);
+            })
+            .finally(() => {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            });
+        }
+
+        // ==========================================
+        // DICOM TAGS MODAL (PS 3.6)
+        // ==========================================
+        let rawDicomTags = [];
+
+        function openDicomTagsModal() {
+            const modal = document.getElementById('dicomTagsModal');
+            modal.style.display = 'flex';
+            const tbody = document.getElementById('tagTableBody');
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #94a3b8; padding: 1.5rem;">⏳ Mengambil kamus data DICOM NEMA PS 3.6...</td></tr>';
+
+            fetch("<?php echo e(route('scans.tags', $scan->id)); ?>")
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        rawDicomTags = data.tags;
+                        renderDicomTagsTable(rawDicomTags);
+                    }
+                })
+                .catch(err => {
+                    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #ef4444;">❌ Gagal memuat tags: ${err.message}</td></tr>`;
+                });
+        }
+
+        function closeDicomTagsModal() {
+            document.getElementById('dicomTagsModal').style.display = 'none';
+        }
+
+        function renderDicomTagsTable(tags) {
+            const tbody = document.getElementById('tagTableBody');
+            if (!tags || tags.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #64748b; padding: 1.5rem;">Tidak ada tag yang cocok.</td></tr>';
+                return;
+            }
+            let html = '';
+            tags.forEach(t => {
+                html += `
+                    <tr>
+                        <td style="color: #38bdf8; font-weight: bold;">(${t.group},${t.element})</td>
+                        <td style="color: #c084fc;">${t.vr}</td>
+                        <td style="color: #f1f5f9; font-weight: 500;">${t.description}</td>
+                        <td style="color: #10b981; font-weight: 600;">${t.value}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        function filterDicomTags() {
+            const query = document.getElementById('txtTagSearch').value.toLowerCase();
+            const filtered = rawDicomTags.filter(t => 
+                t.group.toLowerCase().includes(query) ||
+                t.element.toLowerCase().includes(query) ||
+                t.vr.toLowerCase().includes(query) ||
+                t.description.toLowerCase().includes(query) ||
+                String(t.value).toLowerCase().includes(query)
+            );
+            renderDicomTagsTable(filtered);
+        }
+
+        // ==========================================
+        // SECONDARY CAPTURE EXPORT (EXECUTIVE HOSPITAL-GRADE MED REPORT)
+        // ==========================================
+        function exportAnnotatedReport() {
+            showToolHint('⏳', 'Sedang merender lembar laporan ekspertise resmi CDC...');
+            const targetVp = activeViewport;
+            const domImg = (targetVp === 1) ? img1 : img2;
+            const activeSrc = (vpState[targetVp].denoisedSrc || vpState[targetVp].rawSrc || (domImg ? domImg.src : ''));
+
+            // High-Resolution 1600x1200 Canvas (Executive Medical Landscape)
+            const canvas = document.createElement('canvas');
+            canvas.width = 1600;
+            canvas.height = 1200;
+            const ctx = canvas.getContext('2d');
+
+            function renderExecutiveReport(imgObj) {
+                // 1. Base Canvas Background (Deep Royal Medical Matte)
+                ctx.fillStyle = '#060a14';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // ==========================================
+                // 2. KOP SURAT RESMI (OFFICIAL CLINICAL LETTERHEAD)
+                // ==========================================
+                ctx.fillStyle = '#09101f';
+                ctx.fillRect(0, 0, canvas.width, 115);
+                
+                // Top Cyan Accent Ribbon
+                const gradRibbon = ctx.createLinearGradient(0, 0, canvas.width, 0);
+                gradRibbon.addColorStop(0, '#0284c7');
+                gradRibbon.addColorStop(0.5, '#38bdf8');
+                gradRibbon.addColorStop(1, '#10b981');
+                ctx.fillStyle = gradRibbon;
+                ctx.fillRect(0, 0, canvas.width, 4);
+
+                // Clinic Logo Emblem / Cross Symbol
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.roundRect(30, 20, 52, 52, 10);
+                ctx.fill();
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 26px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('✚', 56, 46);
+
+                // Clinic Letterhead Typography
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 20px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('CAHAYA DIAGNOSTIC CENTRE (CDC SURABAYA)', 95, 36);
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('INSTALASI RADIOLOGI & DIAGNOSTIK TERPADU — PT CAHAYA MEDIKA HEALTHCARE', 95, 56);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Jl. Dharmahusada Indah Barat No. 36, Surabaya • Telp: (031) 592-7788 • Akreditasi KARS Paripurna • ISO 15189', 95, 74);
+
+                // Document Metadata Card (Top Right)
+                const docCardX = 1170, docCardY = 16, docCardW = 400, docCardH = 82;
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+                ctx.beginPath();
+                ctx.roundRect(docCardX, docCardY, docCardW, docCardH, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('LEMBAR HASIL RADIOLOGI & SECONDARY CAPTURE', docCardX + 16, docCardY + 24);
+
+                ctx.fillStyle = '#cbd5e1';
+                ctx.font = '10.5px monospace';
+                ctx.fillText(`No. Dokumen : CDC-RAD-<?php echo e(date('Ymd')); ?>-<?php echo e(str_pad($scan->id, 4, '0', STR_PAD_LEFT)); ?>`, docCardX + 16, docCardY + 44);
+                ctx.fillText(`Standar     : DICOM SC IOD (NEMA PS 3.3)`, docCardX + 16, docCardY + 62);
+
+                // ==========================================
+                // 3. DEMOGRAPHICS GRID (4-COLUMN STRUCTURED MATRIX)
+                // ==========================================
+                const demoY = 125, demoH = 80, demoX = 30, demoW = 1540;
+                ctx.fillStyle = '#0b1322';
+                ctx.beginPath();
+                ctx.roundRect(demoX, demoY, demoW, demoH, 8);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.2;
+                ctx.stroke();
+
+                // Vertical column dividers
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(demoX + 385, demoY); ctx.lineTo(demoX + 385, demoY + demoH);
+                ctx.moveTo(demoX + 770, demoY); ctx.lineTo(demoX + 770, demoY + demoH);
+                ctx.moveTo(demoX + 1155, demoY); ctx.lineTo(demoX + 1155, demoY + demoH);
+                ctx.stroke();
+
+                // Col 1: No. Rekam Medis & Accession
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('NO. REKAM MEDIS (MRN):', demoX + 16, demoY + 25);
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 13.5px monospace';
+                ctx.fillText(`<?php echo e($scan->patient_id ?: 'CDC-' . str_pad($scan->id, 5, '0', STR_PAD_LEFT)); ?>`, demoX + 16, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.fillText(`Acc: <?php echo e($scan->accession_number ?: 'ACC-' . date('Ymd') . '-' . str_pad($scan->id, 3, '0', STR_PAD_LEFT)); ?>`, demoX + 16, demoY + 65);
+
+                // Col 2: Nama Pasien & Usia
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('NAMA PASIEN / DEMOGRAFI:', demoX + 400, demoY + 25);
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 13.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`<?php echo e(strtoupper($scan->patient_name)); ?>`, demoX + 400, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`Usia: <?php echo e($scan->age ?? 42); ?> Tahun • Jenis Kelamin: <?php echo e($scan->gender === 'P' ? 'Perempuan (F)' : 'Laki-laki (M)'); ?>`, demoX + 400, demoY + 65);
+
+                // Col 3: Modalitas & Unit Pesawat
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('MODALITAS & SUMBER CITRA:', demoX + 785, demoY + 25);
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`<?php echo e($scan->modality ?: 'Thorax PA (CR)'); ?>`, demoX + 785, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.fillText(`Station: <?php echo e($scan->station_name ?: 'FUJIFILM_FDR_01'); ?>`, demoX + 785, demoY + 65);
+
+                // Col 4: Waktu & Poli Rujukan
+                ctx.fillStyle = '#64748b';
+                ctx.font = 'bold 9.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('WAKTU & ASAL RUJUKAN:', demoX + 1170, demoY + 25);
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`<?php echo e(date('d F Y')); ?>, 09:30 WIB`, demoX + 1170, demoY + 45);
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Instalasi Radiologi — CDC', demoX + 1170, demoY + 65);
+
+                // ==========================================
+                // 4. MAIN BODY (SPLIT VIEW: MEDICAL SCAN + FINDINGS)
+                // ==========================================
+                const bodyY = 220, bodyH = 920;
+                
+                // 4A. LEFT MEDICAL IMAGE VIEWPORT (W: 880px)
+                const imgAreaX = 30, imgAreaY = bodyY, imgAreaW = 880, imgAreaH = bodyH;
+                ctx.fillStyle = '#02040a';
+                ctx.beginPath();
+                ctx.roundRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH, 10);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(imgAreaX, imgAreaY, imgAreaW, imgAreaH, 10);
+                ctx.clip();
+
+                // Compute aspect ratio & placement within viewport
+                const innerImgX = imgAreaX + 10, innerImgY = imgAreaY + 10;
+                const innerImgW = imgAreaW - 20, innerImgH = imgAreaH - 20;
+                const naturalW = imgObj ? (imgObj.naturalWidth || imgObj.width || 800) : 800;
+                const naturalH = imgObj ? (imgObj.naturalHeight || imgObj.height || 800) : 800;
+                const aspect = (naturalH > 0) ? (naturalW / naturalH) : 1;
+                let drawW = innerImgW;
+                let drawH = innerImgW / aspect;
+                if (drawH > innerImgH) {
+                    drawH = innerImgH;
+                    drawW = innerImgH * aspect;
+                }
+                const drawX = innerImgX + (innerImgW - drawW) / 2;
+                const drawY = innerImgY + (innerImgH - drawH) / 2;
+
+                if (imgObj) {
+                    const st = vpState[targetVp];
+                    ctx.filter = `invert(${st.inverted ? 1 : 0}) brightness(${st.brightness}%) contrast(${st.contrast}%)`;
+                    ctx.drawImage(imgObj, drawX, drawY, drawW, drawH);
+                    ctx.filter = 'none';
+                }
+
+                // 4B. OVERLAID MEASUREMENT ANNOTATIONS ON SCAN
+                const vpElem = (targetVp === 1) ? vp1 : vp2;
+                const vpW = (vpElem && vpElem.clientWidth) ? vpElem.clientWidth : 820;
+                const vpH = (vpElem && vpElem.clientHeight) ? vpElem.clientHeight : 840;
+
+                const toCanvX = (vx) => drawX + (vx / vpW) * drawW;
+                const toCanvY = (vy) => drawY + (vy / vpH) * drawH;
+                const toCanvR = (r) => (r / Math.min(vpW, vpH)) * Math.min(drawW, drawH);
+
+                const list = measurements[targetVp] || [];
+                list.forEach(m => {
+                    if (m.type === 'circle') {
+                        const cx = toCanvX(m.cx);
+                        const cy = toCanvY(m.cy);
+                        const r = toCanvR(m.r);
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.18)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Crosshairs
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(cx - r, cy); ctx.lineTo(cx + r, cy);
+                        ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy + r);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Cardinal dots
+                        ctx.fillStyle = '#facc15';
+                        [ [cx-r, cy], [cx+r, cy], [cx, cy-r], [cx, cy+r] ].forEach(([px, py]) => {
+                            ctx.beginPath(); ctx.arc(px, py, 3.5, 0, Math.PI * 2); ctx.fill();
+                        });
+
+                        // Badge
+                        const badgeY = (cy - r - 16 >= imgAreaY + 20) ? (cy - r - 16) : (cy + r + 16);
+                        const labelText = `${m.label}: Ø ${m.diamCm} cm • ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(cx - (tw / 2) - 10, badgeY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, cx, badgeY);
+                    } else if (m.type === 'ellipse') {
+                        const cx = toCanvX(m.cx);
+                        const cy = toCanvY(m.cy);
+                        const rx = toCanvR(m.rx);
+                        const ry = toCanvR(m.ry);
+
+                        ctx.beginPath();
+                        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.18)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Crosshairs
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(cx - rx, cy); ctx.lineTo(cx + rx, cy);
+                        ctx.moveTo(cx, cy - ry); ctx.lineTo(cx, cy + ry);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        const badgeY = (cy - ry - 16 >= imgAreaY + 20) ? (cy - ry - 16) : (cy + ry + 16);
+                        const labelText = `${m.label}: ${m.d1Cm}×${m.d2Cm} cm • ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(cx - (tw / 2) - 10, badgeY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, cx, badgeY);
+                    } else if (m.type === 'polygon' && m.points && m.points.length >= 3) {
+                        ctx.beginPath();
+                        m.points.forEach((p, i) => {
+                            const px = toCanvX(p.x);
+                            const py = toCanvY(p.y);
+                            if (i === 0) ctx.moveTo(px, py);
+                            else ctx.lineTo(px, py);
+                        });
+                        ctx.closePath();
+                        ctx.fillStyle = 'rgba(250, 204, 21, 0.2)';
+                        ctx.fill();
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.stroke();
+
+                        const pcx = toCanvX(m.cx);
+                        const pcy = toCanvY(m.cy);
+                        const labelText = `${m.label}: ${m.areaCm2} cm²`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(pcx - (tw / 2) - 10, pcy - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, pcx, pcy);
+                    } else if (m.type === 'ctr') {
+                        const hx1 = toCanvX(m.heart.x1), hy1 = toCanvY(m.heart.y1);
+                        const hx2 = toCanvX(m.heart.x2), hy2 = toCanvY(m.heart.y2);
+                        const tx1 = toCanvX(m.thorax.x1), ty1 = toCanvY(m.thorax.y1);
+                        const tx2 = toCanvX(m.thorax.x2), ty2 = toCanvY(m.thorax.y2);
+
+                        // Heart line (Ruby Red)
+                        ctx.beginPath();
+                        ctx.moveTo(hx1, hy1); ctx.lineTo(hx2, hy2);
+                        ctx.strokeStyle = '#f43f5e';
+                        ctx.lineWidth = 3;
+                        ctx.stroke();
+                        ctx.fillStyle = '#f43f5e';
+                        ctx.beginPath(); ctx.arc(hx1, hy1, 4.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(hx2, hy2, 4.5, 0, Math.PI * 2); ctx.fill();
+
+                        // Thorax line (Gold Yellow)
+                        ctx.beginPath();
+                        ctx.moveTo(tx1, ty1); ctx.lineTo(tx2, ty2);
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 3;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                        ctx.fillStyle = '#facc15';
+                        ctx.beginPath(); ctx.arc(tx1, ty1, 4.5, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(tx2, ty2, 4.5, 0, Math.PI * 2); ctx.fill();
+
+                        // Mid CTR badge
+                        const midX = (hx1 + hx2 + tx1 + tx2) / 4;
+                        const midY = (hy1 + hy2 + ty1 + ty2) / 4;
+                        const badgeColor = m.isNormal ? '#10b981' : '#ef4444';
+                        const labelText = `CTR: ${m.ratio}% (${m.verdict})`;
+                        ctx.font = 'bold 12px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = badgeColor;
+                        ctx.lineWidth = 1.8;
+                        ctx.beginPath();
+                        ctx.roundRect(midX - (tw / 2) - 12, midY - 14, tw + 24, 28, 14);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = badgeColor;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, midX, midY);
+                    } else {
+                        // Linear Caliper
+                        const x1 = toCanvX(m.x1), y1 = toCanvY(m.y1);
+                        const x2 = toCanvX(m.x2), y2 = toCanvY(m.y2);
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 2.2;
+                        ctx.setLineDash([5, 5]);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        ctx.fillStyle = '#facc15';
+                        ctx.beginPath(); ctx.arc(x1, y1, 4, 0, Math.PI * 2); ctx.fill();
+                        ctx.beginPath(); ctx.arc(x2, y2, 4, 0, Math.PI * 2); ctx.fill();
+
+                        const midX = (x1 + x2) / 2;
+                        const midY = (y1 + y2) / 2;
+                        const labelText = `${m.label}: ${m.distCm} cm`;
+                        ctx.font = 'bold 11px monospace';
+                        const tw = ctx.measureText(labelText).width;
+                        ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+                        ctx.strokeStyle = '#facc15';
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.roundRect(midX - (tw / 2) - 10, midY - 11, tw + 20, 22, 11);
+                        ctx.fill();
+                        ctx.stroke();
+                        ctx.fillStyle = '#facc15';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(labelText, midX, midY);
+                    }
+                });
+
+                // 4C. DICOM HUD CORNER OVERLAYS ON MEDICAL IMAGE
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.92)';
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText('CAHAYA DIAGNOSTIC CENTRE', imgAreaX + 16, imgAreaY + 16);
+                ctx.font = '10.5px monospace';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.fillText('<?php echo e(strtoupper($scan->patient_name)); ?>', imgAreaX + 16, imgAreaY + 34);
+                ctx.fillText('MRN: <?php echo e($scan->patient_id ?: "CDC-" . str_pad($scan->id, 5, "0", STR_PAD_LEFT)); ?>', imgAreaX + 16, imgAreaY + 52);
+
+                ctx.textAlign = 'right';
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+                ctx.fillText(targetVp === 1 ? '<?php echo e($patientSeries[0]["name"] ?? ($scan->modality ?: "Thorax PA")); ?>' : '<?php echo e($patientSeries[1]["name"] ?? "USG Abdomen"); ?>', imgAreaX + imgAreaW - 16, imgAreaY + 16);
+                ctx.fillText('Station: <?php echo e($scan->station_name ?: "FUJIFILM_FDR"); ?>', imgAreaX + imgAreaW - 16, imgAreaY + 34);
+
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'bottom';
+                const st = vpState[targetVp];
+                const engineLabel = st.denoisedSrc ? (st.engine || 'Bilateral Filter (Denoised)') : 'RAW Acquisition (Original CR)';
+                ctx.fillText(`Mode: ${engineLabel}`, imgAreaX + 16, imgAreaY + imgAreaH - 34);
+                ctx.fillText(`WW: 400 | WL: 40 | Scale: 0.8000 mm/px`, imgAreaX + 16, imgAreaY + imgAreaH - 16);
+
+                ctx.textAlign = 'right';
+                ctx.fillText('Hyu PACS Workstation v2.0', imgAreaX + imgAreaW - 16, imgAreaY + imgAreaH - 34);
+                ctx.fillText('SOP: 1.2.840.10008.5.1.4.1.1.7', imgAreaX + imgAreaW - 16, imgAreaY + imgAreaH - 16);
+
+                ctx.restore();
+
+                // ==========================================
+                // 5. RIGHT SECTION: STRUCTURED CLINICAL DOSSIER (W: 630px)
+                // ==========================================
+                const panelX = 940, panelY = bodyY, panelW = 630, panelH = bodyH;
+                ctx.fillStyle = '#0b1322';
+                ctx.beginPath();
+                ctx.roundRect(panelX, panelY, panelW, panelH, 10);
+                ctx.fill();
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+
+                // Left Blue Accent Stripe on Dossier
+                ctx.fillStyle = '#0284c7';
+                ctx.beginPath();
+                ctx.roundRect(panelX, panelY, 5, panelH, [10, 0, 0, 10]);
+                ctx.fill();
+
+                // Section Header
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 16px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText('LEMBAR HASIL EKSPERTISE RADIOLOG', panelX + 25, panelY + 38);
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '11.5px "Plus Jakarta Sans", sans-serif';
+                const docVal = document.getElementById('txtDoctor').value || 'dr. Bambang Sp.Rad';
+                ctx.fillText(`Dokter Pemeriksa: ${docVal} • Tanggal: ${new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`, panelX + 25, panelY + 60);
+
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, panelY + 75); ctx.lineTo(panelX + panelW - 25, panelY + 75);
+                ctx.stroke();
+
+                let curY = panelY + 105;
+
+                // ------------------------------------------
+                // 5A. CARD HASIL PENGUKURAN KUANTITATIF
+                // ------------------------------------------
+                ctx.fillStyle = '#facc15';
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('I. ANALISIS KUANTITATIF & PENGUKURAN RADIOLOGI:', panelX + 25, curY);
+                curY += 20;
+
+                const ctrMeasurement = list.find(m => m.type === 'ctr');
+                if (ctrMeasurement) {
+                    // Highlighted CTR Clinical Box
+                    const isNormal = ctrMeasurement.isNormal;
+                    const ctrBoxBg = isNormal ? 'rgba(16, 185, 129, 0.08)' : 'rgba(239, 68, 68, 0.08)';
+                    const ctrBorder = isNormal ? '#10b981' : '#ef4444';
+                    
+                    ctx.fillStyle = ctrBoxBg;
+                    ctx.beginPath();
+                    ctx.roundRect(panelX + 25, curY, panelW - 50, 68, 6);
+                    ctx.fill();
+                    ctx.strokeStyle = ctrBorder;
+                    ctx.lineWidth = 1.2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = isNormal ? '#10b981' : '#ef4444';
+                    ctx.font = 'bold 14px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(`🫀 Cardio-Thoracic Ratio (CTR): ${ctrMeasurement.ratio}% [${ctrMeasurement.verdict.toUpperCase()}]`, panelX + 40, curY + 26);
+
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '11px monospace';
+                    ctx.fillText(`• Transversal Jantung (A+B): ${ctrMeasurement.heart.distCm} cm | Toraks Internal (C): ${ctrMeasurement.thorax.distCm} cm`, panelX + 40, curY + 48);
+                    curY += 80;
+                }
+
+                // Other Calipers / Circles / Ellipses
+                const otherMeasurements = list.filter(m => m.type !== 'ctr');
+                if (otherMeasurements.length === 0 && !ctrMeasurement) {
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = 'italic 11.5px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText('Tidak ada anotasi/lesi fokal khusus yang diukur.', panelX + 25, curY);
+                    curY += 24;
+                } else if (otherMeasurements.length > 0) {
+                    otherMeasurements.forEach(m => {
+                        ctx.fillStyle = '#38bdf8';
+                        ctx.font = 'bold 11px monospace';
+                        if (m.type === 'circle') {
+                            ctx.fillText(`• ${m.label} (Lingkaran Nodul): Ø ${m.diamCm} cm (Luas Area: ${m.areaCm2} cm²)`, panelX + 25, curY);
+                        } else if (m.type === 'ellipse') {
+                            ctx.fillText(`• ${m.label} (Oval Lesi): ${m.d1Cm} × ${m.d2Cm} cm (Luas Area: ${m.areaCm2} cm²)`, panelX + 25, curY);
+                        } else if (m.type === 'polygon') {
+                            ctx.fillText(`• ${m.label} (Area Poligon): Luas ${m.areaCm2} cm² (Keliling: ${m.perimeterCm} cm)`, panelX + 25, curY);
+                        } else {
+                            ctx.fillText(`• ${m.label} (Linear Caliper): Panjang ${m.distCm} cm`, panelX + 25, curY);
+                        }
+                        curY += 20;
+                    });
+                }
+
+                curY += 15;
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, curY); ctx.lineTo(panelX + panelW - 25, curY);
+                ctx.stroke();
+                curY += 25;
+
+                // ------------------------------------------
+                // 5B. DESKRIPSI TEMUAN RADIOLOGIS (RSNA FORMAT)
+                // ------------------------------------------
+                ctx.fillStyle = '#facc15';
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('II. DESKRIPSI RADIOLOGIS ANATOMI:', panelX + 25, curY);
+                curY += 22;
+
+                const anatomiRows = [
+                    { organ: 'COR', desc: ctrMeasurement ? `CTR ${ctrMeasurement.ratio}%, apeks ${ctrMeasurement.isNormal ? 'tidak tertanam' : 'tertanam/membesar'}.` : 'Bentuk dan ukuran dalam batas normal, CTR < 50%.' },
+                    { organ: 'PULMO', desc: 'Corakan bronkovaskular normal. Tidak tampak infiltrat, konsolidasi, maupun nodul aktif.' },
+                    { organ: 'SINUS & DIAFRAGMA', desc: 'Sinus kostofrenikus kanan & kiri lancip/tajam. Hemidiafragma licin.' },
+                    { organ: 'TULANG & DINDING DADA', desc: 'Struktur tulang kosta dan klavikula intak. Soft tissue dinding dada simetris.' }
+                ];
+
+                anatomiRows.forEach(row => {
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.font = 'bold 11px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(`• ${row.organ}:`, panelX + 25, curY);
+                    
+                    ctx.fillStyle = '#cbd5e1';
+                    ctx.font = '11px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillText(row.desc, panelX + 35, curY + 16);
+                    curY += 34;
+                });
+
+                curY += 10;
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, curY); ctx.lineTo(panelX + panelW - 25, curY);
+                ctx.stroke();
+                curY += 25;
+
+                // ------------------------------------------
+                // 5C. KESAN / KESIMPULAN KLINIS (IMPRESSION)
+                // ------------------------------------------
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 12.5px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('III. KESAN / KESIMPULAN KLINIS (IMPRESSION):', panelX + 25, curY);
+                curY += 18;
+
+                // Callout Impression Box
+                const diagText = document.getElementById('txtDiagnosis').value.trim() || 'Cor dan pulmo dalam batas normal. Tidak tampak kelainan radiologis aktif.';
+                const lines = diagText.split('\n');
+                const boxH = Math.max(65, lines.length * 20 + 26);
+
+                ctx.fillStyle = 'rgba(2, 132, 199, 0.08)';
+                ctx.beginPath();
+                ctx.roundRect(panelX + 25, curY, panelW - 50, boxH, 6);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(56, 189, 248, 0.4)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                let diagY = curY + 22;
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 12px "Plus Jakarta Sans", sans-serif';
+                lines.forEach(l => {
+                    ctx.fillText(l.substring(0, 68), panelX + 40, diagY);
+                    diagY += 20;
+                });
+
+                // ------------------------------------------
+                // 5D. VALIDASI DIGITAL & TANDA TANGAN DOKTER (FOOTER PANEL)
+                // ------------------------------------------
+                const signBoxY = panelY + panelH - 120;
+                
+                ctx.strokeStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.moveTo(panelX + 25, signBoxY - 15); ctx.lineTo(panelX + panelW - 25, signBoxY - 15);
+                ctx.stroke();
+
+                // QR Code Verification Symbol (Left)
+                ctx.fillStyle = '#1e293b';
+                ctx.beginPath();
+                ctx.roundRect(panelX + 25, signBoxY, 80, 80, 6);
+                ctx.fill();
+                ctx.fillStyle = '#38bdf8';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('HYU PACS', panelX + 65, signBoxY + 35);
+                ctx.fillText('VERIFIED', panelX + 65, signBoxY + 50);
+
+                // Validation Text (Right)
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('Dokter Spesialis Radiologi Penanggung Jawab:', panelX + 120, signBoxY + 16);
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 13px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText(`${docVal}`, panelX + 120, signBoxY + 36);
+
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('SIP: 503/4421/SIP.DS/436.7.2/2024 • CDC Medical Centre', panelX + 120, signBoxY + 54);
+
+                ctx.fillStyle = '#10b981';
+                ctx.font = 'bold 10px "Plus Jakarta Sans", sans-serif';
+                ctx.fillText('✓ TERVALIDASI SECARA ELEKTRONIK (DIGITALLY SIGNED)', panelX + 120, signBoxY + 72);
+
+                // ==========================================
+                // 6. BOTTOM SYSTEM FOOTER DISCLAIMER
+                // ==========================================
+                ctx.fillStyle = '#475569';
+                ctx.font = '10px "Plus Jakarta Sans", sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('Dokumen ini merupakan Laporan Hasil Radiologi Resmi yang diterbitkan secara elektronik melalui Sistem Hyu PACS & RIS PT Cahaya Medika Healthcare. Informasi di dalamnya bersifat RAHASIA MEDIS.', canvas.width / 2, canvas.height - 18);
+
+                // Trigger Instant High-Quality PNG Download
+                const link = document.createElement('a');
+                const cleanDoc = docVal.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                const cleanPatient = '<?php echo e($scan->patient_name); ?>'.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+                link.download = `Laporan_Radiologi_CDC_${cleanDoc}_${cleanPatient}.png`;
+                link.href = canvas.toDataURL('image/png', 1.0);
+                link.click();
+                showToolHint('✅', 'Lembar laporan ekspertise resmi CDC berhasil diekspor!');
+                setTimeout(hideToolHint, 3000);
+            }
+
+            // Reliable Image Load Dispatcher
+            if (domImg && domImg.complete && domImg.naturalWidth > 0 && (!vpState[targetVp].denoisedSrc || domImg.src === activeSrc)) {
+                renderExecutiveReport(domImg);
+            } else {
+                const scanImg = new Image();
+                scanImg.onload = () => renderExecutiveReport(scanImg);
+                scanImg.onerror = () => {
+                    console.warn('[Hyu PACS] Fallback drawing without image loader');
+                    renderExecutiveReport(domImg || null);
+                };
+                scanImg.src = activeSrc;
+            }
+        }
+
+        // Global Keyboard Shortcuts for Workstation (Ctrl+Z: Undo, Ctrl+Y / Ctrl+Shift+Z: Redo)
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) return;
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+                if (e.shiftKey) {
+                    e.preventDefault();
+                    redoLastMeasurement();
+                } else {
+                    e.preventDefault();
+                    undoLastMeasurement();
+                }
+            } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'y') {
+                e.preventDefault();
+                redoLastMeasurement();
+            }
+        });
+
+        // Initial update for Undo/Redo buttons
+        updateUndoRedoButtons();
+    </script>
+
+    <!-- Modal DICOM Tags Inspector -->
+    <div class="modal-backdrop" id="dicomTagsModal" onclick="if(event.target === this) closeDicomTagsModal()">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">DICOM Data Dictionary & Tag Inspector</div>
+                        <div style="font-size: 0.725rem; color: #94a3b8;">NEMA DICOM PS 3.6 Compliance Dataset</div>
+                    </div>
+                </div>
+                <button onclick="closeDicomTagsModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div style="padding: 0.75rem 1.25rem; background: #090e1a; border-bottom: 1px solid #1e293b;">
+                <input type="text" id="txtTagSearch" oninput="filterDicomTags()" placeholder="Cari nama tag atau nomor elemen (misal: 0010, 0028)..." style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 0.5rem 0.85rem; border-radius: 6px; font-size: 0.8rem; outline: none;">
+            </div>
+            <div class="modal-body">
+                <table class="tag-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Tag (Group,Elem)</th>
+                            <th style="width: 10%;">VR</th>
+                            <th style="width: 37%;">Nama Elemen (NEMA PS 3.6)</th>
+                            <th style="width: 35%;">Nilai Metadata</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tagTableBody"></tbody>
+                </table>
+            </div>
+            <div style="padding: 0.75rem 1.25rem; background: #0f172a; border-top: 1px solid #1e293b; display: flex; justify-content: flex-end;">
+                <button onclick="closeDicomTagsModal()" class="tool-btn" style="padding: 0.4rem 1rem;">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal DICOM Node Setup -->
+    <div class="modal-backdrop" id="dicomConfigModal" onclick="if(event.target === this) closeDicomConfigModal()">
+        <div class="modal-content" style="max-width: 480px;">
+            <div class="modal-header">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    <div>
+                        <div style="font-size: 0.95rem; font-weight: 700; color: #f8fafc;">⚙️ Konfigurasi DICOM Node (SCP Service)</div>
+                        <div style="font-size: 0.725rem; color: #94a3b8;">NEMA PS 3.4 Storage & Worklist SCP Settings</div>
+                    </div>
+                </div>
+                <button onclick="closeDicomConfigModal()" style="background: none; border: none; color: #94a3b8; font-size: 1.25rem; cursor: pointer;">✕</button>
+            </div>
+            <div class="modal-body" style="padding: 1.25rem;">
+                <form id="formShowDicomConfig" onsubmit="saveDicomNodeConfig(event)">
+                    <?php echo csrf_field(); ?>
+                    <div style="font-size: 0.76rem; color: #94a3b8; margin-bottom: 1.25rem; line-height: 1.4; background: rgba(2, 132, 199, 0.1); padding: 0.6rem 0.85rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.25);">
+                        Parameter jaringan ini disesuaikan dengan konfigurasi <em>Destination PACS Server</em> pada mesin Rontgen Fujifilm / USG Mindray klinik.
+                    </div>
+
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.35rem; font-weight: 600;">Application Entity Title (AE Title)</label>
+                        <input type="text" id="cfgShowAeTitle" name="ae_title" value="<?php echo e($pacsConfig['ae_title'] ?? 'HYU_PACS'); ?>" required maxlength="16" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: #38bdf8; padding: 0.55rem 0.85rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700; outline: none;">
+                        <span style="font-size: 0.68rem; color: #64748b;">Maks. 16 Karakter Alfanumerik (NEMA PS 3.5). Default: HYU_PACS</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.35rem; font-weight: 600;">Port Jaringan DICOM *</label>
+                            <input type="number" id="cfgShowPort" name="port" value="<?php echo e($pacsConfig['port'] ?? '4242'); ?>" required min="1" max="65535" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 0.55rem 0.85rem; border-radius: 6px; font-family: monospace; font-size: 0.85rem; font-weight: 700; outline: none;">
+                            <span style="font-size: 0.68rem; color: #64748b;">Port: 4242 / 104 / 11112</span>
+                        </div>
+                        <div>
+                            <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.35rem; font-weight: 600;">IP Host Binding</label>
+                            <input type="text" value="0.0.0.0 (All LAN)" disabled style="width: 100%; background: #1e293b; border: 1px solid #334155; color: #94a3b8; padding: 0.55rem 0.85rem; border-radius: 6px; font-family: monospace; font-size: 0.8rem;">
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.25rem;">
+                        <label style="display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.35rem; font-weight: 600;">Sumber Modalitas / Target Hardware</label>
+                        <input type="text" id="cfgShowModality" name="modality_source" value="<?php echo e($pacsConfig['modality_ae'] ?? 'FUJIFILM (CR) & MINDRAY (US)'); ?>" style="width: 100%; background: #0f172a; border: 1px solid #334155; color: white; padding: 0.55rem 0.85rem; border-radius: 6px; font-size: 0.85rem; outline: none;">
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; border-top: 1px solid #1e293b; padding-top: 1rem;">
+                        <button type="button" onclick="closeDicomConfigModal()" class="tool-btn" style="padding: 0.45rem 1rem;">Batal</button>
+                        <button type="submit" id="btnSaveShowDicomCfg" class="btn-action-primary" style="padding: 0.45rem 1.2rem; font-size: 0.78rem;">
+                            💾 Simpan Konfigurasi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openDicomConfigModal() {
+            document.getElementById('dicomConfigModal').style.display = 'flex';
+        }
+
+        function closeDicomConfigModal() {
+            document.getElementById('dicomConfigModal').style.display = 'none';
+        }
+
+        function saveDicomNodeConfig(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnSaveShowDicomCfg');
+            const origText = btn.innerHTML;
+            btn.innerHTML = '⏳ Menyimpan...';
+            btn.disabled = true;
+
+            const ae = document.getElementById('cfgShowAeTitle').value.trim();
+            const port = document.getElementById('cfgShowPort').value.trim();
+            const modality = document.getElementById('cfgShowModality').value.trim();
+
+            fetch("<?php echo e(route('settings.dicom-node')); ?>", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": "<?php echo e(csrf_token()); ?>"
+                },
+                body: JSON.stringify({
+                    ae_title: ae,
+                    port: port,
+                    modality_source: modality
+                })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    const navPort = document.getElementById('navPortDisplay');
+                    if (navPort) navPort.innerText = data.port;
+                    showToolHint('⚙️', `Konfigurasi DICOM Node berhasil diperbarui! (AE: ${data.ae_title}, Port: ${data.port})`);
+                    setTimeout(hideToolHint, 4000);
+                    closeDicomConfigModal();
+                } else {
+                    alert("❌ Gagal menyimpan konfigurasi.");
+                }
+            })
+            .catch(err => {
+                alert("❌ Terjadi kesalahan: " + err.message);
+            })
+            .finally(() => {
+                btn.innerHTML = origText;
+                btn.disabled = false;
+            });
+        }
+
+        // ============================================================
+        // VIEW MENU — VS Code-style cascading menu
+        // ============================================================
+        (function () {
+            'use strict';
+
+            const toggle  = document.getElementById('viewMenuToggle');
+            const panel   = document.getElementById('viewMenuPanel');
+
+            if (!toggle || !panel) return; // guard: only runs when $hasExamined
+
+            // ── State ───────────────────────────────────────────────
+            let _isPanelOpen   = false;
+            let _openGroupEl   = null;
+            let _subLeaveTimer = null;
+            const DELAY_CLOSE  = 300; // ms — cukup panjang untuk pindah ke submenu nested
+
+            // ── Helpers ─────────────────────────────────────────────
+            function _closeAllSubs() {
+                document.querySelectorAll('.vm-group.vm-sub-open').forEach(function (g) {
+                    g.classList.remove('vm-sub-open');
+                });
+                _openGroupEl = null;
+            }
+
+            function _closePanel() {
+                panel.hidden = true;
+                _isPanelOpen = false;
+                toggle.setAttribute('aria-expanded', 'false');
+                toggle.classList.remove('vm-open');
+                _closeAllSubs();
+            }
+
+            function _openPanel() {
+                panel.hidden = false;
+                _isPanelOpen = true;
+                toggle.setAttribute('aria-expanded', 'true');
+                toggle.classList.add('vm-open');
+                requestAnimationFrame(_adjustSubMenuDirections);
+            }
+
+            function _adjustSubMenuDirections() {
+                panel.querySelectorAll('.vm-submenu').forEach(function (sub) {
+                    sub.classList.remove('vm-sub-left');
+                    const rect = sub.getBoundingClientRect();
+                    if (rect.right > window.innerWidth - 8) {
+                        sub.classList.add('vm-sub-left');
+                    }
+                    if (rect.bottom > window.innerHeight - 8) {
+                        sub.style.top = (-(rect.bottom - (window.innerHeight - 8)) - 4) + 'px';
+                    } else {
+                        sub.style.top = '-1px';
+                    }
+                });
+            }
+
+            // ── Public API ────────────────────────────────────────────
+            window.vmToggle = function (e) {
+                e.stopPropagation();
+                _isPanelOpen ? _closePanel() : _openPanel();
+            };
+
+            window.vmCloseAll = function () {
+                _closePanel();
+            };
+
+            window.vmSubOpen = function (groupEl) {
+                clearTimeout(_subLeaveTimer);
+                if (groupEl.classList.contains('vm-sub-open')) return;
+
+                // Hanya tutup sibling vm-groups pada level yang sama (parent node yang sama),
+                // sehingga ancestor tetap terbuka
+                var parent = groupEl.parentNode;
+                if (parent) {
+                    parent.querySelectorAll(':scope > .vm-group.vm-sub-open').forEach(function (g) {
+                        if (g !== groupEl) {
+                            g.classList.remove('vm-sub-open');
+                            // Tutup juga nested submenu di dalam sibling
+                            g.querySelectorAll('.vm-group.vm-sub-open').forEach(function (nested) {
+                                nested.classList.remove('vm-sub-open');
+                            });
+                        }
+                    });
+                }
+
+                groupEl.classList.add('vm-sub-open');
+                _openGroupEl = groupEl;
+                requestAnimationFrame(_adjustSubMenuDirections);
+            };
+
+            window.vmSubLeave = function (groupEl) {
+                _subLeaveTimer = setTimeout(function () {
+                    // Tutup groupEl dan semua nested sub-open di dalamnya
+                    groupEl.classList.remove('vm-sub-open');
+                    groupEl.querySelectorAll('.vm-group.vm-sub-open').forEach(function (nested) {
+                        nested.classList.remove('vm-sub-open');
+                    });
+                    if (_openGroupEl === groupEl) _openGroupEl = null;
+                }, DELAY_CLOSE);
+            };
+
+            window.vmSubKeep = function () {
+                clearTimeout(_subLeaveTimer);
+            };
+
+            // ── Window Preset ─────────────────────────────────────────
+            const PRESET_NAMES = { default: 'Default', lung: 'Lung', bone: 'Bone', soft: 'Soft tissue' };
+            const PRESET_KEYS  = ['default', 'lung', 'bone', 'soft'];
+            const PRESET_CHK   = ['vmChkDefault', 'vmChkLung', 'vmChkBone', 'vmChkSoft'];
+
+            function _syncWindowCheck(preset) {
+                PRESET_KEYS.forEach(function (k, i) {
+                    const el = document.getElementById(PRESET_CHK[i]);
+                    if (el) el.textContent = (k === preset) ? '✓' : '';
+                });
+                const valEl = document.getElementById('vmWindowValue');
+                if (valEl) valEl.textContent = PRESET_NAMES[preset] || 'Default';
+            }
+
+            window.vmApplyPreset = function (preset) {
+                applyPreset(preset);
+                _syncWindowCheck(preset);
+            };
+
+            // Observe hidden lblActivePreset to catch resets from elsewhere
+            const lblHidden = document.getElementById('lblActivePreset');
+            if (lblHidden) {
+                new MutationObserver(function () {
+                    const txt = lblHidden.innerText || '';
+                    let key = 'default';
+                    if (txt.includes('Lung'))      key = 'lung';
+                    else if (txt.includes('Bone')) key = 'bone';
+                    else if (txt.includes('Soft')) key = 'soft';
+                    _syncWindowCheck(key);
+                }).observe(lblHidden, { childList: true, subtree: true, characterData: true });
+            }
+
+            // ── Orientasi Toggles ─────────────────────────────────────
+            function _syncOrientasiChecks() {
+                if (typeof vpState === 'undefined' || typeof activeViewport === 'undefined') return;
+                const st = vpState[activeViewport] || {};
+                const chkH = document.getElementById('vmChkFlipH');
+                const chkV = document.getElementById('vmChkFlipV');
+                const chkI = document.getElementById('vmChkInvert');
+                if (chkH) chkH.textContent = st.flipH    ? '✓' : '';
+                if (chkV) chkV.textContent = st.flipV    ? '✓' : '';
+                if (chkI) chkI.textContent = st.inverted ? '✓' : '';
+            }
+
+            window.vmFlipH = function () { flipHorizontal(); _syncOrientasiChecks(); };
+            window.vmFlipV = function () { flipVertical();   _syncOrientasiChecks(); };
+            window.vmInvert = function () { toggleInvert();  _syncOrientasiChecks(); };
+
+            // Patch selectViewport & resetViewer to keep Orientasi checks in sync
+            const _origSelect = window.selectViewport;
+            if (typeof _origSelect === 'function') {
+                window.selectViewport = function (id) { _origSelect(id); _syncOrientasiChecks(); };
+            }
+            const _origReset = window.resetViewer;
+            if (typeof _origReset === 'function') {
+                window.resetViewer = function () { _origReset(); _syncOrientasiChecks(); _syncWindowCheck('default'); };
+            }
+
+            // ── Keyboard ──────────────────────────────────────────────
+            document.addEventListener('keydown', function (e) {
+                if (!_isPanelOpen) return;
+                if (e.key === 'Escape') {
+                    e.stopPropagation();
+                    if (_openGroupEl) {
+                        _closeAllSubs();
+                    } else {
+                        _closePanel();
+                        toggle.focus();
+                    }
+                }
+            }, true);
+
+            // Arrow nav inside panel
+            panel.addEventListener('keydown', function (e) {
+                const groups = Array.from(panel.querySelectorAll('.vm-group'));
+                const cur = document.activeElement && document.activeElement.closest('.vm-group');
+                const idx = groups.indexOf(cur);
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    const next = groups[(idx + 1) % groups.length];
+                    if (next) next.focus();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    const prev = groups[(idx - 1 + groups.length) % groups.length];
+                    if (prev) prev.focus();
+                } else if (e.key === 'ArrowRight' && cur) {
+                    e.preventDefault();
+                    vmSubOpen(cur);
+                    const firstItem = cur.querySelector('.vm-item');
+                    if (firstItem) firstItem.focus();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    _closeAllSubs();
+                    if (cur) cur.focus();
+                }
+            });
+
+            // ── Initial sync ──────────────────────────────────────────
+            requestAnimationFrame(function () {
+                _syncWindowCheck('default');
+                _syncOrientasiChecks();
+            });
+
+        })();
+        // ── END VIEW MENU ─────────────────────────────────────────────
+
+    </script>
+
+
+
+    <!-- ─────────────────────────────────────────────────────────────
+         GLOSSARY MODAL — GlossaryModal component
+         Load data source first, then the modal logic
+    ───────────────────────────────────────────────────────────────── -->
+    <script src="<?php echo e(asset('js/glossary-data.js')); ?>?v=<?php echo e(time()); ?>"></script>
+
+    <!-- Modal HTML -->
+    <div id="glossaryModal" class="gl-modal-overlay" role="dialog" aria-modal="true"
+         aria-labelledby="glModalTitle" aria-describedby="glModalSummary"
+         onclick="handleGlossaryOverlayClick(event)">
+        <div class="gl-modal-card" id="glossaryModalCard" tabindex="-1">
+
+            <div class="gl-modal-head">
+                <div>
+                    <div class="gl-modal-title" id="glModalTitle">—</div>
+                    <div class="gl-modal-subtitle" id="glModalSubtitle">—</div>
+                </div>
+                <button class="gl-modal-close" id="glModalCloseBtn"
+                    onclick="closeGlossaryModal()" aria-label="Tutup modal">&times;</button>
+            </div>
+
+            <div class="gl-modal-body">
+                <p id="glModalSummary"></p>
+                <div id="glModalFormulaWrap" style="display:none;">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin-top:.75rem;margin-bottom:.2rem;">Rumus / Formula</div>
+                    <code class="gl-modal-formula" id="glModalFormula"></code>
+                </div>
+                <div id="glModalHowWrap" style="display:none;">
+                    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#475569;margin-top:.6rem;margin-bottom:.2rem;">Cara Membaca Nilai</div>
+                    <div class="gl-modal-how">✅ <span id="glModalHow"></span></div>
+                </div>
+                <div class="gl-modal-disclaimer">
+                    ⚠️ Metrik ini adalah ukuran teknis kualitas citra — bukan penilaian diagnostik klinis.
+                    Interpretasi medis harus dilakukan oleh radiolog bersertifikat.
+                </div>
+            </div>
+
+            <div class="gl-modal-foot">
+                <button class="gl-btn-secondary" id="glBtnKembali"
+                    onclick="closeGlossaryModal()">Kembali</button>
+                <a  class="gl-btn-primary" id="glBtnLearnMore"
+                    href="#" target="_self">📖 Pelajari lebih lanjut</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ──────────────────────────────────────────────────────────────
+         * GlossaryModal — TermHint system
+         *
+         * Public API:
+         *   openGlossaryModal(termId, triggerEl)  — open modal for a term
+         *   closeGlossaryModal()                  — close modal
+         * ────────────────────────────────────────────────────────────── */
+
+        (function () {
+            'use strict';
+
+            const overlay    = document.getElementById('glossaryModal');
+            const card       = document.getElementById('glossaryModalCard');
+            const btnClose   = document.getElementById('glModalCloseBtn');
+            const btnLearn   = document.getElementById('glBtnLearnMore');
+
+            // Track which trigger element opened the modal (for focus-return)
+            let _triggerEl = null;
+
+            /* ── Open ──────────────────────────────────────────────── */
+            window.openGlossaryModal = function (termId, triggerEl) {
+                const entry = (typeof GLOSSARY_MAP !== 'undefined') ? GLOSSARY_MAP[termId] : null;
+                if (!entry) {
+                    console.warn('[GlossaryModal] Term not found:', termId);
+                    return;
+                }
+
+                _triggerEl = triggerEl || null;
+
+                // Populate title & subtitle
+                document.getElementById('glModalTitle').textContent =
+                    entry.abbreviation + ' — ' + entry.fullName;
+                document.getElementById('glModalSubtitle').textContent =
+                    (typeof GLOSSARY_CATEGORIES !== 'undefined')
+                        ? GLOSSARY_CATEGORIES[entry.category] || ''
+                        : '';
+
+                // Summary
+                document.getElementById('glModalSummary').textContent = entry.summary;
+
+                // Formula
+                const formulaWrap = document.getElementById('glModalFormulaWrap');
+                const formulaEl   = document.getElementById('glModalFormula');
+                if (entry.formula) {
+                    formulaEl.textContent  = entry.formula;
+                    formulaWrap.style.display = '';
+                } else {
+                    formulaWrap.style.display = 'none';
+                }
+
+                // How to read
+                const howWrap = document.getElementById('glModalHowWrap');
+                const howEl   = document.getElementById('glModalHow');
+                if (entry.howToRead) {
+                    howEl.textContent  = entry.howToRead;
+                    howWrap.style.display = '';
+                } else {
+                    howWrap.style.display = 'none';
+                }
+
+                // "Pelajari lebih lanjut" link → /glosarium#<id>
+                btnLearn.href = '<?php echo e(route('glossary.index')); ?>' + '#' + entry.id;
+
+                // Lock body scroll
+                document.body.style.overflow = 'hidden';
+
+                // Show overlay
+                overlay.classList.add('open');
+
+                // Focus trap — focus the card
+                requestAnimationFrame(() => {
+                    card.focus();
+                    trapFocusInstall();
+                });
+            };
+
+            /* ── Close ─────────────────────────────────────────────── */
+            window.closeGlossaryModal = function () {
+                overlay.classList.remove('open');
+                document.body.style.overflow = '';
+                trapFocusRemove();
+
+                // Return focus to the triggering "?" button
+                if (_triggerEl) {
+                    _triggerEl.focus();
+                    _triggerEl = null;
+                }
+            };
+
+            /* ── Overlay click (close if clicking the dark backdrop) ── */
+            window.handleGlossaryOverlayClick = function (e) {
+                if (e.target === overlay) closeGlossaryModal();
+            };
+
+            /* ── Keyboard: Esc closes, Tab is trapped ───────────────── */
+            document.addEventListener('keydown', function (e) {
+                if (!overlay.classList.contains('open')) return;
+                if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closeGlossaryModal();
+                }
+            });
+
+            /* ── Focus Trap ─────────────────────────────────────────── */
+            function getFocusableEls() {
+                return Array.from(card.querySelectorAll(
+                    'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                ));
+            }
+
+            function trapFocusHandler(e) {
+                if (e.key !== 'Tab') return;
+                const focusable = getFocusableEls();
+                if (focusable.length === 0) return;
+                const first = focusable[0];
+                const last  = focusable[focusable.length - 1];
+
+                if (e.shiftKey) {
+                    if (document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    }
+                } else {
+                    if (document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
+            }
+
+            function trapFocusInstall()  { document.addEventListener('keydown', trapFocusHandler); }
+            function trapFocusRemove()   { document.removeEventListener('keydown', trapFocusHandler); }
+        })();
+    </script>
+
+    
+    <?php echo app('Illuminate\Foundation\Vite')('resources/js/image-processing/contrast-panel.js'); ?>
+</body>
+</html>
+<?php /**PATH D:\laragon\www\belajar-laravel\resources\views/scans/show.blade.php ENDPATH**/ ?>

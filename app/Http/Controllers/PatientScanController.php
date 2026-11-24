@@ -4,11 +4,63 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\MedicalScan;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Facades\Storage;
 
 class PatientScanController extends Controller
 {
+    /**
+     * Normalisasi & validasi ketat string tanggal pencarian (Subbab 3.14)
+     * Hanya menerima dua format:
+     * 1. YYYY-MM-DD (format tetap standar input type="date")
+     * 2. MM/DD/YYYY (format bergaris miring tunggal sesuai tampilan UI date picker)
+     * Pola 'd/m/Y' dan 'Y/m/d' telah dihapus untuk menghilangkan ambiguitas (misal: 05/09/2026).
+     * Validasi ketat: tanggal diformat ulang dan dibandingkan dengan input asli; tolak jika berbeda
+     * (mencegah tanggal meluap, seperti bulan 21).
+     */
+    private function parseSearchDate(?string $rawDate): ?string
+    {
+        if (empty($rawDate) || !is_string($rawDate)) {
+            return null;
+        }
+        $trimmed = trim($rawDate);
+
+        // 1. Format tetap standar input type="date": YYYY-MM-DD
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $trimmed)) {
+            try {
+                $d = Carbon::createFromFormat('Y-m-d', $trimmed);
+                // Validasi ketat: format ulang harus sama persis dengan input asli
+                if ($d && $d->format('Y-m-d') === $trimmed) {
+                    return $trimmed;
+                }
+            } catch (\Throwable $e) {
+                return null;
+            }
+            return null;
+        }
+
+        // 2. Format bergaris miring: HANYA m/d/Y (MM/DD/YYYY sesuai tampilan date picker)
+        if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $trimmed, $m)) {
+            $padded = sprintf('%02d/%02d/%04d', (int) $m[1], (int) $m[2], (int) $m[3]);
+            try {
+                $d = Carbon::createFromFormat('m/d/Y', $padded);
+                // Validasi ketat: format ulang harus sama persis dengan $padded
+                // Jika tanggal meluap (misal bulan 21: '21/09/2026' -> '09/09/2027'), otomatis ditolak!
+                if ($d && $d->format('m/d/Y') === $padded) {
+                    return $d->format('Y-m-d');
+                }
+            } catch (\Throwable $e) {
+                return null;
+            }
+            return null;
+        }
+
+        // Format selain YYYY-MM-DD dan MM/DD/YYYY ditolak
+        return null;
+    }
+
     /**
      * Dashboard Utama MCU & Radiologi Terpadu Hyu
      * Menggantikan fungsi Labsync & teraPACS secara mandiri
@@ -22,21 +74,31 @@ class PatientScanController extends Controller
             $query->where('mcu_status', $request->status);
         }
 
+        $filterDate = null;
         if ($request->filled('date')) {
-            $dateStr = $request->date;
-            $dateCompact = str_replace('-', '', $dateStr);
-            $query->where(function ($q) use ($dateStr, $dateCompact) {
-                $q->whereDate('created_at', $dateStr)
-                  ->orWhere('accession_number', 'like', "%{$dateCompact}%");
-            });
+            $dateStr = $this->parseSearchDate($request->date);
+            if ($dateStr) {
+                $filterDate = $dateStr;
+                $dateCompact = str_replace('-', '', $dateStr);
+                $query->where(function ($q) use ($dateStr, $dateCompact) {
+                    $q->whereDate('created_at', $dateStr)
+                      ->orWhere('accession_number', 'like', "%{$dateCompact}%");
+                });
+            }
         }
 
         if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
+            $fromStr = $this->parseSearchDate($request->date_from);
+            if ($fromStr) {
+                $query->whereDate('created_at', '>=', $fromStr);
+            }
         }
 
         if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
+            $toStr = $this->parseSearchDate($request->date_to);
+            if ($toStr) {
+                $query->whereDate('created_at', '<=', $toStr);
+            }
         }
 
         if ($request->filled('search')) {
@@ -54,18 +116,26 @@ class PatientScanController extends Controller
         // Statistik Dashboard Pos MCU (menyesuaikan filter tanggal jika dipilih)
         $statsBase = MedicalScan::query();
         if ($request->filled('date')) {
-            $dateStr = $request->date;
-            $dateCompact = str_replace('-', '', $dateStr);
-            $statsBase->where(function ($q) use ($dateStr, $dateCompact) {
-                $q->whereDate('created_at', $dateStr)
-                  ->orWhere('accession_number', 'like', "%{$dateCompact}%");
-            });
+            $dateStr = $this->parseSearchDate($request->date);
+            if ($dateStr) {
+                $dateCompact = str_replace('-', '', $dateStr);
+                $statsBase->where(function ($q) use ($dateStr, $dateCompact) {
+                    $q->whereDate('created_at', $dateStr)
+                      ->orWhere('accession_number', 'like', "%{$dateCompact}%");
+                });
+            }
         }
         if ($request->filled('date_from')) {
-            $statsBase->whereDate('created_at', '>=', $request->date_from);
+            $fromStr = $this->parseSearchDate($request->date_from);
+            if ($fromStr) {
+                $statsBase->whereDate('created_at', '>=', $fromStr);
+            }
         }
         if ($request->filled('date_to')) {
-            $statsBase->whereDate('created_at', '<=', $request->date_to);
+            $toStr = $this->parseSearchDate($request->date_to);
+            if ($toStr) {
+                $statsBase->whereDate('created_at', '<=', $toStr);
+            }
         }
 
         $stats = [
@@ -83,7 +153,7 @@ class PatientScanController extends Controller
             'modality_ae' => env('DICOM_MODALITY_SOURCE', 'FUJIFILM (CR) & MINDRAY (US)'),
         ];
 
-        return view('scans.index', compact('scans', 'stats', 'pacsConfig'));
+        return view('scans.index', compact('scans', 'stats', 'pacsConfig', 'filterDate'));
     }
 
 
@@ -329,6 +399,7 @@ class PatientScanController extends Controller
 
         $validated = $request->validate([
             'engine'       => ['nullable', 'string', 'max:100', 'regex:/^[a-zA-Z0-9_:\-]+$/'],
+            'level'        => 'nullable|string|in:auto,15,25,50,Auto',
             'sigma_color'  => 'nullable|numeric|min:1|max:250',
             'sigma_space'  => 'nullable|numeric|min:1|max:250',
             'viewport'     => 'nullable|integer|in:1,2',
@@ -336,6 +407,7 @@ class PatientScanController extends Controller
         ]);
 
         $engine      = $validated['engine'] ?? 'bilateral';
+        $level       = strtolower($validated['level'] ?? 'auto');
         $sigmaColor  = (float) ($validated['sigma_color'] ?? 25);
         $sigmaSpace  = (float) ($validated['sigma_space'] ?? 20);
 
@@ -429,12 +501,30 @@ class PatientScanController extends Controller
             $engine,
             (string) $sigmaColor,
             (string) $sigmaSpace,
-            $residualPath
+            $residualPath,
+            (string) $level
         ];
-        $result = Process::env($env)->timeout(60)->run($command);
+        $tStart = microtime(true);
+        $result = Process::env($env)->timeout(90)->run($command);
+        $totalProcMs = round((microtime(true) - $tStart) * 1000, 1);
 
         $stdout = trim($result->output());
-        $jsonRes = json_decode($stdout, true);
+
+        // 2. Baca JSON pada baris terakhir stdout
+        $lines = array_values(array_filter(preg_split('/\r\n|\r|\n/', $stdout), fn($line) => trim($line) !== ''));
+        $lastLine = count($lines) > 0 ? end($lines) : '{}';
+        $jsonRes = json_decode($lastLine, true);
+
+        // Jika "ok" bernilai false, tampilkan isi "error" di UI
+        if (is_array($jsonRes) && isset($jsonRes['ok']) && $jsonRes['ok'] === false) {
+            $errorMsg = $jsonRes['error'] ?? 'Terjadi kesalahan pada inferensi model DnCNN.';
+            return response()->json([
+                'status'  => 'error',
+                'ok'      => false,
+                'message' => $errorMsg,
+                'error'   => $errorMsg
+            ], 422);
+        }
 
         if ($result->successful() && file_exists($outputPath) && is_array($jsonRes) && ($jsonRes['status'] ?? '') === 'success') {
             $relDenoisedPath = "scan-assets/denoised_scan_{$id}_vp{$viewport}.jpg";
@@ -444,8 +534,23 @@ class PatientScanController extends Controller
                 $scan->update(['denoised_image_path' => $relDenoisedPath]);
             }
 
+            // 4. Simpan "level", "device", "infer_ms", dan "total_ms" ke log untuk pengukuran latensi
+            if (isset($jsonRes['level']) || isset($jsonRes['device']) || isset($jsonRes['infer_ms'])) {
+                Log::info('DnCNN inference measurement (Subbab 3.13)', [
+                    'scan_id'   => $id,
+                    'viewport'  => $viewport,
+                    'level'     => $jsonRes['level'] ?? null,
+                    'device'    => $jsonRes['device'] ?? null,
+                    'infer_ms'  => $jsonRes['infer_ms'] ?? null,
+                    'total_ms'  => $totalProcMs,
+                    'load_ms'   => $jsonRes['load_ms'] ?? null,
+                    'method'    => $jsonRes['method_name'] ?? $jsonRes['engine'] ?? null,
+                ]);
+            }
+
             return response()->json([
                 'status'         => 'success',
+                'ok'             => true,
                 'viewport'       => $viewport,
                 'image_url'      => asset($relDenoisedPath) . '?t=' . time(),
                 'residual_url'   => file_exists($residualPath) ? (asset($relResidualPath) . '?t=' . time()) : null,
@@ -454,6 +559,10 @@ class PatientScanController extends Controller
                 'method_name'    => $jsonRes['method_name'] ?? $jsonRes['engine'] ?? 'Medical Processing',
                 'parameters'     => $jsonRes['parameters'] ?? $jsonRes['details'] ?? [],
                 'metrics'        => $jsonRes['metrics'] ?? [],
+                'level'          => $jsonRes['level'] ?? null,
+                'device'         => $jsonRes['device'] ?? null,
+                'infer_ms'       => $jsonRes['infer_ms'] ?? ($jsonRes['metrics']['inference_time_ms'] ?? null),
+                'total_ms'       => $totalProcMs,
                 'dicom_metadata' => $jsonRes['dicom_metadata'] ?? null,
                 'message'        => 'Pemrosesan citra radiologi berhasil diaplikasikan.'
             ]);
@@ -556,17 +665,52 @@ class PatientScanController extends Controller
             (string) $sigmaColor,
             (string) $sigmaSpace
         ];
-        $result = Process::env($env)->timeout(60)->run($command);
+        $tStart = microtime(true);
+        $result = Process::env($env)->timeout(120)->run($command);
+        $totalProcMs = round((microtime(true) - $tStart) * 1000, 1);
 
         $stdout = trim($result->output());
-        $jsonRes = json_decode($stdout, true);
+
+        // 2. Baca JSON pada baris terakhir stdout
+        $lines = array_values(array_filter(preg_split('/\r\n|\r|\n/', $stdout), fn($line) => trim($line) !== ''));
+        $lastLine = count($lines) > 0 ? end($lines) : '{}';
+        $jsonRes = json_decode($lastLine, true);
+
+        // Jika "ok" bernilai false, tampilkan isi "error" di UI
+        if (is_array($jsonRes) && isset($jsonRes['ok']) && $jsonRes['ok'] === false) {
+            $errorMsg = $jsonRes['error'] ?? 'Gagal menjalankan benchmark algoritma.';
+            return response()->json([
+                'status'  => 'error',
+                'ok'      => false,
+                'message' => $errorMsg,
+                'error'   => $errorMsg
+            ], 422);
+        }
 
         if ($result->successful() && is_array($jsonRes) && ($jsonRes['status'] ?? '') === 'success') {
+            // 4. Simpan "level", "device", "infer_ms", dan "total_ms" ke log untuk pengukuran latensi
+            $dncnnRow = collect($jsonRes['benchmark_rows'] ?? [])->firstWhere('id', 'dl_dncnn');
+            if ($dncnnRow) {
+                Log::info('DnCNN benchmark latency measurement (Subbab 3.13)', [
+                    'scan_id'  => $id,
+                    'viewport' => $viewport,
+                    'level'    => $dncnnRow['level'] ?? ($jsonRes['level'] ?? null),
+                    'device'   => $dncnnRow['device'] ?? ($jsonRes['device'] ?? null),
+                    'infer_ms' => $dncnnRow['infer_ms'] ?? ($jsonRes['infer_ms'] ?? null),
+                    'total_ms' => $totalProcMs,
+                ]);
+            }
+
             return response()->json([
                 'status'         => 'success',
+                'ok'             => true,
                 'viewport'       => $viewport,
                 'benchmark_rows' => $jsonRes['benchmark_rows'] ?? [],
                 'recommended'    => $jsonRes['recommended_engine'] ?? 'dl_dncnn',
+                'level'          => $jsonRes['level'] ?? null,
+                'device'         => $jsonRes['device'] ?? null,
+                'infer_ms'       => $jsonRes['infer_ms'] ?? null,
+                'total_ms'       => $totalProcMs,
                 'message'        => 'Benchmark komparasi 4 algoritma berhasil dieksekusi.'
             ]);
         } else {

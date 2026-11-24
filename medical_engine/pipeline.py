@@ -24,6 +24,14 @@ try:
 except Exception:
     BoneSuppressionEngine = None
 
+try:
+    from .dncnn import denoise as dncnn_denoise
+except Exception:
+    try:
+        from medical_engine.dncnn import denoise as dncnn_denoise
+    except Exception:
+        dncnn_denoise = None
+
 
 def run_pipeline(input_path, output_path, task="enhancement_clahe", **kwargs):
     """
@@ -170,10 +178,26 @@ def run_pipeline(input_path, output_path, task="enhancement_clahe", **kwargs):
             output_img = cv2.fastNlMeansDenoising(base_uint8, None, h=max(2.0, sig_c/10.0), templateWindowSize=5, searchWindowSize=15)
             method_name = "Non-Local Means (NLM - Buades 2005)"
         elif task in ["dl_dncnn", "dncnn"]:
-            dn_base = cv2.bilateralFilter(base_uint8, d=5, sigmaColor=min(sig_c, 35.0), sigmaSpace=min(sig_s, 25.0))
-            g_blur = cv2.GaussianBlur(dn_base, (0, 0), 1.5)
-            output_img = np.clip(cv2.addWeighted(dn_base, 1.35, g_blur, -0.35, 0), 0, 255).astype(np.uint8)
-            method_name = "Deep Residual CNN (DnCNN 2017)"
+            level_arg = kwargs.get("level", "auto")
+            if dncnn_denoise is not None:
+                try:
+                    output_img, dncnn_info = dncnn_denoise(base_uint8, level=level_arg)
+                    method_name = dncnn_info.get("method", "DnCNN (pretrained)")
+                    extra_info = dncnn_info
+                except Exception as e:
+                    return {
+                        "ok": False,
+                        "status": "error",
+                        "error": f"{type(e).__name__}: {str(e)}",
+                        "message": f"DnCNN error: {str(e)}"
+                    }
+            else:
+                return {
+                    "ok": False,
+                    "status": "error",
+                    "error": "RuntimeError: Modul medical_engine.dncnn tidak tersedia",
+                    "message": "Modul medical_engine.dncnn tidak tersedia"
+                }
         else:
             output_img = cv2.bilateralFilter(base_uint8, d=d_val, sigmaColor=sig_c, sigmaSpace=sig_s)
             method_name = "Bilateral Filter (Tomasi 1998)"
@@ -185,10 +209,14 @@ def run_pipeline(input_path, output_path, task="enhancement_clahe", **kwargs):
     elapsed_ms = round((time.time() - start_time) * 1000, 1)
 
     return {
+        "ok": True,
         "status": "success",
         "category": category,
         "method_name": method_name,
         "task": task,
+        "level": extra_info.get("level") if isinstance(extra_info, dict) else None,
+        "device": extra_info.get("device") if isinstance(extra_info, dict) else None,
+        "infer_ms": extra_info.get("infer_ms") if isinstance(extra_info, dict) else None,
         "is_dicom_source": is_dicom,
         "output_path": output_path,
         "resolution": f"{meta.get('rows', output_img.shape[0])} x {meta.get('columns', output_img.shape[1])}",
