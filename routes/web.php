@@ -48,6 +48,9 @@ Route::post('/scans/{id}/benchmark', [PatientScanController::class, 'runBenchmar
 
 // Endpoint untuk memicu simulasi transmisi DICOM C-STORE dari mesin Fujifilm
 Route::post('/scans/simulate-fuji', [PatientScanController::class, 'simulateFuji'])->name('scans.simulate-fuji')->middleware('throttle:10,1');
+Route::post('/scans/simulate-usg-cine', [PatientScanController::class, 'simulateUsgCine'])->name('scans.simulate-usg-cine')->middleware('throttle:10,1');
+Route::post('/scans/import-dicom', [PatientScanController::class, 'importDicomFile'])->name('scans.import-dicom')->middleware('throttle:30,1');
+Route::get('/api/scans/{id}/cine-frames', [PatientScanController::class, 'getCineFrames'])->name('scans.cine-frames')->middleware('throttle:60,1');
 
 // Endpoint API Modality Worklist JSON (antrian rontgen)
 Route::get('/api/worklist', [PatientScanController::class, 'getWorklistJson'])->name('scans.worklist')->middleware('throttle:60,1');

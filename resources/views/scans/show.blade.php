@@ -613,6 +613,178 @@
             cursor: zoom-in !important;
         }
 
+        /* Cine Player Bar Overlay (.CIN / Multi-Frame Ultrasound) */
+        .cine-player-bar {
+            position: absolute;
+            bottom: 35px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: rgba(15, 23, 42, 0.94);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(56, 189, 248, 0.45);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75), 0 0 15px rgba(56, 189, 248, 0.2);
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            z-index: 15;
+            max-width: 92%;
+            width: 480px;
+            user-select: none;
+            transition: all 0.2s ease;
+        }
+        .cine-player-bar:hover {
+            border-color: rgba(56, 189, 248, 0.8);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.85), 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+        .cine-controls-left {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .btn-cine-action {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            color: #f1f5f9;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .btn-cine-action:hover {
+            background: #38bdf8;
+            color: #020617;
+            border-color: #38bdf8;
+            transform: scale(1.08);
+        }
+        .btn-cine-action.btn-cine-play {
+            background: #0284c7;
+            color: #ffffff;
+            border-color: #38bdf8;
+            width: 32px;
+            height: 32px;
+            font-size: 0.85rem;
+        }
+        .btn-cine-action.btn-cine-play:hover {
+            background: #38bdf8;
+            color: #020617;
+        }
+        .cine-slider-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            min-width: 0;
+        }
+        .cine-scrubber {
+            flex: 1;
+            -webkit-appearance: none;
+            appearance: none;
+            height: 5px;
+            border-radius: 3px;
+            background: #334155;
+            outline: none;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .cine-scrubber::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(56, 189, 248, 0.8);
+            border: 2px solid #ffffff;
+            transition: transform 0.1s;
+        }
+        .cine-scrubber::-webkit-slider-thumb:hover {
+            transform: scale(1.25);
+        }
+        .cine-frame-indicator {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.68rem;
+            color: #38bdf8;
+            font-weight: 600;
+            white-space: nowrap;
+            min-width: 48px;
+            text-align: right;
+        }
+        .cine-controls-right {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .cine-fps-group {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        .cine-fps-dropdown {
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-family: 'JetBrains Mono', monospace;
+            padding: 2px 4px;
+            cursor: pointer;
+        }
+        .cine-fps-dropdown:hover {
+            border-color: #38bdf8;
+            color: #f1f5f9;
+        }
+        .btn-cine-mode {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 4px;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+        .btn-cine-mode:hover, .btn-cine-mode.active {
+            opacity: 1;
+        }
+        .btn-cine-video-export {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            color: #38bdf8;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.15s;
+        }
+        .btn-cine-video-export:hover {
+            background: #38bdf8;
+            color: #020617;
+        }
+        .badge-cine-hud {
+            background: rgba(56, 189, 248, 0.2);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            font-weight: 700;
+            font-size: 0.65rem;
+            padding: 2px 5px;
+            border-radius: 4px;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
         /* Viewport Header Bar */
         .viewport-header-hud {
             position: absolute;
@@ -2827,17 +2999,27 @@
                 @foreach($patientSeries as $idx => $s)
                     <div class="series-thumb-card {{ $idx === 0 ? 'active-vp1' : 'active-vp2' }}" 
                          id="seriesCard_{{ $s['id'] }}"
-                         onclick="loadSeriesActive('{{ asset($s['image_path']) }}', '{{ $s['name'] }}', '{{ $s['study'] }}', '{{ $s['station'] }}', '{{ $s['matrix'] }}', '{{ $s['id'] }}')">
+                         onclick="loadSeriesActiveByIndex({{ $idx }})">
                         
                         <div class="thumb-preview-box">
                             <span class="thumb-badge-float" style="background: {{ $s['badge_color'] }}25; color: {{ $s['badge_color'] }}; border: 1px solid {{ $s['badge_color'] }}50;">
                                 {{ $s['badge'] }}
                             </span>
+                            @if(!empty($s['is_cine']))
+                                <span style="position: absolute; bottom: 4px; right: 4px; background: rgba(56, 189, 248, 0.95); color: #020617; font-size: 0.58rem; font-weight: 800; padding: 1px 4px; border-radius: 3px; z-index: 2; box-shadow: 0 1px 3px rgba(0,0,0,0.5);">
+                                    ▶ CINE {{ $s['frame_count'] ?? 1 }}F
+                                </span>
+                            @endif
                             <img src="{{ asset($s['image_path']) }}?v={{ time() }}" alt="{{ $s['name'] }}">
                         </div>
 
                         <div class="thumb-meta">
-                            <strong>{{ $s['name'] }}</strong>
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.3rem;">
+                                <strong>{{ $s['name'] }}</strong>
+                                @if(!empty($s['is_cine']))
+                                    <span style="font-size: 0.6rem; color: #38bdf8; font-weight: 700;">CINE</span>
+                                @endif
+                            </div>
                             <div style="font-size: 0.65rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 {{ $s['study'] }}
                             </div>
@@ -2847,10 +3029,10 @@
                         </div>
 
                         <div class="thumb-actions-bar" onclick="event.stopPropagation()">
-                            <button class="btn-load-vp" onclick="loadSeriesToVp(1, '{{ asset($s['image_path']) }}', '{{ $s['name'] }}', '{{ $s['study'] }}', '{{ $s['station'] }}', '{{ $s['matrix'] }}', '{{ $s['id'] }}')" title="Muat ke Viewport A (Kiri)">
+                            <button class="btn-load-vp" onclick="loadSeriesToVpByIndex(1, {{ $idx }})" title="Muat ke Viewport A (Kiri)">
                                 ◧ Ke VP-A
                             </button>
-                            <button class="btn-load-vp btn-vp2" onclick="loadSeriesToVp(2, '{{ asset($s['image_path']) }}', '{{ $s['name'] }}', '{{ $s['study'] }}', '{{ $s['station'] }}', '{{ $s['matrix'] }}', '{{ $s['id'] }}')" title="Muat ke Viewport B (Kanan)">
+                            <button class="btn-load-vp btn-vp2" onclick="loadSeriesToVpByIndex(2, {{ $idx }})" title="Muat ke Viewport B (Kanan)">
                                 ◨ Ke VP-B
                             </button>
                         </div>
@@ -2896,6 +3078,9 @@
                 <div class="dicom-hud hud-bottom-left">
                     Zoom: <span id="lblZoom">100%</span><br>
                     <span id="lblWwWl">WW: 400 | WL: 40 (Default)</span>
+                    <div id="cineHudBadge1" style="display: none; margin-top: 4px;">
+                        <span class="badge-cine-hud">▶ CINE LOOP: <span id="cineHudFrameCount1">19</span> FRAMES</span>
+                    </div>
                 </div>
                 <div class="dicom-hud hud-bottom-right">
                     Hyu PACS &bull; Viewport A<br>
@@ -2922,6 +3107,36 @@
                     <!-- Measurement Canvas Overlay inside Stage Layer -->
                     <svg class="measurement-canvas" id="svgMeasure1"></svg>
                 </div>
+
+                <!-- CINE PLAYER BAR (ULTRASOUND MULTI-FRAME / .CIN PLAYBACK VP1) -->
+                <div class="cine-player-bar" id="cinePlayerBar1" style="display: none;" onclick="event.stopPropagation()">
+                    <div class="cine-controls-left">
+                        <button type="button" class="btn-cine-action btn-cine-play" id="btnCinePlay1" onclick="toggleCinePlay(1)" title="Play / Pause Cine Loop (Spasi)">
+                            <span id="cinePlayIcon1">▶</span>
+                        </button>
+                        <button type="button" class="btn-cine-action" onclick="stepCineFrame(1, -1)" title="Frame Sebelumnya (Panah Kiri)">⏮</button>
+                        <button type="button" class="btn-cine-action" onclick="stepCineFrame(1, 1)" title="Frame Selanjutnya (Panah Kanan)">⏭</button>
+                    </div>
+                    <div class="cine-slider-wrap">
+                        <input type="range" class="cine-scrubber" id="cineSlider1" min="1" max="1" value="1" oninput="onCineSliderInput(1, this.value)">
+                        <span class="cine-frame-indicator" id="cineFrameDisplay1">1 / 1</span>
+                    </div>
+                    <div class="cine-controls-right">
+                        <div class="cine-fps-group">
+                            <span style="font-size: 0.65rem; color: #94a3b8;">FPS:</span>
+                            <select class="cine-fps-dropdown" id="cineFps1" onchange="setCineFps(1, this.value)">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="19" selected>19</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn-cine-mode active" id="btnCineLoop1" onclick="toggleCineLoopMode(1)" title="Mode Pengulangan Loop">🔁</button>
+                        <a id="cineVideoLink1" href="#" target="_blank" class="btn-cine-video-export" style="display: none;" title="Unduh Video MP4 Cine">⬇ MP4</a>
+                    </div>
+                </div>
             </div>
 
             <!-- Viewport 2 (VP-B: Secondary Multimodal - USG / Comparison) -->
@@ -2944,6 +3159,9 @@
                 <div class="dicom-hud hud-bottom-left">
                     Zoom: <span id="lblZoom2">100%</span><br>
                     Modality: {{ $patientSeries[1]['badge'] ?? ($patientSeries[0]['badge'] ?? 'CR') }}
+                    <div id="cineHudBadge2" style="display: none; margin-top: 4px;">
+                        <span class="badge-cine-hud">▶ CINE LOOP: <span id="cineHudFrameCount2">19</span> FRAMES</span>
+                    </div>
                 </div>
                 <div class="dicom-hud hud-bottom-right">
                     Hyu PACS &bull; Viewport B<br>
@@ -2968,6 +3186,36 @@
                          src="{{ asset($patientSeries[1]['image_path'] ?? $patientSeries[0]['image_path']) }}?v={{ time() }}" 
                          alt="Denoised Scan VP2">
                     <svg class="measurement-canvas" id="svgMeasure2"></svg>
+                </div>
+
+                <!-- CINE PLAYER BAR (ULTRASOUND MULTI-FRAME / .CIN PLAYBACK VP2) -->
+                <div class="cine-player-bar" id="cinePlayerBar2" style="display: none;" onclick="event.stopPropagation()">
+                    <div class="cine-controls-left">
+                        <button type="button" class="btn-cine-action btn-cine-play" id="btnCinePlay2" onclick="toggleCinePlay(2)" title="Play / Pause Cine Loop (Spasi)">
+                            <span id="cinePlayIcon2">▶</span>
+                        </button>
+                        <button type="button" class="btn-cine-action" onclick="stepCineFrame(2, -1)" title="Frame Sebelumnya (Panah Kiri)">⏮</button>
+                        <button type="button" class="btn-cine-action" onclick="stepCineFrame(2, 1)" title="Frame Selanjutnya (Panah Kanan)">⏭</button>
+                    </div>
+                    <div class="cine-slider-wrap">
+                        <input type="range" class="cine-scrubber" id="cineSlider2" min="1" max="1" value="1" oninput="onCineSliderInput(2, this.value)">
+                        <span class="cine-frame-indicator" id="cineFrameDisplay2">1 / 1</span>
+                    </div>
+                    <div class="cine-controls-right">
+                        <div class="cine-fps-group">
+                            <span style="font-size: 0.65rem; color: #94a3b8;">FPS:</span>
+                            <select class="cine-fps-dropdown" id="cineFps2" onchange="setCineFps(2, this.value)">
+                                <option value="5">5</option>
+                                <option value="10">10</option>
+                                <option value="15">15</option>
+                                <option value="19" selected>19</option>
+                                <option value="25">25</option>
+                                <option value="30">30</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn-cine-mode active" id="btnCineLoop2" onclick="toggleCineLoopMode(2)" title="Mode Pengulangan Loop">🔁</button>
+                        <a id="cineVideoLink2" href="#" target="_blank" class="btn-cine-video-export" style="display: none;" title="Unduh Video MP4 Cine">⬇ MP4</a>
+                    </div>
                 </div>
             </div>
 
@@ -3756,9 +4004,21 @@
         let isMultimodal = false;
         let isDrawerOpen = (window.innerWidth > 768);
 
+        const patientSeriesData = @json($patientSeries);
+
         const vpState = {
-            1: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' },
-            2: { zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '' }
+            1: { 
+                zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, 
+                inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', 
+                residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '',
+                isCine: false, cineFrames: [], cineFps: 15, currentFrame: 0, isPlaying: false, cineTimer: null, cineLoopMode: 'loop', cineDirection: 1, videoUrl: null
+            },
+            2: { 
+                zoom: 1, translateX: 0, translateY: 0, rotation: 0, flipH: false, flipV: false, 
+                inverted: false, brightness: 100, contrast: 100, rawSrc: '', denoisedSrc: '', 
+                residualSrc: '', isResidual: false, isCurtain: false, curtainPos: 50, metrics: null, engine: '',
+                isCine: false, cineFrames: [], cineFps: 15, currentFrame: 0, isPlaying: false, cineTimer: null, cineLoopMode: 'loop', cineDirection: 1, videoUrl: null
+            }
         };
         window.vpState = vpState; // Exposed for ContrastPanel module
 
@@ -3857,6 +4117,10 @@
         // Init Initial Image Sources & Drawer Responsive State
         if (img1) vpState[1].rawSrc = img1.src;
         if (img2) vpState[2].rawSrc = img2.src;
+        if (typeof patientSeriesData !== 'undefined' && Array.isArray(patientSeriesData)) {
+            if (patientSeriesData.length > 0) initCineForViewport(1, patientSeriesData[0]);
+            if (patientSeriesData.length > 1) initCineForViewport(2, patientSeriesData[1]);
+        }
         @if(!empty($scan->denoised_image_path) && file_exists(public_path($scan->denoised_image_path)))
             vpState[1].denoisedSrc = "{{ asset($scan->denoised_image_path) }}?v={{ time() }}";
             if (img1Denoised) img1Denoised.src = vpState[1].denoisedSrc;
@@ -3911,7 +4175,7 @@
         }
 
         // Load Series into Specific Viewport (1=A, 2=B)
-        function loadSeriesToVp(targetVp, imgUrl, name, studyDesc, station, matrix, cardId) {
+        function loadSeriesToVp(targetVp, imgUrl, name, studyDesc, station, matrix, cardId, seriesObj) {
             const targetImg = (targetVp === 1) ? img1 : img2;
             const targetDenoisedImg = (targetVp === 1) ? img1Denoised : img2Denoised;
             const cContainer = (targetVp === 1) ? curtainContainer1 : curtainContainer2;
@@ -3951,6 +4215,13 @@
                 selectViewport(2);
             }
 
+            // Inisialisasi Cine Player jika seri adalah Multi-Frame / .CIN
+            let resolvedSeries = seriesObj;
+            if (!resolvedSeries && typeof patientSeriesData !== 'undefined' && Array.isArray(patientSeriesData)) {
+                resolvedSeries = patientSeriesData.find(s => s.id === cardId || s.name === name || s.image_path === imgUrl);
+            }
+            initCineForViewport(targetVp, resolvedSeries);
+
             showToolHint('📂', `Memuat ${name} ke Viewport ${targetVp === 1 ? 'A (Kiri)' : 'B (Kanan)'}`);
             setTimeout(hideToolHint, 2500);
 
@@ -3960,12 +4231,220 @@
         }
 
         // Load Series into Currently Active Viewport
-        function loadSeriesActive(imgUrl, name, studyDesc, station, matrix, cardId) {
-            loadSeriesToVp(activeViewport, imgUrl, name, studyDesc, station, matrix, cardId);
+        function loadSeriesActive(imgUrl, name, studyDesc, station, matrix, cardId, seriesObj) {
+            loadSeriesToVp(activeViewport, imgUrl, name, studyDesc, station, matrix, cardId, seriesObj);
             if (window.innerWidth <= 768 && isDrawerOpen) {
                 toggleSeriesDrawer();
             }
         }
+
+        function loadSeriesToVpByIndex(targetVp, seriesIndex) {
+            if (!patientSeriesData || !patientSeriesData[seriesIndex]) return;
+            const s = patientSeriesData[seriesIndex];
+            loadSeriesToVp(targetVp, s.image_path, s.name, s.study, s.station, s.matrix, s.id, s);
+        }
+
+        function loadSeriesActiveByIndex(seriesIndex) {
+            loadSeriesToVpByIndex(activeViewport, seriesIndex);
+        }
+
+        /* ─── CINE PLAYER CONTROLLER (.CIN / MULTI-FRAME ULTRASOUND) ─── */
+        function initCineForViewport(vpId, series) {
+            stopCinePlay(vpId);
+
+            const isCine = !!(series && series.is_cine && series.frames && series.frames.length > 1);
+            const playerBar = document.getElementById(`cinePlayerBar${vpId}`);
+            const hudBadge = document.getElementById(`cineHudBadge${vpId}`);
+            const hudCount = document.getElementById(`cineHudFrameCount${vpId}`);
+            const slider = document.getElementById(`cineSlider${vpId}`);
+            const display = document.getElementById(`cineFrameDisplay${vpId}`);
+            const fpsSelect = document.getElementById(`cineFps${vpId}`);
+            const videoLink = document.getElementById(`cineVideoLink${vpId}`);
+
+            if (isCine) {
+                const frames = series.frames;
+                const fps = parseFloat(series.cine_fps) || 19.0;
+                vpState[vpId].isCine = true;
+                vpState[vpId].cineFrames = frames;
+                vpState[vpId].cineFps = fps;
+                vpState[vpId].currentFrame = 0;
+                vpState[vpId].videoUrl = series.video_path || null;
+
+                if (playerBar) playerBar.style.display = 'flex';
+                if (hudBadge) hudBadge.style.display = 'block';
+                if (hudCount) hudCount.innerText = frames.length;
+                if (slider) {
+                    slider.min = 1;
+                    slider.max = frames.length;
+                    slider.value = 1;
+                }
+                if (display) display.innerText = `1 / ${frames.length}`;
+                if (fpsSelect) {
+                    const roundedFps = Math.round(fps);
+                    if ([...fpsSelect.options].some(o => parseInt(o.value) === roundedFps)) {
+                        fpsSelect.value = roundedFps;
+                    }
+                }
+                if (videoLink) {
+                    if (series.video_path) {
+                        videoLink.href = series.video_path;
+                        videoLink.style.display = 'inline-flex';
+                    } else {
+                        videoLink.style.display = 'none';
+                    }
+                }
+                updateCinePlayButtonUi(vpId, false);
+            } else {
+                vpState[vpId].isCine = false;
+                vpState[vpId].cineFrames = [];
+                vpState[vpId].currentFrame = 0;
+                if (playerBar) playerBar.style.display = 'none';
+                if (hudBadge) hudBadge.style.display = 'none';
+            }
+        }
+
+        function toggleCinePlay(vpId) {
+            if (!vpState[vpId].isCine || !vpState[vpId].cineFrames.length) return;
+            if (vpState[vpId].isPlaying) {
+                stopCinePlay(vpId);
+            } else {
+                startCinePlay(vpId);
+            }
+        }
+
+        function startCinePlay(vpId) {
+            if (!vpState[vpId].isCine || !vpState[vpId].cineFrames.length) return;
+            stopCinePlay(vpId);
+            vpState[vpId].isPlaying = true;
+            updateCinePlayButtonUi(vpId, true);
+
+            const intervalMs = Math.max(16, Math.round(1000.0 / (vpState[vpId].cineFps || 15.0)));
+            vpState[vpId].cineTimer = setInterval(() => {
+                advanceCineFrame(vpId, 1);
+            }, intervalMs);
+        }
+
+        function stopCinePlay(vpId) {
+            if (vpState[vpId].cineTimer) {
+                clearInterval(vpState[vpId].cineTimer);
+                vpState[vpId].cineTimer = null;
+            }
+            vpState[vpId].isPlaying = false;
+            updateCinePlayButtonUi(vpId, false);
+        }
+
+        function updateCinePlayButtonUi(vpId, isPlaying) {
+            const icon = document.getElementById(`cinePlayIcon${vpId}`);
+            const btn = document.getElementById(`btnCinePlay${vpId}`);
+            if (icon) icon.innerText = isPlaying ? '⏸' : '▶';
+            if (btn) btn.title = isPlaying ? 'Pause Cine Loop (Spasi)' : 'Play Cine Loop (Spasi)';
+        }
+
+        function advanceCineFrame(vpId, step) {
+            const frames = vpState[vpId].cineFrames;
+            const total = frames.length;
+            if (total <= 1) return;
+
+            let cur = vpState[vpId].currentFrame;
+            const mode = vpState[vpId].cineLoopMode || 'loop';
+
+            if (mode === 'loop') {
+                cur = (cur + step + total) % total;
+            } else if (mode === 'bounce') {
+                let dir = vpState[vpId].cineDirection || 1;
+                cur += (step * dir);
+                if (cur >= total) {
+                    cur = total - 2;
+                    vpState[vpId].cineDirection = -1;
+                } else if (cur < 0) {
+                    cur = 1;
+                    vpState[vpId].cineDirection = 1;
+                }
+            } else {
+                cur += step;
+                if (cur >= total) {
+                    cur = total - 1;
+                    stopCinePlay(vpId);
+                } else if (cur < 0) {
+                    cur = 0;
+                    stopCinePlay(vpId);
+                }
+            }
+
+            renderCineFrame(vpId, cur);
+        }
+
+        function stepCineFrame(vpId, delta) {
+            stopCinePlay(vpId);
+            advanceCineFrame(vpId, delta);
+        }
+
+        function onCineSliderInput(vpId, val) {
+            stopCinePlay(vpId);
+            const frameIdx = parseInt(val, 10) - 1;
+            renderCineFrame(vpId, frameIdx);
+        }
+
+        function renderCineFrame(vpId, frameIdx) {
+            const frames = vpState[vpId].cineFrames;
+            if (!frames || frameIdx < 0 || frameIdx >= frames.length) return;
+
+            vpState[vpId].currentFrame = frameIdx;
+            const targetImg = (vpId === 1) ? img1 : img2;
+            const frameUrl = frames[frameIdx];
+
+            if (targetImg) {
+                targetImg.src = frameUrl;
+                vpState[vpId].rawSrc = frameUrl;
+            }
+
+            const slider = document.getElementById(`cineSlider${vpId}`);
+            const display = document.getElementById(`cineFrameDisplay${vpId}`);
+            if (slider) slider.value = frameIdx + 1;
+            if (display) display.innerText = `${frameIdx + 1} / ${frames.length}`;
+        }
+
+        function setCineFps(vpId, fpsVal) {
+            const newFps = Math.max(1, Math.min(60, parseFloat(fpsVal) || 15.0));
+            vpState[vpId].cineFps = newFps;
+            if (vpState[vpId].isPlaying) {
+                startCinePlay(vpId);
+            }
+        }
+
+        function toggleCineLoopMode(vpId) {
+            const curMode = vpState[vpId].cineLoopMode || 'loop';
+            const nextMode = (curMode === 'loop') ? 'bounce' : 'loop';
+            vpState[vpId].cineLoopMode = nextMode;
+            const btn = document.getElementById(`btnCineLoop${vpId}`);
+            if (btn) {
+                btn.innerText = (nextMode === 'loop') ? '🔁' : '🔀';
+                btn.title = (nextMode === 'loop') ? 'Loop Maju Terus' : 'Loop Bouncing (Maju-Mundur)';
+            }
+            showToolHint('🔁', `Cine Loop Mode: ${nextMode.toUpperCase()}`);
+            setTimeout(hideToolHint, 1500);
+        }
+
+        // Global Keyboard Shortcut untuk Cine (Space: Play/Pause, Panah Kiri/Kanan: Step Frame)
+        window.addEventListener('keydown', function(e) {
+            if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT')) return;
+            if (e.code === 'Space') {
+                if (vpState[activeViewport].isCine) {
+                    e.preventDefault();
+                    toggleCinePlay(activeViewport);
+                }
+            } else if (e.code === 'ArrowLeft') {
+                if (vpState[activeViewport].isCine) {
+                    e.preventDefault();
+                    stepCineFrame(activeViewport, -1);
+                }
+            } else if (e.code === 'ArrowRight') {
+                if (vpState[activeViewport].isCine) {
+                    e.preventDefault();
+                    stepCineFrame(activeViewport, 1);
+                }
+            }
+        });
 
         // Right Dock Workstation Controller
         const DOCK_TAB_META = {

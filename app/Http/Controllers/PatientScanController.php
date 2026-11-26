@@ -224,6 +224,9 @@ class PatientScanController extends Controller
             // Susun seri citra nyata berdasarkan modalitas
             $mUpper = strtoupper($scan->modality ?? '');
             $isUsg = str_contains($mUpper, 'USG') || str_contains($mUpper, 'ULTRASOUND') || $mUpper === 'US' || str_starts_with($mUpper, 'US ');
+            $primaryImagePath = $scan->preview_image_path ?: ($isUsg ? 'scan-assets/usg_cine/sample_usg_poster.jpg' : 'scan-assets/raw_toraks.jpg');
+            $primaryCine = $this->resolveCineData($scan, $isUsg, $primaryImagePath);
+
             $primarySeries = [
                 'id'          => 'series-1',
                 'name'        => $scan->modality ?: ($isUsg ? 'USG Abdomen' : 'Thorax PA (CR)'),
@@ -232,27 +235,41 @@ class PatientScanController extends Controller
                 'badge_color' => '#38bdf8',
                 'study'       => $scan->study_description ?: ($isUsg ? 'Pemeriksaan USG Hepar & Abdomen Upper' : 'Pemeriksaan Paru & Jantung PA'),
                 'station'     => $scan->station_name ?: ($isUsg ? 'USG_MINDRAY_02' : 'FUJIFILM_FDR_01'),
-                'matrix'      => $isUsg ? 'B-Mode 3.5MHz (1920x1080)' : '2048 x 2048',
-                'image_path'  => $scan->preview_image_path ?: ($isUsg ? 'scan-assets/usg_sample.jpg' : 'scan-assets/raw_toraks.jpg'),
+                'matrix'      => $isUsg ? ($primaryCine['is_cine'] ? "Cine {$primaryCine['frame_count']} Frames ({$primaryCine['cine_fps']} FPS)" : 'B-Mode 3.5MHz (1920x1080)') : '2048 x 2048',
+                'image_path'  => $primaryImagePath,
                 'has_image'   => true,
                 'is_primary'  => true,
+                'is_cine'     => $primaryCine['is_cine'],
+                'frame_count' => $primaryCine['frame_count'],
+                'cine_fps'    => $primaryCine['cine_fps'],
+                'video_path'  => $primaryCine['video_path'],
+                'frames'      => $primaryCine['frames'],
             ];
 
             // Pasien Demo #1 tetap disiapkan 2 seri untuk keperluan demo komparasi multimodal
             // Sedangkan pasien riil (dari alat Fujifilm) akan otomatis menampilkan sejumlah citra riil yang dikirim
             if ($scan->id === 1) {
+                $secIsUsg = !$isUsg;
+                $secImagePath = $isUsg ? 'scan-assets/raw_toraks.jpg' : 'scan-assets/usg_cine/sample_usg_poster.jpg';
+                $secCine = $this->resolveCineData($scan, $secIsUsg, $secImagePath);
+
                 $secondarySeries = [
                     'id'          => 'series-2',
-                    'name'        => $isUsg ? 'Thorax PA (CR)' : 'USG Abdomen',
+                    'name'        => $isUsg ? 'Thorax PA (CR)' : 'USG Abdomen (Cine)',
                     'modality'    => $isUsg ? 'CR / Rontgen Dada' : 'US / Ultrasonografi',
                     'badge'       => $isUsg ? 'CR' : 'US',
                     'badge_color' => '#38bdf8',
-                    'study'       => $isUsg ? 'Pemeriksaan Paru & Jantung PA' : 'Pemeriksaan USG Hepar & Abdomen Upper',
+                    'study'       => $isUsg ? 'Pemeriksaan Paru & Jantung PA' : 'Pemeriksaan USG Hepar & Abdomen Upper (Cine Loop)',
                     'station'     => $isUsg ? 'FUJIFILM_FDR' : 'USG_MINDRAY_02',
-                    'matrix'      => $isUsg ? '2048 x 2048' : 'B-Mode 3.5MHz (1920x1080)',
-                    'image_path'  => $isUsg ? 'scan-assets/raw_toraks.jpg' : 'scan-assets/usg_sample.jpg',
+                    'matrix'      => $isUsg ? '2048 x 2048' : "Cine {$secCine['frame_count']} Frames ({$secCine['cine_fps']} FPS)",
+                    'image_path'  => $secImagePath,
                     'has_image'   => true,
                     'is_primary'  => false,
+                    'is_cine'     => $secCine['is_cine'],
+                    'frame_count' => $secCine['frame_count'],
+                    'cine_fps'    => $secCine['cine_fps'],
+                    'video_path'  => $secCine['video_path'],
+                    'frames'      => $secCine['frames'],
                 ];
                 $patientSeries = [$primarySeries, $secondarySeries];
             } else {
@@ -270,6 +287,9 @@ class PatientScanController extends Controller
                 foreach ($relatedScans as $rIdx => $rScan) {
                     $rMUpper = strtoupper($rScan->modality ?? '');
                     $rIsUsg = str_contains($rMUpper, 'USG') || str_contains($rMUpper, 'ULTRASOUND') || $rMUpper === 'US' || str_starts_with($rMUpper, 'US ');
+                    $rImgPath = $rScan->preview_image_path ?: $rScan->scan_image_path;
+                    $rCine = $this->resolveCineData($rScan, $rIsUsg, $rImgPath);
+
                     $patientSeries[] = [
                         'id'          => 'series-' . ($rIdx + 2),
                         'name'        => $rScan->modality ?: 'Seri Tambahan',
@@ -278,10 +298,15 @@ class PatientScanController extends Controller
                         'badge_color' => '#38bdf8',
                         'study'       => $rScan->study_description ?: 'Pemeriksaan Lanjutan',
                         'station'     => $rScan->station_name ?: 'STATION_01',
-                        'matrix'      => 'DICOM Series',
-                        'image_path'  => $rScan->preview_image_path ?: $rScan->scan_image_path,
+                        'matrix'      => $rCine['is_cine'] ? "Cine {$rCine['frame_count']} Frames" : 'DICOM Series',
+                        'image_path'  => $rImgPath,
                         'has_image'   => true,
                         'is_primary'  => false,
+                        'is_cine'     => $rCine['is_cine'],
+                        'frame_count' => $rCine['frame_count'],
+                        'cine_fps'    => $rCine['cine_fps'],
+                        'video_path'  => $rCine['video_path'],
+                        'frames'      => $rCine['frames'],
                     ];
                 }
             }
@@ -326,11 +351,22 @@ class PatientScanController extends Controller
             || str_contains($modalityUpper, 'SKULL') 
             || str_contains($modalityUpper, 'CRANIUM');
 
+        $isCine     = false;
+        $frameCount = 1;
+        $cineFps    = null;
+        $cineVideo  = null;
+        $cineFrames = null;
+
         // Gunakan citra sampel sesuai modalitas (representasi citra DICOM dari alat)
         if ($isUsg) {
-            $previewPath = 'scan-assets/usg_sample.jpg';
-            $scanPath    = null;
+            $previewPath = 'scan-assets/usg_cine/sample_usg_poster.jpg';
+            $scanPath    = 'scan-assets/usg_cine/sample_usg_poster.jpg';
             $dicomRaw    = 'sample_usg.dcm';
+            $isCine      = true;
+            $frameCount  = 19;
+            $cineFps     = 19.0;
+            $cineVideo   = 'scan-assets/usg_cine/sample_usg.mp4';
+            $cineFrames  = 'scan-assets/usg_cine/frames';
         } elseif ($isHead) {
             $previewPath = 'scan-assets/raw_kepala.jpg';
             $scanPath    = 'scan-assets/raw_kepala.jpg';
@@ -347,6 +383,11 @@ class PatientScanController extends Controller
             'scan_image_path'    => $scanPath,
             'dicom_raw_path'     => $dicomRaw,
             'station_name'       => $scan->station_name ?: ($isUsg ? 'USG_MINDRAY_02' : 'FUJIFILM_FDR_01'),
+            'is_cine'            => $isCine,
+            'frame_count'        => $frameCount,
+            'cine_fps'           => $cineFps,
+            'cine_video_path'    => $cineVideo,
+            'cine_frames_dir'    => $cineFrames,
         ]);
 
         return redirect()->route('scans.show', $id)
@@ -1140,5 +1181,262 @@ class PatientScanController extends Controller
             'port'            => $port,
             'modality_source' => $modality,
         ]);
+    }
+
+    /**
+     * Resolusi Data Cine Loop Multi-Frame (.CIN / .DCM)
+     */
+    private function resolveCineData(MedicalScan $scan, bool $isUsg, ?string $imagePath = null): array
+    {
+        // 1. Cek langsung dari atribut model jika scan adalah cine
+        if ($scan->is_cine && !empty($scan->cine_frames_dir)) {
+            $framesPath = public_path($scan->cine_frames_dir);
+            $frames = [];
+            if (is_dir($framesPath)) {
+                $files = glob($framesPath . '/*.jpg');
+                if ($files) {
+                    sort($files);
+                    foreach ($files as $f) {
+                        $frames[] = asset($scan->cine_frames_dir . '/' . basename($f));
+                    }
+                }
+            }
+            return [
+                'is_cine'     => true,
+                'frame_count' => $scan->frame_count ?: count($frames),
+                'cine_fps'    => $scan->cine_fps ?: 15.0,
+                'video_path'  => $scan->cine_video_path ? asset($scan->cine_video_path) : null,
+                'frames'      => $frames,
+            ];
+        }
+
+        // 2. Fallback untuk sample USG jika manifest cine sample tersedia
+        $pathToCheck = $imagePath ?: ($scan->preview_image_path ?: $scan->scan_image_path);
+        if ($isUsg || ($pathToCheck && (str_contains($pathToCheck, 'usg') || str_contains($pathToCheck, 'cine')))) {
+            $manifestPath = public_path('scan-assets/usg_cine/manifest.json');
+            if (file_exists($manifestPath)) {
+                $manifest = json_decode(file_get_contents($manifestPath), true);
+                if ($manifest && !empty($manifest['frames'])) {
+                    $frames = array_map(fn($f) => asset($f), $manifest['frames']);
+                    return [
+                        'is_cine'     => true,
+                        'frame_count' => $manifest['frame_count'] ?? count($frames),
+                        'cine_fps'    => $manifest['fps'] ?? 19.0,
+                        'video_path'  => !empty($manifest['video_url']) ? asset($manifest['video_url']) : asset('scan-assets/usg_cine/sample_usg.mp4'),
+                        'frames'      => $frames,
+                    ];
+                }
+            }
+        }
+
+        return [
+            'is_cine'     => false,
+            'frame_count' => 1,
+            'cine_fps'    => null,
+            'video_path'  => null,
+            'frames'      => [],
+        ];
+    }
+
+    /**
+     * Simulasi Penerimaan Citra USG Mindray Cine Loop (19 Frames .CIN / Multi-Frame)
+     */
+    public function simulateUsgCine(Request $request)
+    {
+        try {
+            // Pastikan aset cine sample sudah terekstrak
+            $manifestPath = public_path('scan-assets/usg_cine/manifest.json');
+            if (!file_exists($manifestPath)) {
+                $py = $this->getPythonBinary() ?: 'python';
+                \Illuminate\Support\Facades\Process::timeout(12)->run([$py, base_path('medical_engine/cine_extractor.py'), base_path('sample_usg.dcm')]);
+            }
+
+            // Cari antrian USG yang sedang menunggu atau buat baru
+            $targetScan = MedicalScan::where('mcu_status', 'siap_rontgen')
+                ->where(function($q) {
+                    $q->where('modality', 'like', '%US%')
+                      ->orWhere('modality', 'like', '%USG%');
+                })
+                ->orderBy('id', 'asc')
+                ->first();
+
+            if ($targetScan) {
+                $targetScan->update([
+                    'mcu_status'         => 'rontgen_selesai',
+                    'station_name'       => 'USG_MINDRAY_DP10',
+                    'scan_image_path'    => 'scan-assets/usg_cine/sample_usg_poster.jpg',
+                    'preview_image_path' => 'scan-assets/usg_cine/sample_usg_poster.jpg',
+                    'dicom_raw_path'     => 'sample_usg.dcm',
+                    'is_cine'            => true,
+                    'frame_count'        => 19,
+                    'cine_fps'           => 19.0,
+                    'cine_video_path'    => 'scan-assets/usg_cine/sample_usg.mp4',
+                    'cine_frames_dir'    => 'scan-assets/usg_cine/frames',
+                    'study_instance_uid' => '1.2.840.10008.5.1.4.1.1.3.1.' . time(),
+                    'sop_instance_uid'   => '1.2.840.10008.5.1.4.1.1.3.1.1.' . time(),
+                ]);
+            } else {
+                $latestId = (MedicalScan::max('id') ?: 0) + 1;
+                $targetScan = MedicalScan::create([
+                    'patient_id'         => 'CDC-USG-' . str_pad($latestId, 4, '0', STR_PAD_LEFT),
+                    'accession_number'   => 'ACC-USG-' . date('Ymd') . '-' . str_pad($latestId, 3, '0', STR_PAD_LEFT),
+                    'patient_name'       => 'Ny. Ratna Dewi (USG Cine)',
+                    'age'                => 32,
+                    'gender'             => 'P',
+                    'modality'           => 'USG Abdomen (Cine Loop)',
+                    'study_description'  => 'USG Abdomen & Hepar (Mindray Cine 19 Frames)',
+                    'mcu_status'         => 'rontgen_selesai',
+                    'station_name'       => 'USG_MINDRAY_DP10',
+                    'scan_image_path'    => 'scan-assets/usg_cine/sample_usg_poster.jpg',
+                    'preview_image_path' => 'scan-assets/usg_cine/sample_usg_poster.jpg',
+                    'dicom_raw_path'     => 'sample_usg.dcm',
+                    'is_cine'            => true,
+                    'frame_count'        => 19,
+                    'cine_fps'           => 19.0,
+                    'cine_video_path'    => 'scan-assets/usg_cine/sample_usg.mp4',
+                    'cine_frames_dir'    => 'scan-assets/usg_cine/frames',
+                    'study_instance_uid' => '1.2.840.10008.5.1.4.1.1.3.1.' . time(),
+                    'sop_instance_uid'   => '1.2.840.10008.5.1.4.1.1.3.1.1.' . time(),
+                    'order_notes'        => 'Diterima otomatis dari ultrasound Mindray DP-10 via DICOM C-STORE Cine Loop (UltrasoundMultiFrameImageStorage).',
+                ]);
+            }
+
+            return response()->json([
+                'status'           => 'success',
+                'title'            => 'TRANSMISI DICOM CINE USG BERHASIL',
+                'message'          => 'Citra Cine Loop USG (19 Frames @ 19 FPS) dari mesin Mindray DP-10 berhasil diterima dan diarsipkan oleh Hyu PACS.',
+                'patient_name'     => $targetScan->patient_name,
+                'patient_id'       => $targetScan->patient_id,
+                'accession_number' => $targetScan->accession_number,
+                'modality'         => $targetScan->modality,
+                'station'          => $targetScan->station_name,
+                'is_cine'          => true,
+                'frame_count'      => 19,
+                'fps'              => 19.0,
+                'scan_id'          => $targetScan->id,
+                'viewer_url'       => route('scans.show', $targetScan->id),
+                'sop_class'        => 'Ultrasound Multi-Frame Image Storage (1.2.840.10008.5.1.4.1.1.3.1)',
+                'status_code'      => '0x0000 (Success)',
+                'mode'             => 'Mindray USG Cine Loop Ingestion'
+            ]);
+        } catch (\Throwable $ex) {
+            return response()->json([
+                'status'  => 'error',
+                'title'   => 'GAGAL TRANSMISI CINE USG',
+                'message' => 'Terjadi kesalahan saat memproses transmisi C-STORE Cine: ' . $ex->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Endpoint API Pengambilan Frame Cine Loop untuk Viewer
+     */
+    public function getCineFrames(string $id)
+    {
+        $scan = MedicalScan::findOrFail($id);
+        $mUpper = strtoupper($scan->modality ?? '');
+        $isUsg = str_contains($mUpper, 'USG') || str_contains($mUpper, 'ULTRASOUND') || $mUpper === 'US' || str_starts_with($mUpper, 'US ');
+        $cine = $this->resolveCineData($scan, $isUsg);
+
+        return response()->json([
+            'status'      => 'success',
+            'scan_id'     => $scan->id,
+            'is_cine'     => $cine['is_cine'],
+            'frame_count' => $cine['frame_count'],
+            'cine_fps'    => $cine['cine_fps'],
+            'video_path'  => $cine['video_path'],
+            'frames'      => $cine['frames'],
+        ]);
+    }
+
+    /**
+     * Upload & Impor Langsung Berkas DICOM (.dcm atau .cin) dari Web
+     */
+    public function importDicomFile(Request $request)
+    {
+        $request->validate([
+            'dicom_file' => 'required|file|max:102400', // max 100MB
+        ]);
+
+        $file = $request->file('dicom_file');
+        $origName = $file->getClientOriginalName();
+        $ext = strtolower($file->getClientOriginalExtension());
+
+        if (!in_array($ext, ['dcm', 'cin', 'dicom', 'raw']) && !str_ends_with(strtolower($origName), '.cin') && !str_ends_with(strtolower($origName), '.dcm')) {
+            return back()->with('error', 'Hanya berkas dengan format .dcm, .cin, atau DICOM valid yang didukung.');
+        }
+
+        $now = now();
+        $subfolder = $now->format('Y/m');
+        $targetDir = storage_path("app/public/scans/{$subfolder}");
+        if (!file_exists($targetDir)) mkdir($targetDir, 0755, true);
+
+        $safeName = preg_replace('/[^A-Za-z0-9_\-\.]/', '_', $origName);
+        $savedFilename = time() . '_' . $safeName;
+        $file->move($targetDir, $savedFilename);
+        $fullDcmPath = $targetDir . DIRECTORY_SEPARATOR . $savedFilename;
+        $relDcmPath = "scans/{$subfolder}/{$savedFilename}";
+
+        // Jalankan Python untuk ekstraksi metadata & frame cine
+        $python = $this->getPythonBinary() ?: 'python';
+        $dirName = pathinfo($savedFilename, PATHINFO_FILENAME);
+        $outBase = public_path("scan-assets/cine/{$dirName}");
+        $webPrefix = "scan-assets/cine/{$dirName}";
+        if (!file_exists($outBase)) mkdir($outBase, 0755, true);
+
+        $escapedPath = addslashes($fullDcmPath);
+        $escapedOut = addslashes($outBase);
+        $baseFn = 'import_' . time();
+
+        $extractScript = "import json, pydicom\n"
+            . "from medical_engine.cine_extractor import extract_dicom_cine\n"
+            . "ds = pydicom.dcmread(r'{$escapedPath}', force=True)\n"
+            . "res = extract_dicom_cine(ds, r'{$escapedOut}', '{$webPrefix}', '{$baseFn}')\n"
+            . "res['patient_name'] = str(ds.get('PatientName', 'Pasien Impor')).replace('^', ' ').strip()\n"
+            . "res['patient_id'] = str(ds.get('PatientID', 'IMP-" . time() . "')).strip()\n"
+            . "res['modality'] = str(ds.get('Modality', 'US')).strip()\n"
+            . "res['study_description'] = str(ds.get('StudyDescription', 'Impor DICOM / Cine')).strip()\n"
+            . "res['station_name'] = str(ds.get('StationName', 'WORKSTATION_IMPORT')).strip()\n"
+            . "print(json.dumps(res))\n";
+
+        try {
+            $run = \Illuminate\Support\Facades\Process::timeout(25)->run([$python, '-c', $extractScript]);
+            $output = trim($run->output());
+            $meta = json_decode($output, true);
+        } catch (\Throwable $e) {
+            $meta = null;
+        }
+
+        $isCine = !empty($meta['is_cine']);
+        $frameCount = $meta['frame_count'] ?? 1;
+        $fps = $meta['fps'] ?? 15.0;
+        $posterRel = $meta['poster_rel'] ?? null;
+        $videoRel = $meta['video_rel'] ?? null;
+        $framesDirRel = $meta['frames_dir_rel'] ?? null;
+        $patientName = (!empty($meta['patient_name']) && $meta['patient_name'] !== 'UNKNOWN') ? $meta['patient_name'] : 'Pasien Impor ' . strtoupper($ext);
+        $patientId = (!empty($meta['patient_id']) && $meta['patient_id'] !== 'UNKNOWN') ? $meta['patient_id'] : 'IMP-' . date('YmdHis');
+        $modality = $meta['modality'] ?? ($isCine ? 'US' : 'DX');
+        $studyDesc = $meta['study_description'] ?? ($isCine ? 'USG Cine Loop' : 'Pemeriksaan Radiologi');
+
+        $scan = MedicalScan::create([
+            'patient_id'         => $patientId,
+            'accession_number'   => 'ACC-IMP-' . date('YmdHis'),
+            'patient_name'       => $patientName,
+            'modality'           => $isCine ? ($modality . ' (Cine Loop)') : $modality,
+            'study_description'  => $studyDesc,
+            'mcu_status'         => 'rontgen_selesai',
+            'station_name'       => $meta['station_name'] ?? 'IMPOR_FILE',
+            'scan_image_path'    => $posterRel,
+            'preview_image_path' => $posterRel,
+            'dicom_raw_path'     => $relDcmPath,
+            'is_cine'            => $isCine,
+            'frame_count'        => $frameCount,
+            'cine_fps'           => $fps,
+            'cine_video_path'    => $videoRel,
+            'cine_frames_dir'    => $framesDirRel,
+            'order_notes'        => "Diimpor langsung dari berkas {$origName} (" . ($isCine ? "Cine Loop {$frameCount} frames" : "Single Frame") . ").",
+        ]);
+
+        return redirect()->route('scans.show', $scan->id)->with('success', "Berkas {$origName} berhasil diimpor! Viewer siap dengan " . ($isCine ? "mode Cine Loop ({$frameCount} frames)" : "mode citra statis") . ".");
     }
 }

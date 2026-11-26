@@ -39,6 +39,11 @@ from pynetdicom.sop_class import (
     SecondaryCaptureImageStorage
 )
 
+try:
+    from medical_engine.cine_extractor import extract_dicom_cine
+except ImportError:
+    extract_dicom_cine = None
+
 # Direktori Dasar Project
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STORAGE_SCANS_DIR = os.path.join(BASE_DIR, "storage", "app", "public", "scans")
@@ -166,16 +171,37 @@ def handle_store(event):
     # 1. Simpan file DICOM asli
     ds.save_as(dcm_full_path, write_like_original=False)
     
-    # 2. Ekstrak preview JPG untuk Web Viewer
+    # 2. Ekstrak preview JPG & Cine Multi-frame jika tersedia
     jpg_filename = f"scan_{safe_patient_id}_{timestamp_str}.jpg"
     jpg_full_path = os.path.join(PUBLIC_ASSETS_DIR, jpg_filename)
     rel_jpg_path = f"scan-assets/{jpg_filename}"
 
-    if not os.path.abspath(jpg_full_path).startswith(os.path.abspath(PUBLIC_ASSETS_DIR)):
-        print(f"[HYU PACS WARNING] Percobaan path traversal terdeteksi pada file preview JPG: {jpg_filename}")
-        return 0xC000
-    
-    extract_preview_jpg(ds, jpg_full_path)
+    is_cine = 0
+    frame_count = 1
+    cine_fps = 15.0
+    cine_video_rel = None
+    cine_frames_rel = None
+
+    if extract_dicom_cine is not None:
+        cine_out_dir = os.path.join(PUBLIC_ASSETS_DIR, "cine", f"{safe_patient_id}_{timestamp_str}")
+        cine_web_prefix = f"scan-assets/cine/{safe_patient_id}_{timestamp_str}"
+        try:
+            cine_res = extract_dicom_cine(ds, cine_out_dir, cine_web_prefix, base_filename=f"scan_{safe_patient_id}_{timestamp_str}")
+            if cine_res.get("is_cine"):
+                is_cine = 1
+                frame_count = cine_res.get("frame_count", 1)
+                cine_fps = cine_res.get("fps", 15.0)
+                cine_video_rel = cine_res.get("video_rel")
+                cine_frames_rel = cine_res.get("frames_dir_rel")
+                rel_jpg_path = cine_res.get("poster_rel") or rel_jpg_path
+                print(f"[HYU PACS] [CINE] Multi-frame Ultrasound Cine Loop terdeteksi: {frame_count} frames @ {cine_fps} FPS!")
+            else:
+                rel_jpg_path = cine_res.get("poster_rel") or rel_jpg_path
+        except Exception as cine_err:
+            print(f"[HYU PACS] [CINE EXTRACT ERROR] {cine_err}")
+            extract_preview_jpg(ds, jpg_full_path)
+    else:
+        extract_preview_jpg(ds, jpg_full_path)
     
     # Update file raw_toraks & sample_toraks default jika Thorax, atau usg_sample jika USG
     clean_modality = normalize_modality(modality)
@@ -261,9 +287,19 @@ def handle_store(event):
                     study_instance_uid = ?,
                     sop_instance_uid = ?,
                     modality = ?,
+                    is_cine = ?,
+                    frame_count = ?,
+                    cine_fps = ?,
+                    cine_video_path = ?,
+                    cine_frames_dir = ?,
                     updated_at = datetime('now')
                 WHERE id = ?
-            """, (rel_jpg_path, rel_jpg_path, rel_dcm_path, station_name, study_uid, sop_uid, clean_modality, scan_id))
+            """, (
+                rel_jpg_path, rel_jpg_path, rel_dcm_path, 
+                station_name, study_uid, sop_uid, clean_modality,
+                is_cine, frame_count, cine_fps, cine_video_rel, cine_frames_rel,
+                scan_id
+            ))
             print(f"[HYU PACS] [OK] Sukses menautkan citra USG Mindray ke Order Antrian #{scan_id} ({actual_patient_name} - {actual_patient_id}) -> Status: Selesai Pemeriksaan")
         else:
             # Buat record baru otomatis jika pemeriksaan dilakukan langsung tanpa order worklist
@@ -274,12 +310,15 @@ def handle_store(event):
                 INSERT INTO medical_scans (
                     patient_id, accession_number, patient_name, modality, study_description,
                     scan_image_path, preview_image_path, dicom_raw_path, mcu_status,
-                    station_name, study_instance_uid, sop_instance_uid, created_at, updated_at
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rontgen_selesai', ?, ?, ?, datetime('now'), datetime('now'))
+                    station_name, study_instance_uid, sop_instance_uid,
+                    is_cine, frame_count, cine_fps, cine_video_path, cine_frames_dir,
+                    created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'rontgen_selesai', ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))
             """, (
                 assigned_id, assigned_acc, assigned_name,
                 clean_modality, study_desc, rel_jpg_path, rel_jpg_path, rel_dcm_path,
-                station_name, study_uid, sop_uid
+                station_name, study_uid, sop_uid,
+                is_cine, frame_count, cine_fps, cine_video_rel, cine_frames_rel
             ))
             print(f"[HYU PACS] [OK] Sukses menerima Citra DICOM Baru ({assigned_name} - {assigned_id}) dari {station_name}")
             

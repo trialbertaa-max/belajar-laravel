@@ -21,6 +21,11 @@ class MedicalScan extends Model
         'station_name',
         'study_instance_uid',
         'sop_instance_uid',
+        'is_cine',
+        'frame_count',
+        'cine_fps',
+        'cine_video_path',
+        'cine_frames_dir',
         'dicom_raw_path',
         'preview_image_path',
         'denoised_image_path',
@@ -32,6 +37,9 @@ class MedicalScan extends Model
 
     protected $casts = [
         'birth_date' => 'date',
+        'is_cine'    => 'boolean',
+        'frame_count' => 'integer',
+        'cine_fps'   => 'float',
     ];
 
     // Helper untuk status badge di antarmuka web

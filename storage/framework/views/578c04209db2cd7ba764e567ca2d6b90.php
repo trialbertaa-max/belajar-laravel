@@ -1386,6 +1386,14 @@
             <a href="<?php echo e(route('system.start')); ?>" class="btn btn-secondary" style="border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; font-weight: 700; text-decoration: none;">
                 ⚡ Status & Kesiapan Sistem
             </a>
+            <!-- Form Upload Berkas DICOM / .CIN -->
+            <form action="<?php echo e(route('scans.import-dicom')); ?>" method="POST" enctype="multipart/form-data" id="formImportDicom" style="display: inline-block; margin: 0;">
+                <?php echo csrf_field(); ?>
+                <input type="file" name="dicom_file" id="inputDicomFile" accept=".dcm,.cin,.dicom" style="display: none;" onchange="document.getElementById('formImportDicom').submit()">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('inputDicomFile').click()" title="Unggah file DICOM (.dcm) atau Cine Loop USG (.cin) untuk langsung dibuka di Viewer" style="border-color: rgba(16, 185, 129, 0.45); color: #34d399; font-weight: 700;">
+                    🎬 Impor DICOM / .CIN
+                </button>
+            </form>
             <button class="btn btn-primary" onclick="openOrderModal()">
                 ➕ Buat Order MCU Baru
             </button>
