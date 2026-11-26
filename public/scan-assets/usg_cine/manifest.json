@@ -1,0 +1,32 @@
+{
+  "is_cine": true,
+  "frame_count": 19,
+  "fps": 19.0,
+  "dimensions": {
+    "width": 800,
+    "height": 600
+  },
+  "poster_url": "scan-assets/usg_cine/sample_usg_poster.jpg",
+  "video_url": "scan-assets/usg_cine/sample_usg.mp4",
+  "frames": [
+    "scan-assets/usg_cine/frames/frame_0000.jpg",
+    "scan-assets/usg_cine/frames/frame_0001.jpg",
+    "scan-assets/usg_cine/frames/frame_0002.jpg",
+    "scan-assets/usg_cine/frames/frame_0003.jpg",
+    "scan-assets/usg_cine/frames/frame_0004.jpg",
+    "scan-assets/usg_cine/frames/frame_0005.jpg",
+    "scan-assets/usg_cine/frames/frame_0006.jpg",
+    "scan-assets/usg_cine/frames/frame_0007.jpg",
+    "scan-assets/usg_cine/frames/frame_0008.jpg",
+    "scan-assets/usg_cine/frames/frame_0009.jpg",
+    "scan-assets/usg_cine/frames/frame_0010.jpg",
+    "scan-assets/usg_cine/frames/frame_0011.jpg",
+    "scan-assets/usg_cine/frames/frame_0012.jpg",
+    "scan-assets/usg_cine/frames/frame_0013.jpg",
+    "scan-assets/usg_cine/frames/frame_0014.jpg",
+    "scan-assets/usg_cine/frames/frame_0015.jpg",
+    "scan-assets/usg_cine/frames/frame_0016.jpg",
+    "scan-assets/usg_cine/frames/frame_0017.jpg",
+    "scan-assets/usg_cine/frames/frame_0018.jpg"
+  ]
+}

@@ -730,6 +730,9 @@
             <button class="btn-sub-action" onclick="triggerSimulateFuji()" id="btnSimulateFuji">
                 📨 Simulasi Transmisi Fujifilm (C-STORE)
             </button>
+            <button class="btn-sub-action" onclick="triggerSimulateUsgCine()" id="btnSimulateUsgCine">
+                🎬 Simulasi USG Cine Loop (.CIN / Multi-Frame)
+            </button>
             <a href="{{ route('scans.index') }}" class="btn-sub-action" style="text-decoration: none;">
                 📋 Lihat Antrian Modality Worklist
             </a>
@@ -1105,6 +1108,40 @@
         } finally {
             btn.disabled = false;
             btn.innerText = '📨 Simulasi Transmisi Fujifilm (C-STORE)';
+        }
+    }
+
+    // Simulasi C-STORE USG Cine Loop (.CIN / Multi-Frame)
+    async function triggerSimulateUsgCine() {
+        const btn = document.getElementById('btnSimulateUsgCine');
+        btn.disabled = true;
+        btn.innerText = '🎬 Mentransmisikan Cine...';
+        logToConsole('info', 'Mengirim citra USG Cine Loop (19 Frames) via simulasi DICOM C-STORE Mindray DP-10...');
+
+        try {
+            const res = await fetch("{{ route('scans.simulate-usg-cine') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
+                }
+            });
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                logToConsole('success', `[C-STORE CINE SUKSES] Cine Loop pasien ${data.patient_name} (${data.frame_count} frames @ ${data.fps} FPS) berhasil diarsipkan!`);
+                showToast('🎬', `Cine Sukses: ${data.patient_name} (${data.frame_count} Frames)`);
+                fetchSystemStatus();
+            } else {
+                logToConsole('error', `[C-STORE CINE GAGAL] ${data.message}`);
+                showToast('❌', data.message);
+            }
+        } catch (err) {
+            logToConsole('error', 'Kesalahan transmisi Cine: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerText = '🎬 Simulasi USG Cine Loop (.CIN / Multi-Frame)';
         }
     }
 
